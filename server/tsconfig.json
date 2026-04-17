@@ -1,0 +1,87 @@
+{
+  // Production-grade TypeScript config for the Node/Express backend.
+  //
+  //  - Targets Node 20+ via ES2022 / NodeNext.
+  //  - Pure ESM ("type": "module" in package.json), so imports use .js suffixes.
+  //  - Strictest practical checks ON: exactOptionalPropertyTypes,
+  //    noUncheckedIndexedAccess, noImplicitReturns, etc.
+  //  - Incremental builds + source maps for fast rebuilds & good stack traces.
+  //  - No path aliases: tsc does not rewrite import specifiers on emit, and
+  //    this project ships plain `dist/` output under `node`, so alias-based
+  //    imports would be a runtime trap. If aliases are ever needed, adopt
+  //    Node's native package `imports` field (#alias) or add `tsc-alias`.
+  //
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    /* ---------- File layout ---------- */
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    /* ---------- Language & module target ---------- */
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+
+    /* ---------- Emit ---------- */
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "removeComments": false,
+    "importHelpers": true,
+    "newLine": "lf",
+    "preserveConstEnums": true,
+
+    /* ---------- Build performance ---------- */
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/server.tsbuildinfo",
+    "skipLibCheck": true,
+    "assumeChangesOnlyAffectDirectDependencies": true,
+
+    /* ---------- Strict type-checking ---------- */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    // noImplicitReturns is off: Express handlers frequently mix
+    // `return res.status(400)...` guard clauses with terminal
+    // `res.status(200)...` calls whose return value is never consumed.
+    // Turning this on produces noisy false positives without catching bugs.
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": false,
+    // noUnusedLocals/Parameters are style checks; leave to ESLint so tsc
+    // failures reflect genuine type problems, not dead identifiers.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+
+    /* ---------- Interop ---------- */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedSideEffectImports": true,
+
+    /* ---------- Runtime types ---------- */
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

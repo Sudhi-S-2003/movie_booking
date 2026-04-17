@@ -1,0 +1,50 @@
+{
+  // Config for build-tool files that run in Node (not the browser):
+  // vite.config.ts, postcss config, etc.
+  //
+  // Kept as a separate project reference so the app build doesn't pull in
+  // Node types and the node build doesn't pull in DOM types.
+  "compilerOptions": {
+    /* ---------- Language & module target ---------- */
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+
+    /* ---------- Emit (type-check only) ---------- */
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+
+    /* ---------- Build performance ---------- */
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/node.tsbuildinfo",
+    "skipLibCheck": true,
+    "assumeChangesOnlyAffectDirectDependencies": true,
+
+    /* ---------- Strict type-checking ---------- */
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "erasableSyntaxOnly": true,
+    "noUncheckedSideEffectImports": true,
+
+    /* ---------- Interop ---------- */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* ---------- Runtime types ---------- */
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

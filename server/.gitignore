@@ -1,0 +1,29 @@
+# Server-specific ignores (merges with the monorepo root .gitignore)
+
+# ---------- Build output ----------
+dist/
+build/
+*.tsbuildinfo
+node_modules/.cache/
+
+# ---------- Env & secrets ----------
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# ---------- Runtime logs / uploads ----------
+logs/
+*.log
+uploads/
+tmp/
+temp/
+
+# ---------- MongoDB / local db dumps ----------
+*.bson
+*.gz
+db-dumps/
+
+# ---------- Node / npm ----------
+node_modules/
+npm-debug.log*

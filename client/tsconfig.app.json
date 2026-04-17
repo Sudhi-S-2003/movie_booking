@@ -1,0 +1,99 @@
+{
+  // Production-grade TypeScript config for the React + Vite client.
+  //
+  //  - Bundler-mode module resolution: Vite owns runtime resolution; tsc
+  //    is used purely for type checking (noEmit).
+  //  - Strictest practical checks ON, matching the backend.
+  //  - Path aliases kept in sync with vite.config.ts resolve.alias so both
+  //    tsc and the bundler agree on `@/components/...` etc.
+  //  - Incremental buildinfo kept out of src for fast rebuilds.
+  "compilerOptions": {
+    /* ---------- File layout ----------
+     * Path aliases resolve relative to this tsconfig file (TS 6+ — no
+     * baseUrl needed). Keep in sync with vite.config.ts resolve.alias.
+     */
+    "paths": {
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@layouts/*": ["./src/layouts/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@services/*": ["./src/services/*"],
+      "@store/*": ["./src/store/*"],
+      "@providers/*": ["./src/providers/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@constants/*": ["./src/constants/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@style/*": ["./src/style/*"]
+    },
+
+    /* ---------- Language & module target ---------- */
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+
+    /* ---------- Emit (Vite owns this — tsc is type-check only) ---------- */
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+
+    /* ---------- Build performance ---------- */
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/app.tsbuildinfo",
+    "skipLibCheck": true,
+    "assumeChangesOnlyAffectDirectDependencies": true,
+
+    /* ---------- Strict type-checking ---------- */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true,
+    // exactOptionalPropertyTypes is off on the client: React prop drilling
+    // frequently passes `foo={undefined}` for optional props, which this
+    // flag rejects even when the prop type is `foo?: T`. The server has it
+    // on (model/DTO correctness is worth the friction); the client leaves
+    // it off so optional props stay ergonomic.
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": false,
+    // Style checks — leave to ESLint so tsc failures only reflect genuine
+    // type problems. Dead imports are a lint concern, not a type concern.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "erasableSyntaxOnly": true,
+    "noUncheckedSideEffectImports": true,
+
+    /* ---------- Interop ---------- */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* ---------- Runtime types ---------- */
+    "types": ["vite/client"]
+  },
+  "include": ["src"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
+}

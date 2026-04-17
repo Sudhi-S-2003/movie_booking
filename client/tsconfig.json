@@ -1,0 +1,17 @@
+{
+  // Root config: project-references layout.
+  //
+  //  - tsconfig.app.json  — application code under ./src (React + Vite)
+  //  - tsconfig.node.json — build-tool config files (vite.config.ts, etc.)
+  //
+  // Running `tsc -b` from the client root builds both projects and respects
+  // their individual buildinfo caches for incremental compilation.
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "skipLibCheck": true
+  }
+}
