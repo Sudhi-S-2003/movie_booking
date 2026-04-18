@@ -18,6 +18,8 @@ import { Comment } from '../../models/comment.model.js';
 import { CommentLike } from '../../models/commentLike.model.js';
 import { Conversation, ChatMessage, ChatReadCursor, ConversationParticipant } from '../../models/chat.model.js';
 import { ConversationInvite, ConversationJoinRequest } from '../../models/chatInvite.model.js';
+import { MessageRead } from '../../models/messageRead.model.js';
+import { ApiKey } from '../../models/apiKey.model.js';
 import { log } from './helpers.js';
 
 export const clearDatabase = async () => {
@@ -47,6 +49,8 @@ export const clearDatabase = async () => {
     ConversationParticipant.deleteMany({}),
     ConversationInvite.deleteMany({}),
     ConversationJoinRequest.deleteMany({}),
+    MessageRead.deleteMany({}),
+    ApiKey.deleteMany({}),
   ]);
   // Drop indexes to avoid stale unique-key conflicts on re-seed
   const db = mongoose.connection.db;

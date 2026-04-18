@@ -1,54 +1,103 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { chatApi } from '../../../services/api/chat.api.js';
+import type {
+  ConversationTypeFilter,
+  ConversationSortField,
+  ConversationSortOrder,
+} from '../../../services/api/chat.api.js';
 import { chatListSocket } from '../../../services/socket/chat/index.js';
 import { CONVERSATIONS_PAGE_SIZE } from '../constants.js';
 import type { Conversation } from '../types.js';
 
+/** Subset of filter state that hits the server. */
+export interface ServerFilters {
+  q:         string;
+  type:      ConversationTypeFilter | null;
+  sortBy:    ConversationSortField;
+  sortOrder: ConversationSortOrder;
+}
+
+const EMPTY_FILTERS: ServerFilters = {
+  q:         '',
+  type:      null,
+  sortBy:    'activity',
+  sortOrder: 'desc',
+};
+
 /**
- * Manages the conversation list with real-time updates.
- * Connects to the chat-list socket for live conversation/unread events.
+ * Manages the conversation list with real-time updates + server-side filters.
  *
- * Uses ref-counted connect/disconnect so shared singleton socket stays
- * alive when multiple hooks use it (e.g. useUnreadCounts).
+ * Whenever `filters` change identity, the list resets to page 1 with the new
+ * query. Pagination (`loadMore`) continues from whatever the current filter is.
  */
-export const useConversations = (userId: string | undefined) => {
+export const useConversations = (
+  userId:  string | undefined,
+  filters: ServerFilters = EMPTY_FILTERS,
+) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading]   = useState(true);
   const [page, setPage]         = useState(1);
   const [hasMore, setHasMore]   = useState(false);
 
-  const fetchConversations = useCallback(async (p: number, append = false) => {
-    try {
-      setLoading(true);
-      const { conversations: items, pagination } = await chatApi.getConversations({
-        page:  p,
-        limit: CONVERSATIONS_PAGE_SIZE,
-      });
-      setConversations((prev) => append ? [...prev, ...items] : items);
-      setPage(pagination.page);
-      setHasMore(pagination.page < pagination.totalPages);
-    } catch (e) {
-      console.error('[useConversations] fetch failed:', e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Track the filters used for the last in-flight request so late responses
+  // don't clobber the list when filters have moved on.
+  const lastRequestedFiltersRef = useRef<ServerFilters>(filters);
+  lastRequestedFiltersRef.current = filters;
+
+  const fetchConversations = useCallback(
+    async (p: number, append: boolean, f: ServerFilters) => {
+      try {
+        setLoading(true);
+        const { conversations: items, pagination } = await chatApi.getConversations({
+          page:      p,
+          limit:     CONVERSATIONS_PAGE_SIZE,
+          sortBy:    f.sortBy,
+          sortOrder: f.sortOrder,
+          ...(f.q    ? { q: f.q }       : {}),
+          ...(f.type ? { type: f.type } : {}),
+        });
+
+        // Drop stale response if filters changed between request and reply.
+        const latest = lastRequestedFiltersRef.current;
+        if (
+          latest.q         !== f.q         ||
+          latest.type      !== f.type      ||
+          latest.sortBy    !== f.sortBy    ||
+          latest.sortOrder !== f.sortOrder
+        ) return;
+
+        setConversations((prev) => append ? [...prev, ...items] : items);
+        setPage(pagination.page);
+        setHasMore(pagination.page < pagination.totalPages);
+      } catch (e) {
+        console.error('[useConversations] fetch failed:', e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const loadMore = useCallback(() => {
     if (loading || !hasMore) return;
-    void fetchConversations(page + 1, true);
+    void fetchConversations(page + 1, true, lastRequestedFiltersRef.current);
   }, [loading, hasMore, page, fetchConversations]);
 
-  // Initial load
+  // Reload whenever user or filters change.
   useEffect(() => {
-    void fetchConversations(1);
-  }, [fetchConversations]);
+    if (!userId) {
+      setLoading(false);
+      setConversations([]);
+      setHasMore(false);
+      return;
+    }
+    void fetchConversations(1, false, filters);
+  }, [userId, filters.q, filters.type, filters.sortBy, filters.sortOrder, fetchConversations]);
 
   // Socket: live updates + reconnect refetch
   useEffect(() => {
     if (!userId) return;
 
-    // Connect — server auto-joins the user's room from the JWT token
     chatListSocket.connect();
 
     const unsubs = [
@@ -68,15 +117,14 @@ export const useConversations = (userId: string | undefined) => {
           return [conv, ...prev];
         });
       }),
-      // On reconnect: refetch entire list to catch anything missed while disconnected
       chatListSocket.onReconnect(() => {
-        void fetchConversations(1);
+        void fetchConversations(1, false, lastRequestedFiltersRef.current);
       }),
     ];
 
     return () => {
       unsubs.forEach((u) => u());
-      chatListSocket.disconnect(); // ref-counted — won't kill if others still connected
+      chatListSocket.disconnect();
     };
   }, [userId, fetchConversations]);
 
@@ -86,6 +134,6 @@ export const useConversations = (userId: string | undefined) => {
     loading,
     hasMore,
     loadMore,
-    refresh: () => fetchConversations(1),
+    refresh: () => fetchConversations(1, false, lastRequestedFiltersRef.current),
   };
 };

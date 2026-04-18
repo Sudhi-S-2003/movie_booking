@@ -18,6 +18,8 @@ import hashtagRoutes from './routes/hashtag.routes.js';
 import postRoutes from './routes/post.routes.js';
 import statsRoutes from './routes/stats.routes.js';
 import chatRoutes from './routes/chat.routes.js';
+import apiKeyRoutes from './routes/apiKey.routes.js';
+import apiKeyPublicRoutes from './routes/apiKey.public.routes.js';
 
 const app = express();
 
@@ -52,5 +54,7 @@ app.use('/api/hashtags', hashtagRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/public/chat', apiKeyPublicRoutes);
+app.use('/api/keys', apiKeyRoutes);
 
 export default app;

@@ -75,7 +75,7 @@ export function createReadCursorService(
         },
         $setOnInsert: { userId: userObjId, [partitionKey]: partitionObjId },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     ).catch((e: unknown) => {
       const err = e as { code?: number; message?: string };
       if (err?.code === 11000) {

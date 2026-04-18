@@ -52,6 +52,7 @@ export const useChatMessages = (
   conversationId: string | null,
   currentUserId?: string,
   onIncoming?: (msg: ChatMessage) => void,
+  guestSession?: { signature: string; expiresAt: string; name: string },
 ) => {
   const [state, dispatch] = useReducer(messagesReducer, initialState);
   const abortRef             = useRef<AbortController | null>(null);
@@ -69,6 +70,22 @@ export const useChatMessages = (
   hasBeforeRef.current  = state.hasBefore;
   hasAfterRef.current   = state.hasAfter;
   onIncomingRef.current = onIncoming;
+
+  // Track latest guestSession / currentUserId via refs so the socket handler
+  // registered in the effect below sees fresh values without re-subscribing
+  // every render. Without these, the handler captured a stale `guestSession`
+  // when the effect first ran (e.g. before `name` was hydrated from the
+  // conversation doc) and receipts misclassified ownership thereafter.
+  const guestSessionRef  = useRef(guestSession);
+  guestSessionRef.current = guestSession;
+
+  const currentUserIdRef  = useRef(currentUserId);
+  currentUserIdRef.current = currentUserId;
+
+  // Forward-ref to the latest `fetchMessages` so the socket reconnect handler
+  // below can refetch without the closure capturing a stale fetchMessages
+  // from first render. Assigned in an effect after `fetchMessages` is defined.
+  const fetchMessagesRef = useRef<((kind: LoadKind) => Promise<InitialLoadResult>) | null>(null);
 
   // Reset on conversation change — but do NOT auto-fetch
   useEffect(() => {
@@ -98,7 +115,12 @@ export const useChatMessages = (
 
     const unsubs = [
       chatMessagesSocket.on<ChatMessage>('new_message', (msg) => {
-        const isOwn = currentUserId && msg.senderId === currentUserId;
+        const guest = guestSessionRef.current;
+        const selfId = currentUserIdRef.current;
+        const isOwn = guest
+          ? (!msg.senderId && msg.senderName === guest.name)
+          : (!!selfId && msg.senderId === selfId);
+
         if (isOwn) return;
         const decorated = { ...msg, isYou: false };
         dispatch({ type: 'SOCKET_NEW', message: decorated });
@@ -106,8 +128,17 @@ export const useChatMessages = (
       }),
       chatMessagesSocket.on<ReceiptsUpdate>('receipts_update', (payload) => {
         if (payload.conversationId !== conversationId) return;
-        if (payload.userId === currentUserId) return;
-        dispatch({ type: 'RECEIPTS_UPDATE', messageIds: payload.messageIds });
+
+        const guest = guestSessionRef.current;
+        const selfId = currentUserIdRef.current;
+        const isMe = guest
+          ? payload.externalUserName === guest.name
+          : !!selfId && payload.userId === selfId;
+        if (isMe) return;
+
+        const ids = Array.isArray(payload.messageIds) ? payload.messageIds : [];
+        if (ids.length === 0) return;
+        dispatch({ type: 'RECEIPTS_UPDATE', messageIds: ids });
       }),
       chatMessagesSocket.on<{ conversationId: string; messageId: string }>(
         'message_deleted',
@@ -116,6 +147,11 @@ export const useChatMessages = (
           dispatch({ type: 'MESSAGE_DELETED', messageId: payload.messageId });
         },
       ),
+      // On reconnect, refetch the current window so we pick up any receipts /
+      // new messages / deletions that fired while we were disconnected.
+      chatMessagesSocket.onReconnect(() => {
+        void fetchMessagesRef.current?.('initial');
+      }),
     ];
 
     return () => {
@@ -158,11 +194,17 @@ export const useChatMessages = (
         if (opts.around) params.around = opts.around;
         if (opts.anchor) params.anchor = opts.anchor;
 
-        const res = await chatApi.getMessages(
-          conversationId,
-          params,
-          controller.signal,
-        );
+        const res = guestSession
+          ? await chatApi.getGuestMessages(
+            conversationId,
+            { ...params, signature: guestSession.signature, expiresAt: guestSession.expiresAt },
+            controller.signal,
+          )
+          : await chatApi.getMessages(
+            conversationId,
+            params,
+            controller.signal,
+          );
         if (hasConversationChanged(fetchedFor)) return { messages: [], lastReadMessageId: null };
 
         const messages: ChatMessage[] = res.messages ?? [];
@@ -202,6 +244,10 @@ export const useChatMessages = (
     },
     [conversationId, getAbortController, hasConversationChanged],
   );
+
+  // Keep the forward-ref in sync so the socket reconnect handler always
+  // calls the latest fetchMessages.
+  fetchMessagesRef.current = fetchMessages;
 
   // ── Public API ─────────────────────────────────────────────────────────────
 

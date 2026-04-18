@@ -1,8 +1,8 @@
 // ─── Chat Types ──────────────────────────────────────────────────────────────
 
-export type ConversationType = 'direct' | 'group' | 'system';
+export type ConversationType = 'direct' | 'group' | 'system' | 'api';
 export type ChatMessageType  = 'text' | 'image' | 'file' | 'system';
-export type DeliveryStatus   = 'sent' | 'delivered' | 'read';
+export type DeliveryStatus   = 'sent' | 'read';
 
 export interface ChatParticipant {
   _id:       string;
@@ -40,6 +40,7 @@ export interface Conversation {
   lastMessageSender?: string;
   messageCount:      number;
   isActive:          boolean;
+  externalUser?:     { name: string; email: string };
   createdAt:         string;
   updatedAt:         string;
 }
@@ -66,9 +67,11 @@ export interface ChatMessage {
 }
 
 export interface ReceiptsUpdate {
-  conversationId: string;
-  userId:         string;
-  messageIds:     string[];
+  conversationId:   string;
+  userId?:           string;
+  externalUserName?: string;
+  messageIds:        string[];
+  readAt:            string;
 }
 
 export interface TypingEvent {

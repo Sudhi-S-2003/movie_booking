@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle } from 'lucide-react';
+import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound } from 'lucide-react';
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { useAuthStore } from '../store/authStore.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
@@ -28,6 +28,12 @@ const useUserSidebarConfig = (): SidebarConfig => {
         label: 'Social',
         items: [
           { icon: MessageCircle, label: 'Messages', to: '/user/chat', colorClass: 'text-emerald-400' },
+        ],
+      },
+      {
+        label: 'Developer',
+        items: [
+          { icon: KeyRound, label: 'API Keys', to: '/user/api-keys', colorClass: 'text-emerald-400' },
         ],
       },
       {

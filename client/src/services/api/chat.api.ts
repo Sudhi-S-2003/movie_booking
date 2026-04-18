@@ -149,9 +149,17 @@ export interface InvitePreviewResponse {
 
 // ── Query Types ──────────────────────────────────────────────────────────────
 
-interface ConversationsQuery {
-  page?:  number;
-  limit?: number;
+export type ConversationTypeFilter = 'direct' | 'group' | 'system' | 'api';
+export type ConversationSortField  = 'activity' | 'created' | 'name';
+export type ConversationSortOrder  = 'asc' | 'desc';
+
+export interface ConversationsQuery {
+  page?:      number;
+  limit?:     number;
+  q?:         string;
+  type?:      ConversationTypeFilter;
+  sortBy?:    ConversationSortField;
+  sortOrder?: ConversationSortOrder;
 }
 
 interface MessagesQuery {
@@ -220,7 +228,10 @@ export const chatApi = {
     http.delete<{ message: ChatMessage }>(`/chat/conversations/${conversationId}/messages/${messageId}`),
 
   markMessagesRead: (conversationId: string, messageIds: string[]) =>
-    http.post<{ updated: number }>(`/chat/conversations/${conversationId}/messages/read`, { messageIds }),
+    http.post<{ success: boolean; markedIds?: string[] }>(
+      `/chat/conversations/${conversationId}/messages/read`,
+      { messageIds },
+    ),
 
   // Unread
   getUnreadCounts: () =>
@@ -292,4 +303,28 @@ export const chatApi = {
 
   acceptInvite: (token: string) =>
     http.post<{ conversationId: string }>(`/chat/invites/${encodeURIComponent(token)}/accept`),
+
+  // ── Guest API (Signature Verified) ──────────────────────────────────────
+  getGuestConversation: (id: string, params: { signature: string; expiresAt: string }) =>
+    http.get<SingleConversationResponse>(`/public/chat/conversation/${id}`, { params: params as any }),
+
+  getGuestMessages: (id: string, params: MessagesQuery & { signature: string; expiresAt: string }, signal?: AbortSignal) =>
+    http.get<MessagesResponse>(`/public/chat/conversation/${id}/messages`, { params: params as any, signal }),
+
+  sendGuestMessage: (id: string, body: SendMessageBody, params: { signature: string; expiresAt: string }) =>
+    http.post<SendMessageResponse>(`/public/chat/conversation/${id}/messages`, body, { params: params as any }),
+
+  markGuestMessagesRead: (
+    id: string,
+    messageIds: string[],
+    params: { signature: string; expiresAt: string },
+  ) =>
+    http.post<{ success: boolean; markedIds?: string[] }>(
+      `/public/chat/conversation/${id}/messages/read`,
+      { messageIds },
+      { params: params as any },
+    ),
+
+  deleteGuestMessage: (id: string, messageId: string, params: { signature: string; expiresAt: string }) =>
+    http.delete<{ message: ChatMessage }>(`/public/chat/conversation/${id}/messages/${messageId}`, { params: params as any }),
 };

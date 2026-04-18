@@ -22,10 +22,10 @@ export const ChatHeader = memo(({
   // list endpoint; fall back to scanning `participants` when the detail
   // endpoint hydrated it instead. Groups/system rows use the stored title.
   const directPeer = useMemo(() => {
-    if (conversation.type !== 'direct') return null;
+    if (conversation.type !== 'direct' && conversation.type !== 'api') return null;
     if (conversation.peer) return conversation.peer;
     return null;
-  }, [conversation, currentUserId]);
+  }, [conversation]);
 
   const displayName = useMemo(() => {
     if (conversation.type === 'system') return conversation.title ?? 'Notification';

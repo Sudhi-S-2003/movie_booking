@@ -22,11 +22,24 @@ export type AuthUser = HydratedDocument<IUser> & { _id: unknown };
  * The field is optional because anonymous requests exist; handlers mounted
  * behind `isAuthenticated` should narrow via `req.user!` or `requireAuthUser`.
  */
+/**
+ * Signed-URL guest identity, attached by `isChatSignatureValid`.
+ *
+ * Unlike `user`, this is NOT a registered account — it's whatever lives on
+ * `conversation.externalUser` when the signed link was generated. We put it
+ * on the request so guest-facing controllers can access it without casting.
+ */
+export interface ExternalUserIdentity {
+  name:   string;
+  email?: string;
+}
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: AuthUser;
+      user?:         AuthUser;
+      externalUser?: ExternalUserIdentity;
     }
   }
 }

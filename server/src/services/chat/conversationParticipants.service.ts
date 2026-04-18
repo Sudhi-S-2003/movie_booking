@@ -186,7 +186,7 @@ export interface PopulatedParticipant {
   _id:      mongoose.Types.ObjectId;
   name:     string;
   username: string;
-  avatar?:  string;
+  avatar?:  string | undefined;
 }
 
 export interface PopulateOptions {
@@ -243,7 +243,7 @@ export interface DirectPeer {
   _id:      mongoose.Types.ObjectId;
   name:     string;
   username: string;
-  avatar?:  string;
+  avatar?:  string | undefined;
 }
 
 /**
@@ -260,52 +260,76 @@ export interface DirectPeer {
  *   1. membership rows for the direct conversations on this page
  *   2. user lookup for the union of peer ids
  */
-export const attachDirectPeer = async <T extends { _id: unknown; type: string; title?: string; avatarUrl?: string }>(
+export const attachDirectPeer = async <T extends { _id: any; type: string; title?: string; avatarUrl?: string; externalUser?: { name: string; email: string } }>(
   rows: T[],
   viewerId: IdLike,
 ): Promise<Array<T & { peer?: DirectPeer }>> => {
   const directRows = rows.filter((r) => r.type === 'direct');
-  if (directRows.length === 0) return rows;
-
   const viewerStr = String(viewerId);
-  const directConvIds = directRows.map((r) => r._id as mongoose.Types.ObjectId | string);
 
-  const memberships = await ConversationParticipant.find(
-    { conversationId: { $in: directConvIds } },
-    { conversationId: 1, userId: 1, _id: 0 },
-  ).lean();
-
-  // For each direct conversation, find the id of the user who isn't the viewer.
+  // 1. Process 'direct' rows (require DB lookup into User model)
   const peerIdByConv = new Map<string, string>();
-  for (const m of memberships) {
-    if (String(m.userId) === viewerStr) continue;
-    peerIdByConv.set(String(m.conversationId), String(m.userId));
+  const peerById = new Map<string, DirectPeer>();
+
+  if (directRows.length > 0) {
+    const directConvIds = directRows.map((r) => r._id as mongoose.Types.ObjectId | string);
+    const memberships = await ConversationParticipant.find(
+      { conversationId: { $in: directConvIds } },
+      { conversationId: 1, userId: 1, _id: 0 },
+    ).lean();
+
+    for (const m of memberships) {
+      if (String(m.userId) === viewerStr) continue;
+      peerIdByConv.set(String(m.conversationId), String(m.userId));
+    }
+
+    const peerIds = Array.from(new Set(peerIdByConv.values()))
+      .map((id) => new mongoose.Types.ObjectId(id));
+
+    const UserModel = mongoose.model('User');
+    const peers = peerIds.length
+      ? await UserModel.find(
+          { _id: { $in: peerIds } },
+          { name: 1, username: 1, avatar: 1 },
+        ).lean<DirectPeer[]>()
+      : [];
+    
+    for (const p of peers) peerById.set(String(p._id), p);
   }
 
-  const peerIds = Array.from(new Set(peerIdByConv.values()))
-    .map((id) => new mongoose.Types.ObjectId(id));
-
-  const UserModel = mongoose.model('User');
-  const peers = peerIds.length
-    ? await UserModel.find(
-        { _id: { $in: peerIds } },
-        { name: 1, username: 1, avatar: 1 },
-      ).lean<DirectPeer[]>()
-    : [];
-  const peerById = new Map(peers.map((p) => [String(p._id), p]));
-
+  // 2. Map all rows, synthesizing peers for 'api' type on the fly
   return rows.map((r) => {
-    if (r.type !== 'direct') return r;
-    const peerId = peerIdByConv.get(String(r._id));
-    const peer   = peerId ? peerById.get(peerId) : null;
-    if (!peer) return r;
-    return {
-      ...r,
-      // Derived fields — never persisted, only shaped for the wire.
-      title:     r.title     ?? peer.name,
-      avatarUrl: r.avatarUrl ?? peer.avatar,
-      peer,
-    };
+    // Case A: Standard direct chat
+    if (r.type === 'direct') {
+      const peerId = peerIdByConv.get(String(r._id));
+      const peer   = peerId ? peerById.get(peerId) : null;
+      if (!peer) return r;
+      return {
+        ...r,
+        title:     r.title     ?? peer.name,
+        avatarUrl: r.avatarUrl ?? peer.avatar,
+        peer,
+      };
+    }
+
+    // Case B: API-driven chat with inline external user info
+    if (r.type === 'api' && r.externalUser) {
+      const peer: DirectPeer = {
+        // Use the conversation ID as the peer ID for stability in UI keys
+        _id:      toObjectId(r._id),
+        name:     r.externalUser.name,
+        username: r.externalUser.email,
+        avatar:   undefined,
+      };
+      return {
+        ...r,
+        title:     r.title     ?? peer.name,
+        avatarUrl: r.avatarUrl ?? peer.avatar,
+        peer,
+      };
+    }
+
+    return r;
   });
 };
 

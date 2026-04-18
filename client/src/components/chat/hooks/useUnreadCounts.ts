@@ -49,7 +49,10 @@ export const useChatUnreadCounts = (userId: string | undefined) => {
 
   // Initial load
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setCountsReady(true);
+      return;
+    }
     void fetchCounts();
   }, [userId, fetchCounts]);
 

@@ -1,116 +1,148 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // chatReadCursor.service
 //
-// Thin wrapper around the shared read-cursor factory, bound to
-// ChatMessage / ChatReadCursor and 'conversationId'.
+// Cursor-only read-receipt model. One row per (conversation, reader).
+// `lastReadAt` is authoritative; delivery status (sent vs read) for a sender's
+// own messages is computed by comparing it to each message's `createdAt`.
+//
+// Public surface:
+//   • markConversationRead  — upsert cursor with lastReadAt = now
+//   • markSentMessageRead   — sender's own cursor advancement on send
+//   • advanceCursorTo       — advance cursor to a specific time + message id
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose from 'mongoose';
-import { ChatMessage, ChatReadCursor } from '../../models/chat.model.js';
-import { createReadCursorService } from '../shared/readCursor.service.js';
-import type { AdvanceCursorArgs } from '../shared/readCursor.service.js';
+import mongoose, { type HydratedDocument } from 'mongoose';
+import { ChatReadCursor } from '../../models/chat.model.js';
+import type { ChatReadCursorDoc } from '../../models/chat.model.js';
 
-const markReadInBatch = createReadCursorService(ChatMessage, ChatReadCursor, 'conversationId');
+export interface ReadReceiptIdentity {
+  userId?:           string;
+  externalUserName?: string;
+}
 
-/**
- * Advance the read cursor for (user, conversation) to the latest non-self
- * message in the given batch.
- *
- * `conversationId` maps to the shared factory's `partitionId`.
- */
-export const markChatMessagesRead = (args: {
-  userId:         string;
-  conversationId: string;
-  messageIds:     string[];
-}) =>
-  markReadInBatch({
-    userId:      args.userId,
-    partitionId: args.conversationId,
-    messageIds:  args.messageIds,
-  } satisfies AdvanceCursorArgs);
+interface CursorFilter {
+  conversationId: mongoose.Types.ObjectId;
+  userId?:        mongoose.Types.ObjectId;
+  externalUserName?: string;
+}
 
-/**
- * Advance the sender's own read cursor to the message they just sent.
- *
- * When a user sends a message they've obviously read everything up to it,
- * so we bump their cursor forward. Monotonic — only moves if the new
- * timestamp is strictly newer than the existing one.
- */
-export const markSentMessageRead = (args: {
-  userId:           string;
-  conversationId:   string;
-  messageId:        string;
-  messageCreatedAt: Date;
-}): Promise<unknown> => {
-  const userObjId = new mongoose.Types.ObjectId(args.userId);
-  const convObjId = new mongoose.Types.ObjectId(args.conversationId);
-
-  return ChatReadCursor.findOneAndUpdate(
-    {
-      userId:         userObjId,
-      conversationId: convObjId,
-      $or: [
-        { lastReadAt: { $lt: args.messageCreatedAt } },
-        { lastReadAt: { $exists: false } },
-      ],
-    },
-    {
-      $set: {
-        lastReadMessageId: new mongoose.Types.ObjectId(args.messageId),
-        lastReadAt:        args.messageCreatedAt,
-      },
-      $setOnInsert: { userId: userObjId, conversationId: convObjId },
-    },
-    { upsert: true },
-  );
+const buildIdentityFilter = (
+  convObjId: mongoose.Types.ObjectId,
+  identity:  ReadReceiptIdentity,
+): CursorFilter | null => {
+  if (identity.userId) {
+    return { conversationId: convObjId, userId: new mongoose.Types.ObjectId(identity.userId) };
+  }
+  if (identity.externalUserName) {
+    return { conversationId: convObjId, externalUserName: identity.externalUserName };
+  }
+  return null;
 };
 
 /**
- * High-Performance Group Read Consensus
- *
- * Checks if EVERY participant in a conversation has read past a certain
- * point by finding the "slowest" reader (minimum lastReadAt).
- *
- * Returns the minReadAt Date if consensus is met, or null if at least
- * one participant has never opened the chat (no cursor exists).
+ * Upsert the reader's cursor for this conversation with `lastReadAt = now`.
+ * Monotonic: never rewinds — if a newer timestamp is already stored we keep it.
+ * Returns the live cursor (or null if neither identity was supplied).
  */
-export const getConversationReadConsensus = async (
+export const markConversationRead = async (
   conversationId: string,
-  totalParticipants: number,
-): Promise<Date | null> => {
+  identity:       ReadReceiptIdentity,
+): Promise<HydratedDocument<ChatReadCursorDoc> | null> => {
   const convObjId = new mongoose.Types.ObjectId(conversationId);
+  const filter    = buildIdentityFilter(convObjId, identity);
+  if (!filter) return null;
 
-  const stats = await ChatReadCursor.aggregate([
-    { $match: { conversationId: convObjId } },
-    { $group: {
-        _id: null,
-        minReadAt: { $min: '$lastReadAt' },
-        count: { $sum: 1 }
-    }}
-  ]);
+  const now = new Date();
 
-  // Consensus is only possible if every single participant has a cursor.
-  // (If count < totalParticipants, someone hasn't read anything yet).
-  const hasReadAll = stats.length > 0 && stats[0].count >= totalParticipants;
-  return hasReadAll ? stats[0].minReadAt : null;
+  try {
+    const cursor = await ChatReadCursor.findOneAndUpdate(
+      { ...filter, $or: [{ lastReadAt: { $lt: now } }, { lastReadAt: { $exists: false } }] },
+      {
+        $set:         { lastReadAt: now },
+        $setOnInsert: { ...filter },
+      },
+      { upsert: true, returnDocument: 'after' },
+    );
+    if (cursor) return cursor;
+    // No-op update (cursor already >= now) — fetch the existing doc.
+    return await ChatReadCursor.findOne(filter);
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && (err as { code?: number }).code === 11000) {
+      // Lost the upsert race; another writer created the row concurrently.
+      return ChatReadCursor.findOne(filter);
+    }
+    throw err;
+  }
 };
 
 /**
- * Filter a list of message IDs to only those that have been read by everyone.
+ * Advance the sender's own read cursor to the moment they just sent a message.
+ * Cheap idempotent upsert — the sender has obviously read everything up to
+ * and including their own send.
  */
-export const getFullyReadMessageIds = async (
-  conversationId: string,
-  messageIds: string[],
-  minReadAt: Date,
-): Promise<string[]> => {
-  const messages = await ChatMessage.find(
-    {
-      _id: { $in: messageIds.map(id => new mongoose.Types.ObjectId(id)) },
-      conversationId: new mongoose.Types.ObjectId(conversationId),
-      createdAt: { $lte: minReadAt }
-    },
-    { _id: 1 }
-  ).lean();
+export const markSentMessageRead = async (args: {
+  userId?:          string;
+  externalUserName?: string;
+  conversationId:   string;
+  messageCreatedAt: Date;
+}): Promise<void> => {
+  const convObjId = new mongoose.Types.ObjectId(args.conversationId);
+  const filter = buildIdentityFilter(convObjId, {
+    ...(args.userId           && { userId: args.userId }),
+    ...(args.externalUserName && { externalUserName: args.externalUserName }),
+  });
+  if (!filter) return;
 
-  return messages.map((m) => m._id.toString());
+  try {
+    await ChatReadCursor.updateOne(
+      { ...filter, $or: [{ lastReadAt: { $lt: args.messageCreatedAt } }, { lastReadAt: { $exists: false } }] },
+      {
+        $set:         { lastReadAt: args.messageCreatedAt },
+        $setOnInsert: { ...filter },
+      },
+      { upsert: true },
+    );
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && (err as { code?: number }).code === 11000) return;
+    throw err;
+  }
+};
+
+/**
+ * Advance the reader's cursor to a specific `lastReadAt` + `lastReadMessageId`
+ * pair. Monotonic — no-op if the stored cursor already equals or exceeds the
+ * supplied timestamp. Used by the per-message read endpoint to keep the
+ * fast-path unread-count cursor in sync with the max `createdAt` of the
+ * messages that were just marked.
+ */
+export const advanceCursorTo = async (args: {
+  conversationId:    string;
+  userId?:           string;
+  externalUserName?: string;
+  lastReadAt:        Date;
+  lastReadMessageId?: mongoose.Types.ObjectId;
+}): Promise<void> => {
+  const convObjId = new mongoose.Types.ObjectId(args.conversationId);
+  const filter = buildIdentityFilter(convObjId, {
+    ...(args.userId           && { userId: args.userId }),
+    ...(args.externalUserName && { externalUserName: args.externalUserName }),
+  });
+  if (!filter) return;
+
+  try {
+    await ChatReadCursor.updateOne(
+      { ...filter, $or: [{ lastReadAt: { $lt: args.lastReadAt } }, { lastReadAt: { $exists: false } }] },
+      {
+        $set: {
+          lastReadAt: args.lastReadAt,
+          ...(args.lastReadMessageId && { lastReadMessageId: args.lastReadMessageId }),
+        },
+        $setOnInsert: { ...filter },
+      },
+      { upsert: true },
+    );
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && (err as { code?: number }).code === 11000) return;
+    throw err;
+  }
 };

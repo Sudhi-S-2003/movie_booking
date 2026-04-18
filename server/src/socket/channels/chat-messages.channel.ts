@@ -19,6 +19,11 @@ export const registerChatMessagesHandlers = (namespace: Namespace) => {
     console.log(`💬 [CHAT-MSG] Client connected: ${socket.id} (user: ${userId})`);
 
     socket.on('join_conversation', (conversationId: string) => {
+      // Security: if guest, verify they are joining the conversation they have a signature for.
+      if (socket.data.isGuest && socket.data.allowedConversationId !== conversationId) {
+        console.warn(`⚠️ [CHAT-MSG] Guest ${socket.id} attempted to join unauthorized room: ${conversationId}`);
+        return;
+      }
       socket.join(`conv:${conversationId}`);
     });
 
@@ -30,8 +35,8 @@ export const registerChatMessagesHandlers = (namespace: Namespace) => {
     socket.on('typing', (payload: { conversationId: string }) => {
       socket.to(`conv:${payload.conversationId}`).emit('user_typing', {
         conversationId: payload.conversationId,
-        userId,
-        name: userName,
+        userId:         socket.data.userId, // May be null for guests
+        name:           socket.data.userName,
       });
     });
 
@@ -67,11 +72,16 @@ export const emitNewMessage = (namespace: Namespace, conversationId: string, mes
   namespace.to(`conv:${conversationId}`).emit('new_message', message);
 };
 
-/** Read receipts — sender's UI flips ticks from sent → read. */
+/** Read receipts — sender's UI flips ticks from sent → read for a specific set of messages. */
 export const emitChatReceipts = (
   namespace: Namespace,
   conversationId: string,
-  payload: { userId: string; messageIds: string[] },
+  payload: {
+    userId?:          string | undefined;
+    externalUserName?: string | undefined;
+    messageIds:       string[];
+    readAt:           string;
+  },
 ) => {
   namespace.to(`conv:${conversationId}`).emit('receipts_update', { conversationId, ...payload });
 };

@@ -18,3 +18,5 @@ export type { Post, PostAuthor, PostComment } from './posts.api.js';
 export { statsApi } from './stats.api.js';
 export type { PlatformStats, AdminStats, GenreBucket, DailyBookingBucket, TopMovieRow } from './stats.api.js';
 export { chatApi } from './chat.api.js';
+export { apiKeysApi } from './apiKeys.api.js';
+export type { ApiKeyRecord, ApiKeyCategory } from './apiKeys.api.js';

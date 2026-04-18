@@ -21,7 +21,17 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 // ─── Conversation ────────────────────────────────────────────────────────────
 
-export type ConversationType = 'direct' | 'group' | 'system';
+/**
+ * Conversation type.
+ *
+ *   direct  — 1-on-1 between two real users
+ *   group   — multi-user chat with a title + public slug
+ *   system  — one-way platform notifications (OTP, booking confirmations, …)
+ *   api     — programmatic channel driven by a user's API key. Hidden from
+ *             the regular conversation list; surfaced on its own management
+ *             screen.
+ */
+export type ConversationType = 'direct' | 'group' | 'system' | 'api';
 
 export interface ConversationDoc extends Document {
   type:          ConversationType;
@@ -35,6 +45,10 @@ export interface ConversationDoc extends Document {
    * expose one.
    */
   publicName?:       string;
+  externalUser?: {
+    name:  string;
+    email: string;
+  };
   /**
    * Denormalized member count. Authoritative source is the
    * `ConversationParticipant` collection; this field is kept in sync on every
@@ -56,7 +70,7 @@ const ConversationSchema = new Schema<ConversationDoc>(
   {
     type: {
       type:     String,
-      enum:     ['direct', 'group', 'system'],
+      enum:     ['direct', 'group', 'system', 'api'],
       required: true,
     },
     title:     { type: String, trim: true },
@@ -68,6 +82,11 @@ const ConversationSchema = new Schema<ConversationDoc>(
       trim:      true,
       lowercase: true,
       required:  true, // every conversation carries a slug (auto-generated for direct/system)
+    },
+    externalUser: {
+      _id:   false,
+      name:  { type: String, trim: true },
+      email: { type: String, trim: true, lowercase: true },
     },
     participantCount: { type: Number, default: 0, min: 0 },
 
@@ -94,6 +113,11 @@ ConversationSchema.index(
 // For system-conversation dedup (one bucket per recipient + title). The
 // per-recipient gate happens application-side via ConversationParticipant.
 ConversationSchema.index({ type: 1, title: 1 });
+// For API-driven conversation dedup (one bucket per owner + external email).
+ConversationSchema.index(
+  { type: 1, createdBy: 1, 'externalUser.email': 1 },
+  { unique: true, partialFilterExpression: { type: 'api' } },
+);
 
 // ─── ChatMessage ─────────────────────────────────────────────────────────────
 
@@ -179,26 +203,43 @@ ConversationParticipantSchema.index({ conversationId: 1, joinedAt: 1 });
 ConversationParticipantSchema.index({ userId: 1 });
 
 // ─── ChatReadCursor ──────────────────────────────────────────────────────────
+//
+// One row per (conversation, reader). A reader is either a registered user
+// (`userId` set) or a signed-URL guest (`externalUserName` set) — never both.
+//
+// `lastReadAt` is the only field the UI actually cares about; own-message
+// delivery status is derived by comparing it to the message's `createdAt`.
+// The optional `lastReadMessageId` is retained to power the "unread messages"
+// divider anchor.
 
 export interface ChatReadCursorDoc extends Document {
-  userId:            mongoose.Types.ObjectId;
+  userId?:           mongoose.Types.ObjectId; // unset for external guests
+  externalUserName?: string;
   conversationId:    mongoose.Types.ObjectId;
-  lastReadMessageId: mongoose.Types.ObjectId;
+  lastReadMessageId?: mongoose.Types.ObjectId;
   lastReadAt:        Date;
 }
 
 const ChatReadCursorSchema = new Schema<ChatReadCursorDoc>(
   {
-    userId:            { type: Schema.Types.ObjectId, ref: 'User',         required: true },
+    userId:            { type: Schema.Types.ObjectId, ref: 'User' },
+    externalUserName:  { type: String, trim: true },
     conversationId:    { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
-    lastReadMessageId: { type: Schema.Types.ObjectId, ref: 'ChatMessage',  required: true },
-    lastReadAt:        { type: Date, default: Date.now },
+    lastReadMessageId: { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
+    lastReadAt:        { type: Date, default: Date.now, required: true },
   },
   { timestamps: false },
 );
 
-// One cursor per (user, conversation)
-ChatReadCursorSchema.index({ userId: 1, conversationId: 1 }, { unique: true });
+// Partial unique indexes — one cursor per (conversation, reader).
+ChatReadCursorSchema.index(
+  { conversationId: 1, userId: 1 },
+  { unique: true, partialFilterExpression: { userId: { $exists: true } } },
+);
+ChatReadCursorSchema.index(
+  { conversationId: 1, externalUserName: 1 },
+  { unique: true, partialFilterExpression: { externalUserName: { $exists: true } } },
+);
 
 // ─── Model exports ───────────────────────────────────────────────────────────
 

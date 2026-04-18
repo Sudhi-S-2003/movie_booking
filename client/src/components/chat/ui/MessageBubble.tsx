@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, RotateCw } from 'lucide-react';
 import { MessageStatus } from './MessageStatus.js';
 import { MessageText } from './MessageText.js';
 import { ReplyPreview } from './ReplyPreview.js';
@@ -16,6 +16,7 @@ interface MessageBubbleProps {
   isHighlighted?:   boolean;
   onReply?:         (msg: ChatMessage) => void;
   onDelete?:        (messageId: string) => void;
+  onRetry?:         (messageId: string) => void;
   onJumpToMessage?: (messageId: string) => void;
 }
 
@@ -29,6 +30,7 @@ export const MessageBubble = memo(({
   isHighlighted,
   onReply,
   onDelete,
+  onRetry,
   onJumpToMessage,
 }: MessageBubbleProps) => {
   const [copied, setCopied] = useState(false);
@@ -197,7 +199,21 @@ export const MessageBubble = memo(({
                 />
               )}
               {isFailed && (
-                <span className="text-[8px] text-red-400 font-medium">Failed</span>
+                <>
+                  <span className="text-[8px] text-red-400 font-medium">Failed</span>
+                  {onRetry && (
+                    <button
+                      type="button"
+                      onClick={() => onRetry(msg._id)}
+                      className="text-[9px] text-red-300 hover:text-red-100 font-semibold uppercase tracking-wider flex items-center gap-0.5 transition-colors"
+                      aria-label="Retry send"
+                      title="Retry sending this message"
+                    >
+                      <RotateCw size={10} />
+                      Retry
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}

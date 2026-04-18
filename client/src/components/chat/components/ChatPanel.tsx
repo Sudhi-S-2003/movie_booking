@@ -23,6 +23,7 @@ export const ChatPanel = memo(() => {
     loadBeforeMessages,
     loadAfterMessages,
     sendMessage,
+    retryMessage,
     deleteMessage,
     scroll,
     scrollToMessage,
@@ -33,6 +34,7 @@ export const ChatPanel = memo(() => {
     replyingTo,
     setReplyingTo,
     currentUserId,
+    guestSession,
   } = useChat();
 
   if (!selectedConversation) {
@@ -64,6 +66,7 @@ export const ChatPanel = memo(() => {
         afterCursor={afterCursor}
         conversationId={selectedConversation._id}
         currentUserId={currentUserId}
+        guestSession={guestSession}
         lastReadMessageId={lastReadMessageId}
         typingUsers={typingUsers}
         scroll={scroll}
@@ -71,6 +74,7 @@ export const ChatPanel = memo(() => {
         onLoadAfter={loadAfterMessages}
         onReply={setReplyingTo}
         onDelete={deleteMessage}
+        onRetry={retryMessage}
         onJumpToMessage={scrollToMessage}
       />
 

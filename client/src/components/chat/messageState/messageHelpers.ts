@@ -78,7 +78,7 @@ export const reconcileOptimistic = (
 };
 
 /**
- * Mark a set of messages as read.
+ * Flip a specific set of own-messages to `deliveryStatus: 'read'`.
  * Returns the original array reference if nothing changed (optimisation).
  */
 export const markMessagesRead = (
@@ -86,11 +86,11 @@ export const markMessagesRead = (
   messageIds: string[],
 ): ChatMessage[] => {
   if (messageIds.length === 0) return list;
-  const target = new Set(messageIds);
+  const ids = new Set(messageIds);
   let changed = false;
   const next = list.map((m) => {
-    if (!target.has(m._id)) return m;
     if (m.deliveryStatus === 'read') return m;
+    if (!ids.has(m._id)) return m;
     changed = true;
     return { ...m, deliveryStatus: 'read' as DeliveryStatus };
   });

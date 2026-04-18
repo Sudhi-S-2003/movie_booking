@@ -8,6 +8,26 @@
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      Frame-busting guard (defense-in-depth).
+      Only the signed-URL guest chat (/chat/:id?signature=…) may be iframed.
+      Any other route that finds itself framed reloads in the top window.
+      Runs synchronously BEFORE React boots so the framed page never paints.
+    -->
+    <script>
+      (function () {
+        try {
+          if (window.self === window.top) return;
+          var u = new URL(window.location.href);
+          var allow = u.pathname.indexOf('/chat/') === 0 && u.searchParams.has('signature');
+          if (!allow) window.top.location = window.self.location.href;
+        } catch (_) {
+          // Cross-origin access to window.top threw — we're framed by a
+          // different origin AND we're not the signed-chat route; force out.
+          try { window.top.location = window.self.location.href; } catch (__) { /* nothing we can do */ }
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

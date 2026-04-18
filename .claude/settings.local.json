@@ -38,7 +38,13 @@
       "Bash(echo \"SERVER:$?\")",
       "Bash(echo \"CLIENT:$?\")",
       "Bash(grep -l \"Pagination\" client/src/pages/dashboards/admin/*.tsx)",
-      "Bash(node -e \"console.log\\(require\\('mongoose/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\('mongoose/package.json'\\).version\\)\")",
+      "Bash(grep -n 'type: { $ne: '\\\\''api'\\\\'' }\\\\|type: {' /c/Users/sudhi/OneDrive/Desktop/test/move-booking/server/src/controllers/chat.controller.ts)",
+      "Bash(grep -n \"sendMessage,\\\\s*$\\\\|deleteMessage,\\\\s*$\" /c/Users/sudhi/OneDrive/Desktop/test/move-booking/client/src/components/chat/context/ChatContext.tsx)",
+      "Bash(echo \"SERVER-EXIT:$?\")",
+      "Bash(echo \"CLIENT-EXIT:$?\")",
+      "Bash(find /c/Users/sudhi/OneDrive/Desktop/test/move-booking/server/src -name \"*.ts\" -size +600c -exec wc -l {} +)",
+      "Bash(echo \"exit:$?\")"
     ]
   }
 }

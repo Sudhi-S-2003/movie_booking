@@ -56,10 +56,28 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
+/**
+ * We skip the auto-redirect to /login when the user is on a signed-URL
+ * chat page (`/chat/:id?signature=...`). Those pages authenticate via the
+ * URL signature, not via JWT — a stray 401 on an unrelated background
+ * call (e.g. the auth store containing a stale token from a previous
+ * session) must not navigate the iframe off the chat widget.
+ */
+const isSignedChatContext = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const { pathname, search } = window.location;
+  if (!pathname.startsWith('/chat/')) return false;
+  return new URLSearchParams(search).has('signature');
+};
+
 axiosClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ message?: string; errors?: Record<string, string> }>) => {
     if (error.response?.status === 401) {
+      if (isSignedChatContext()) {
+        // Guest flow — don't touch the auth store, don't redirect the iframe.
+        return Promise.reject(error);
+      }
       useAuthStore.getState().logout();
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         window.location.href = '/login';

@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iframe test — CinemaConnect signed chat</title>
+    <!--
+      Standalone harness for verifying the signed-URL chat page embeds
+      cleanly on a third-party site. Loads no framework, no build tool —
+      just open this file via a local static server and you'll see the
+      same behaviour a customer's React / Vue / plain-HTML page would get.
+
+      Quick start (pick one):
+        cd test && npx serve .
+        cd test && python -m http.server 8000
+
+      Paste a fresh signed URL into the form at the top (the default is
+      the one most recently tested; replace it when its `expiresAt` is
+      past). The iframe loads the guest chat; the right-hand panel logs
+      every `postMessage` event the page emits upstream — confirming
+      `chat:ready` fires on mount and `chat:close` fires on unmount.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg:         #0a0a0b;
+        --panel:      #111114;
+        --border:     rgba(255, 255, 255, 0.08);
+        --text:       #e5e7eb;
+        --text-dim:   #9ca3af;
+        --text-faint: #4b5563;
+        --accent:     #6366f1;
+        --ok:         #10b981;
+        --err:        #ef4444;
+        --warn:       #f59e0b;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      header {
+        padding: 20px 28px 16px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, #121215 0%, #0b0b0e 100%);
+      }
+
+      header h1 { margin: 0 0 4px; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+      header p  { margin: 0; font-size: 12px; color: var(--text-dim); }
+
+      .url-bar {
+        display: flex;
+        gap: 8px;
+        padding: 14px 28px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .url-bar input[type='url'] {
+        flex: 1;
+        padding: 9px 12px;
+        font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+        font-size: 11px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        outline: none;
+      }
+
+      .url-bar input[type='url']:focus { border-color: var(--accent); }
+
+      .url-bar button {
+        padding: 9px 18px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #fff;
+        background: var(--accent);
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .url-bar button.ghost {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+      }
+
+      .url-bar button:hover { opacity: 0.9; }
+
+      main {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 20px;
+        padding: 20px 28px 28px;
+      }
+
+      @media (max-width: 1024px) {
+        main { grid-template-columns: 1fr; }
+      }
+
+      .iframe-wrap {
+        position: relative;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        min-height: 640px;
+      }
+
+      .iframe-wrap .placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-faint);
+        font-size: 12px;
+      }
+
+      iframe {
+        display: block;
+        width: 100%;
+        height: 640px;
+        border: 0;
+        background: #0d0d10;
+      }
+
+      aside {
+        display: flex;
+        flex-direction: column;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      aside h2 {
+        margin: 0;
+        padding: 14px 18px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      aside .count {
+        font-family: ui-monospace, monospace;
+        color: var(--text);
+        font-size: 11px;
+      }
+
+      .log {
+        flex: 1;
+        overflow: auto;
+        padding: 10px 14px;
+        font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+        font-size: 11px;
+        line-height: 1.6;
+        max-height: 640px;
+      }
+
+      .entry {
+        padding: 6px 0;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+        color: var(--text);
+      }
+
+      .entry:last-child { border-bottom: 0; }
+
+      .entry .ts {
+        color: var(--text-faint);
+        margin-right: 8px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .entry .tag {
+        display: inline-block;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 1px 6px;
+        border-radius: 4px;
+        margin-right: 8px;
+      }
+
+      .entry .tag.ready  { background: rgba(16, 185, 129, 0.15); color: var(--ok); }
+      .entry .tag.close  { background: rgba(239, 68, 68, 0.15);  color: var(--err); }
+      .entry .tag.msg    { background: rgba(99, 102, 241, 0.18); color: var(--accent); }
+      .entry .tag.unread { background: rgba(245, 158, 11, 0.15); color: var(--warn); }
+      .entry .tag.other  { background: rgba(156, 163, 175, 0.15); color: var(--text-dim); }
+
+      .entry pre {
+        margin: 4px 0 0 0;
+        padding: 6px 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 6px;
+        font-size: 10px;
+        color: var(--text-dim);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .empty {
+        text-align: center;
+        color: var(--text-faint);
+        padding: 40px 12px;
+        font-size: 11px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .status-pill .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-faint);
+      }
+
+      .status-pill.live .dot { background: var(--ok); animation: pulse 1.4s infinite; }
+      .status-pill.err  .dot { background: var(--err); }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.35; }
+      }
+
+      .banner {
+        display: none;
+        background: rgba(239, 68, 68, 0.12);
+        border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fecaca;
+        padding: 12px 28px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .banner.show { display: block; }
+
+      .banner code {
+        background: rgba(0, 0, 0, 0.35);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Iframe harness — CinemaConnect signed chat</h1>
+      <p>
+        Drop a valid signed URL below and verify it renders, authenticates
+        without a login redirect, and emits <code>postMessage</code> events
+        upstream.
+      </p>
+    </header>
+
+    <!--
+      `file://` origins are sandboxed per-file by Chrome — they can't iframe
+      any HTTP URL. If the user opened this file directly (double-click),
+      warn them up front instead of showing cryptic CSP errors.
+    -->
+    <div class="banner" id="fileBanner">
+      <strong>This page must be served over HTTP.</strong> You opened it as a
+      <code>file://</code> URL — Chrome treats every local file as an isolated
+      origin and refuses to iframe anything from it. Run one of these from the
+      <code>test/</code> folder and then open the printed URL:
+      <br />
+      <code>npx serve .</code>&nbsp;&nbsp;or&nbsp;&nbsp;<code>python -m http.server 8000</code>
+    </div>
+
+    <form class="url-bar" id="urlForm">
+      <input
+        id="urlInput"
+        type="url"
+        required
+        placeholder="http://localhost:5173/chat/<id>?signature=<hex>&expiresAt=<ms>"
+      />
+      <button type="submit">Load</button>
+      <button type="button" id="clearBtn" class="ghost">Clear log</button>
+    </form>
+
+    <main>
+      <section class="iframe-wrap">
+        <div class="placeholder" id="placeholder">
+          Paste a signed URL above and press <strong>Load</strong>.
+        </div>
+        <!--
+          No `sandbox` attribute — this is our own trusted app and needs full
+          same-origin access (localStorage, WebSocket upgrade, composer form).
+          Chrome warns that `allow-scripts` + `allow-same-origin` collapses
+          the sandbox back to a normal frame anyway, so leaving it off is
+          both cleaner and warning-free. If you want stricter isolation on
+          an untrusted embedder, add back the sandbox list and accept the
+          tradeoffs (socket falls back to polling, etc.).
+        -->
+        <iframe
+          id="chatFrame"
+          title="CinemaConnect signed chat"
+          style="display: none"
+          allow="clipboard-read; clipboard-write"
+        ></iframe>
+      </section>
+
+      <aside>
+        <h2>
+          postMessage log
+          <span id="statusPill" class="status-pill"><span class="dot"></span>idle</span>
+        </h2>
+        <div class="log" id="log">
+          <div class="empty">Events will appear here once the iframe loads.</div>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      // ── Default URL ───────────────────────────────────────────────────────
+      // Pre-fill with the user's most recent test URL so you don't have to
+      // paste it every time. Replace it whenever `expiresAt` is in the past.
+      const DEFAULT_URL =
+        'http://localhost:5173/chat/69e2f4b15f53bd9825ca0251?signature=b5e7b37838b6262eea6046fdc82751b3c769eaa391bea5505453f6570d2f6750&expiresAt=1776494606138';
+
+      const $ = (id) => document.getElementById(id);
+
+      const input       = $('urlInput');
+      const form        = $('urlForm');
+      const frame       = $('chatFrame');
+      const placeholder = $('placeholder');
+      const log         = $('log');
+      const statusPill  = $('statusPill');
+      const clearBtn    = $('clearBtn');
+
+      let eventCount = 0;
+
+      input.value = DEFAULT_URL;
+
+      // ── file:// guard ─────────────────────────────────────────────────────
+      // Opening this harness via double-click yields a `file://` document
+      // origin. Chrome refuses to iframe any `http` URL from such a parent
+      // (every file: URL is treated as its own opaque origin). Show a clear
+      // banner instead of autoloading into a CSP error.
+      const isFileOrigin = window.location.protocol === 'file:';
+      if (isFileOrigin) $('fileBanner').classList.add('show');
+
+      // ── Helpers ───────────────────────────────────────────────────────────
+      const setStatus = (state, label) => {
+        statusPill.className = `status-pill ${state}`;
+        statusPill.innerHTML = `<span class="dot"></span>${label}`;
+      };
+
+      const tagFor = (type) => {
+        if (type === 'chat:ready')   return 'ready';
+        if (type === 'chat:close')   return 'close';
+        if (type === 'chat:message') return 'msg';
+        if (type === 'chat:unread')  return 'unread';
+        return 'other';
+      };
+
+      const ts = () => {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${String(d.getMilliseconds()).padStart(3, '0')}`;
+      };
+
+      const escapeHtml = (s) =>
+        String(s).replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        })[c]);
+
+      const appendEntry = (type, payload) => {
+        if (eventCount === 0) log.innerHTML = '';
+        eventCount += 1;
+
+        const entry = document.createElement('div');
+        entry.className = 'entry';
+
+        const bodyHtml = payload && Object.keys(payload).length
+          ? `<pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>`
+          : '';
+
+        entry.innerHTML =
+          `<span class="ts">${ts()}</span>` +
+          `<span class="tag ${tagFor(type)}">${escapeHtml(type)}</span>` +
+          bodyHtml;
+
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+      };
+
+      // ── Iframe loader ─────────────────────────────────────────────────────
+      const loadIframe = (url) => {
+        placeholder.style.display = 'none';
+        frame.style.display       = 'block';
+        frame.src                 = url;
+        setStatus('live', 'loading');
+      };
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = input.value.trim();
+        if (!url) return;
+        loadIframe(url);
+      });
+
+      clearBtn.addEventListener('click', () => {
+        eventCount = 0;
+        log.innerHTML =
+          '<div class="empty">Events will appear here once the iframe loads.</div>';
+      });
+
+      frame.addEventListener('load',  () => setStatus('live', 'connected'));
+      frame.addEventListener('error', () => setStatus('err',  'load failed'));
+
+      // ── postMessage listener ──────────────────────────────────────────────
+      //
+      // The iframe emits `{ type, payload }` events via
+      // `window.parent.postMessage`. The guard below filters out noise:
+      //   (a) only messages from THIS iframe's window
+      //   (b) only well-formed `chat:*` events
+      window.addEventListener('message', (ev) => {
+        if (ev.source !== frame.contentWindow) return;
+        const data = ev.data;
+        if (!data || typeof data !== 'object' || typeof data.type !== 'string') return;
+        if (!data.type.startsWith('chat:')) return;
+
+        appendEntry(data.type, data.payload || {});
+
+        if (data.type === 'chat:close') setStatus('idle', 'closed');
+      });
+
+      // Auto-load the default URL so the harness is one-click — but only
+      // if we're running over HTTP. `file://` origins can't iframe network
+      // URLs; in that case we leave the placeholder up and rely on the
+      // banner to tell the user to serve this page properly.
+      if (DEFAULT_URL && !isFileOrigin) loadIframe(DEFAULT_URL);
+    </script>
+  </body>
+</html>

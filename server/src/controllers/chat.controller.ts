@@ -14,6 +14,7 @@ import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import {
   Conversation,
+  ConversationParticipant,
   ChatMessage,
   ChatReadCursor,
 } from '../models/chat.model.js';
@@ -31,7 +32,6 @@ import {
   createDirectConversation,
   createGroupConversation,
 } from '../services/chat/conversationCreator.service.js';
-import type { ChatMessageDoc } from '../models/chat.model.js';
 import { User } from '../models/user.model.js';
 import { requireAuthUser } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
@@ -44,59 +44,15 @@ import {
   loadAround,
   loadWithAnchor,
 } from '../services/chat/chatMessageFetch.service.js';
-import { markChatMessagesRead, markSentMessageRead, getConversationReadConsensus, getFullyReadMessageIds } from '../services/chat/chatReadCursor.service.js';
+import { markSentMessageRead, advanceCursorTo } from '../services/chat/chatReadCursor.service.js';
+import { recordReads } from '../services/chat/messageRead.service.js';
 import {
   getChatMessagesNamespace,
   getChatListNamespace,
 } from '../socket/index.js';
-import { emitNewMessage, emitChatReceipts, emitMessageDeleted } from '../socket/channels/chat-messages.channel.js';
+import { emitNewMessage, emitMessageDeleted, emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
 import { emitChatUnreadChanged, emitConversationUpdated, emitNewConversation } from '../socket/channels/chat-list.channel.js';
-
-// Re-export createSystemMessage from its service so existing callers
-// that import from the controller continue to work.
-export { createSystemMessage } from '../services/chat/systemMessage.service.js';
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Lean representation of a ChatMessageDoc (from `.lean()` queries). */
-type LeanChatMessage = mongoose.FlattenMaps<ChatMessageDoc> & { _id: mongoose.Types.ObjectId };
-
-/** Decorate messages with `isYou` and `deliveryStatus` */
-const decorateMessages = async (messages: LeanChatMessage[], conversationId: string, currentUserId?: string) => {
-  if (messages.length === 0) return [];
-
-  // Pull the denormalized member count — authoritative read-consensus needs
-  // to know how many participants are expected.
-  const conversation = await Conversation.findById(
-    conversationId,
-    { participantCount: 1, type: 1 },
-  ).lean();
-  if (!conversation) return messages;
-
-  const minReadAt = await getConversationReadConsensus(conversationId, conversation.participantCount);
-
-  return messages.map((m) => {
-    const isYou = currentUserId ? m.senderId?.toString() === currentUserId : false;
-
-    // A message is "read" if the global minimum read cursor is past its creation time.
-    const isRead = !!minReadAt && minReadAt >= m.createdAt;
-
-    return { ...m, isYou, deliveryStatus: isRead ? 'read' : 'sent' };
-  });
-};
-
-/** Emit `new_conversation` to everyone in the conversation except the creator. */
-const broadcastNewConversation = (
-  participantIds: ReadonlyArray<string>,
-  creatorIdStr:   string,
-  payload:        object,
-) => {
-  const chatListNs = getChatListNamespace();
-  for (const pid of participantIds) {
-    if (pid === creatorIdStr) continue;
-    emitNewConversation(chatListNs, pid, payload as any);
-  }
-};
+import { decorateMessages, broadcastNewConversation } from './chat/chat.helpers.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -117,16 +73,75 @@ export const getConversations = async (req: Request, res: Response) => {
     const convIds = await getUserConversationIds(userId);
     if (convIds.length === 0) {
       return res.json({
-        success:       true,
+        success: true,
         conversations: [],
-        pagination:    buildPageEnvelope(0, { page, limit, skip }),
+        pagination: buildPageEnvelope(0, { page, limit, skip }),
       });
     }
 
-    const filter = { _id: { $in: convIds }, isActive: true };
+    // Optional query params: q, type, sortBy, sortOrder.
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    const typeParam = typeof req.query.type === 'string' ? req.query.type : '';
+    const allowedTypes = ['direct', 'group', 'system', 'api'] as const;
+    const typeFilter = (allowedTypes as readonly string[]).includes(typeParam)
+      ? typeParam
+      : '';
+
+    const sortByParam    = typeof req.query.sortBy === 'string' ? req.query.sortBy : 'activity';
+    const sortOrderParam = req.query.sortOrder === 'asc' ? 'asc' : 'desc';
+    const sortField: Record<string, 'activity' | 'created' | 'name'> = {
+      activity: 'activity', created: 'created', name: 'name',
+    };
+    const sortBy = sortField[sortByParam] ?? 'activity';
+    const dir: 1 | -1 = sortOrderParam === 'asc' ? 1 : -1;
+
+    const sortSpec: Record<string, 1 | -1> =
+      sortBy === 'name'
+        ? { title: dir, _id: dir }
+        : sortBy === 'created'
+          ? { createdAt: dir, _id: dir }
+          : { lastMessageAt: dir, updatedAt: dir, _id: dir };
+
+    const filter: Record<string, unknown> = { _id: { $in: convIds }, isActive: true };
+    if (typeFilter) filter.type = typeFilter;
+    if (q) {
+      // Escape regex metachars to avoid injection / invalid-regex errors.
+      const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp(safe, 'i');
+
+      // Search across four surfaces so the UX matches user expectations:
+      //   1. conversation.title                     — groups, named chats
+      //   2. conversation.externalUser.name/email   — guest/api conversations
+      //   3. peer (registered user) name / username — direct chats whose
+      //      `title` is empty and rendered from the opposite participant
+      const userMatches = await User
+        .find({ $or: [{ name: rx }, { username: rx }] }, { _id: 1 })
+        .limit(500)
+        .lean();
+      const matchedUserIds = userMatches.map((u) => u._id);
+
+      let peerConvIds: mongoose.Types.ObjectId[] = [];
+      if (matchedUserIds.length > 0) {
+        const peerRows = await ConversationParticipant
+          .find(
+            { userId: { $in: matchedUserIds }, conversationId: { $in: convIds } },
+            { conversationId: 1, _id: 0 },
+          )
+          .lean();
+        peerConvIds = peerRows.map((r) => r.conversationId as mongoose.Types.ObjectId);
+      }
+
+      filter.$or = [
+        { title: rx },
+        { 'externalUser.name':  rx },
+        { 'externalUser.email': rx },
+        ...(peerConvIds.length > 0 ? [{ _id: { $in: peerConvIds } }] : []),
+      ];
+    }
+
     const [rows, total] = await Promise.all([
       Conversation.find(filter)
-        .sort({ lastMessageAt: -1, updatedAt: -1 })
+        .sort(sortSpec)
         .skip(skip)
         .limit(limit)
         .lean(),
@@ -139,9 +154,9 @@ export const getConversations = async (req: Request, res: Response) => {
     const conversations = await attachDirectPeer(rows, userId);
 
     res.json({
-      success:       true,
+      success: true,
       conversations,
-      pagination:    buildPageEnvelope(total, { page, limit, skip }),
+      pagination: buildPageEnvelope(total, { page, limit, skip }),
     });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
@@ -194,8 +209,8 @@ export const createConversation = async (req: Request, res: Response) => {
       const [a, b] = allParticipants as [string, string];
 
       const { conversation: direct, existing } = await createDirectConversation({
-        userA:     a,
-        userB:     b,
+        userA: a,
+        userB: b,
         createdBy: userId,
       });
 
@@ -214,10 +229,10 @@ export const createConversation = async (req: Request, res: Response) => {
       }
 
       const result = await createGroupConversation({
-        title:          title || 'Group Chat',
-        publicName:     groupPublicName!,
+        title: title || 'Group Chat',
+        publicName: groupPublicName!,
         participantIds: allParticipants,
-        createdBy:      userId,
+        createdBy: userId,
       });
       if (!result.ok) {
         return res.status(409).json({ success: false, message: 'Public name is already taken' });
@@ -295,20 +310,20 @@ export const getConversationMembers = async (req: Request, res: Response) => {
     const page = parsePage(req, 15);
     const { members, pagination } = await listMembers({
       conversationId: conversation._id as mongoose.Types.ObjectId,
-      currentUserId:  String(userId),
-      creatorId:      conversation.createdBy as mongoose.Types.ObjectId | null | undefined,
+      currentUserId: String(userId),
+      creatorId: conversation.createdBy as mongoose.Types.ObjectId | null | undefined,
       page,
     });
 
     res.json({
-      success:    true,
+      success: true,
       members,
       pagination,
       conversation: {
-        _id:        conversation._id,
-        type:       conversation.type,
-        title:      conversation.title ?? null,
-        createdBy:  conversation.createdBy ?? null,
+        _id: conversation._id,
+        type: conversation.type,
+        title: conversation.title ?? null,
+        createdBy: conversation.createdBy ?? null,
         publicName: conversation.publicName ?? null,
       },
     });
@@ -335,7 +350,7 @@ export const updateConversation = async (req: Request, res: Response) => {
     const conversation = await Conversation.findOneAndUpdate(
       { _id: conversationId, type: 'group' },
       { ...(title && { title }), ...(avatarUrl && { avatarUrl }) },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean();
 
     if (!conversation) {
@@ -366,7 +381,7 @@ export const addParticipants = async (req: Request, res: Response) => {
     }
 
     if (!(await isParticipant(conversationId, userId))) {
-      return res.status(404).json({ success: false, message: 'Group not found' });
+      return res.status(404).json({ success: 'Group not found' });
     }
 
     const conversation = await Conversation.findOne({ _id: conversationId, type: 'group' }).lean();
@@ -421,7 +436,7 @@ export const removeParticipant = async (req: Request, res: Response) => {
     }
 
     const isCreator = conversation.createdBy?.toString() === String(currentUserId);
-    const isSelf    = String(currentUserId) === targetUserId;
+    const isSelf = String(currentUserId) === targetUserId;
 
     if (!isCreator && !isSelf) {
       return res.status(403).json({ success: false, message: 'Only the group creator can remove others' });
@@ -479,7 +494,7 @@ export const getMessages = async (req: Request, res: Response) => {
 
     const limit = Math.min(parseInt(req.query.limit as string) || 20, PAGINATION.MAX_LIMIT);
     const before = req.query.before as string | undefined;
-    const after  = req.query.after  as string | undefined;
+    const after = req.query.after as string | undefined;
     const around = req.query.around as string | undefined;
     const anchor = req.query.anchor as string | undefined;
 
@@ -493,10 +508,10 @@ export const getMessages = async (req: Request, res: Response) => {
     const lastReadMsgId = readCursor?.lastReadMessageId?.toString() ?? null;
 
     let result;
-    if (before)       result = await loadOlder(conversationId, before, limit);
-    else if (after)   result = await loadNewer(conversationId, after, limit);
-    else if (around)  result = await loadAround(conversationId, around, limit);
-    else if (anchor)  result = await loadWithAnchor(conversationId, anchor, limit);
+    if (before) result = await loadOlder(conversationId, before, limit);
+    else if (after) result = await loadNewer(conversationId, after, limit);
+    else if (around) result = await loadAround(conversationId, around, limit);
+    else if (anchor) result = await loadWithAnchor(conversationId, anchor, limit);
     else {
       // ── Smart initial load ──────────────────────────────────────────────
       // Check if there are unread messages (foreign messages after the cursor).
@@ -523,7 +538,7 @@ export const getMessages = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'Target message not found' });
     }
 
-    const decorated = await decorateMessages(result.messages, conversationId, String(userId));
+    const decorated = await decorateMessages(result.messages, conversationId, { userId: String(userId) });
 
     res.json({
       success: true,
@@ -570,16 +585,16 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     const message = await ChatMessage.create({
       conversationId,
-      senderId:    userId,
-      senderName:  user.name,
+      senderId: userId,
+      senderName: user.name,
       messageType: messageType || 'text',
-      text:        text.trim(),
-      isSystem:    false,
+      text: text.trim(),
+      isSystem: false,
       ...(replyTo && {
         replyTo: {
-          messageId:  replyTo.messageId,
+          messageId: replyTo.messageId,
           senderName: replyTo.senderName,
-          text:       (replyTo.text || '').slice(0, 200),
+          text: (replyTo.text || '').slice(0, 200),
         },
       }),
     });
@@ -590,9 +605,9 @@ export const sendMessage = async (req: Request, res: Response) => {
       { _id: conversationId },
       {
         $set: {
-          lastMessageId:     message._id,
-          lastMessageAt:     message.createdAt,
-          lastMessageText:   previewText,
+          lastMessageId: message._id,
+          lastMessageAt: message.createdAt,
+          lastMessageText: previewText,
           lastMessageSender: user.name,
         },
         $inc: { messageCount: 1 },
@@ -601,7 +616,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     const decorated = {
       ...message.toObject(),
-      isYou:          true,
+      isYou: true,
       deliveryStatus: 'sent',
     };
 
@@ -632,10 +647,10 @@ export const sendMessage = async (req: Request, res: Response) => {
 
       emitConversationUpdated(chatListNs, pidStr, {
         conversationId,
-        lastMessageAt:     message.createdAt.toISOString(),
-        lastMessageText:   previewText,
+        lastMessageAt: message.createdAt.toISOString(),
+        lastMessageText: previewText,
         lastMessageSender: user.name,
-        messageCount:      nextMessageCount,
+        messageCount: nextMessageCount,
       });
     });
 
@@ -643,11 +658,10 @@ export const sendMessage = async (req: Request, res: Response) => {
     // When a user sends a message they've obviously read everything up to it.
     // Without this, reopening the conversation would show stale "unread" state.
     markSentMessageRead({
-      userId:         String(userId),
+      userId: String(userId),
       conversationId,
-      messageId:      String(message._id),
       messageCreatedAt: message.createdAt,
-    }).catch(() => {/* fire-and-forget */});
+    }).catch(() => {/* fire-and-forget */ });
 
     res.status(201).json({ success: true, message: decorated });
   } catch (e: unknown) {
@@ -669,7 +683,7 @@ export const deleteMessage = async (req: Request, res: Response) => {
     const message = await ChatMessage.findOneAndUpdate(
       { _id: messageId, conversationId, senderId: userId },
       { text: 'This message was deleted', attachments: [], messageType: 'system' as const },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     if (!message) {
@@ -690,74 +704,66 @@ export const deleteMessage = async (req: Request, res: Response) => {
 /**
  * POST /api/chat/conversations/:id/messages/read
  * Body: { messageIds: string[] }
+ *
+ * Records per-message read receipts for the caller AND advances the
+ * conversation read cursor to the max `createdAt` of the supplied messages
+ * (so the fast-path unread-count query stays cheap). Broadcasts
+ * `receipts_update` with the messageIds that were actually NEWLY marked.
  */
 export const markMessagesRead = async (req: Request, res: Response) => {
   try {
     const user = requireAuthUser(req);
     const userId = String(user._id);
     const conversationId = req.params.id as string;
-    const { messageIds } = req.body;
 
-    if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
-      return res.status(200).json({ success: true, updated: 0 });
+    const rawIds = Array.isArray(req.body?.messageIds) ? (req.body.messageIds as unknown[]) : [];
+    const messageIds = rawIds
+      .filter((x): x is string => typeof x === 'string' && mongoose.isValidObjectId(x))
+      .slice(0, 200);
+
+    if (messageIds.length === 0) return res.json({ success: true, markedIds: [] });
+
+    const { insertedIds } = await recordReads({
+      conversationId,
+      messageIds,
+      userId,
+    });
+
+    if (insertedIds.length === 0) return res.json({ success: true, markedIds: [] });
+
+    // Advance the per-conversation cursor to the max createdAt among marked.
+    const maxMsg = await ChatMessage
+      .find({ _id: { $in: insertedIds.map((id) => new mongoose.Types.ObjectId(id)) } }, { createdAt: 1 })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
+
+    if (maxMsg[0]) {
+      await advanceCursorTo({
+        conversationId,
+        userId,
+        lastReadAt: maxMsg[0].createdAt as Date,
+        lastReadMessageId: maxMsg[0]._id as mongoose.Types.ObjectId,
+      });
     }
 
-    // Fetch messages to identify non-self ones (for receipt broadcast).
-    // Self-messages are excluded so the sender's cursor doesn't leapfrog.
-    const messages = await ChatMessage.find(
-      { _id: { $in: messageIds }, conversationId },
-      { senderId: 1 },
-    ).lean();
+    // Broadcast only the newly-marked messageIds.
+    emitChatReceipts(getChatMessagesNamespace(), conversationId, {
+      userId,
+      messageIds: insertedIds,
+      readAt: new Date().toISOString(),
+    });
 
-    const nonSelfIds = messages
-      .filter((m) => m.senderId?.toString() !== userId)
-      .map((m) => m._id.toString());
+    // Tell the actor's own other devices to refresh their badge.
+    try {
+      const chatListNs = getChatListNamespace();
+      emitChatUnreadChanged(chatListNs, userId, {
+        conversationId,
+        count: -1, // delta hint — clients refetch
+      });
+    } catch { /* socket optional */ }
 
-    // Advance the per-user read cursor. Monotonic — never moves backward.
-    const cursor = await markChatMessagesRead({ userId, conversationId, messageIds: nonSelfIds });
-
-    // ── Consensus-Aware Socket Broadcast ─────────────────────────────────────
-    // In a group chat, we only want to notify the sender that a message is "read"
-    // once EVERYONE in the group has read it.
-    if (nonSelfIds.length > 0) {
-      try {
-        const conversation = await Conversation.findById(
-          conversationId,
-          { participantCount: 1 },
-        ).lean();
-        if (conversation) {
-          const minReadAt = await getConversationReadConsensus(conversationId, conversation.participantCount);
-
-          if (minReadAt) {
-            const fullyReadIds = await getFullyReadMessageIds(conversationId, nonSelfIds, minReadAt);
-
-            if (fullyReadIds.length > 0) {
-              const chatMsgNs = getChatMessagesNamespace();
-              emitChatReceipts(chatMsgNs, conversationId, {
-                userId,
-                messageIds: fullyReadIds,
-              });
-            }
-          }
-        }
-      } catch (err) {
-        console.error('[markMessagesRead] Socket broadcast failed:', err);
-      }
-    }
-
-    // Tell the actor's *own* other devices to clear/update the badge.
-    if (cursor) {
-      try {
-        const chatListNs = getChatListNamespace();
-        emitChatUnreadChanged(chatListNs, userId, {
-          conversationId,
-          count:             0,
-          lastReadMessageId: (cursor as any).lastReadMessageId?.toString() ?? null,
-        });
-      } catch { /* socket optional */ }
-    }
-
-    res.json({ success: true, updated: nonSelfIds.length });
+    res.json({ success: true, markedIds: insertedIds });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
   }
@@ -798,11 +804,18 @@ export const getUnreadCounts = async (req: Request, res: Response) => {
       return res.json({ success: true, counts: {}, lastReadMap: {} });
     }
 
-    // Narrow to conversations still active (soft-closed system chats drop out).
+    // Narrow to conversations still active AND cap to the 200 most recently
+    // active. Power users in thousands of chats still get accurate badges on
+    // the ones they care about — the long tail is ignored for this endpoint
+    // since the MongoDB query planner degrades past ~hundreds of $or clauses.
+    const UNREAD_CONV_CAP = 200;
     const activeConvs = await Conversation.find(
       { _id: { $in: memberConvIds }, isActive: true },
       { _id: 1 },
-    ).lean();
+    )
+      .sort({ lastMessageAt: -1, updatedAt: -1 })
+      .limit(UNREAD_CONV_CAP)
+      .lean();
     if (activeConvs.length === 0) {
       return res.json({ success: true, counts: {}, lastReadMap: {} });
     }
@@ -817,7 +830,7 @@ export const getUnreadCounts = async (req: Request, res: Response) => {
     const cursorByConv = new Map<string, { lastReadAt: Date; lastReadMessageId: mongoose.Types.ObjectId | null }>();
     for (const c of cursors) {
       cursorByConv.set(c.conversationId.toString(), {
-        lastReadAt:        c.lastReadAt,
+        lastReadAt: c.lastReadAt,
         lastReadMessageId: (c.lastReadMessageId ?? null) as mongoose.Types.ObjectId | null,
       });
     }
@@ -833,9 +846,19 @@ export const getUnreadCounts = async (req: Request, res: Response) => {
       return base;
     });
 
+    // Cap the count at `UNREAD_COUNT_CEILING`: once past that, the UI just
+    // renders "99+" so extra work is wasted. We stop accumulating per
+    // conversation once its bucket reaches the ceiling.
+    const UNREAD_COUNT_CEILING = 100;
     const grouped = await ChatMessage.aggregate<{ _id: mongoose.Types.ObjectId; count: number }>([
       { $match: { $or: orClauses } },
-      { $group: { _id: '$conversationId', count: { $sum: 1 } } },
+      {
+        $group: {
+          _id:   '$conversationId',
+          count: { $sum: 1 },
+        },
+      },
+      { $addFields: { count: { $min: ['$count', UNREAD_COUNT_CEILING] } } },
     ]);
 
     const counts: Record<string, number> = {};
@@ -875,8 +898,8 @@ export const searchUsers = async (req: Request, res: Response) => {
 
     const regex = new RegExp(q.trim(), 'i');
     const filter = {
-      _id:  { $ne: userId },
-      $or:  [{ name: regex }, { username: regex }],
+      _id: { $ne: userId },
+      $or: [{ name: regex }, { username: regex }],
     };
 
     const [users, total] = await Promise.all([
@@ -889,7 +912,7 @@ export const searchUsers = async (req: Request, res: Response) => {
     ]);
 
     res.json({
-      success:    true,
+      success: true,
       users,
       pagination: buildPageEnvelope(total, { page, limit, skip }),
     });

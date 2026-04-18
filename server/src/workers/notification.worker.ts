@@ -28,7 +28,7 @@ import {
   type BookingConfirmationJob,
   type SystemBroadcastJob,
 } from '../queues/notification.queue.js';
-import { createSystemMessage } from '../controllers/chat.controller.js';
+import { createSystemMessage } from '../services/chat/systemMessage.service.js';
 import { UserFollow } from '../models/userFollow.model.js';
 import { HashtagFollow } from '../models/hashtagFollow.model.js';
 

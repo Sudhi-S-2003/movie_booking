@@ -185,5 +185,5 @@ export const resolveRequest = async (
         resolvedBy: toObjectId(args.resolverId),
       },
     },
-    { new: true },
+    { returnDocument: 'after' },
   );

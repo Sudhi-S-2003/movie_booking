@@ -69,10 +69,30 @@ export const ChatAvatar = memo(({ conversation, participant, size = 'md' }: Chat
     );
   }
 
-  // Both group and direct rows read from `conversation.avatarUrl` + `title`
-  // uniformly. The server fills these in for direct chats from the opposite
-  // participant (see `attachDirectPeer`), so the client never has to dig
-  // through a participants array to render the sidebar.
+  // Peer-backed rows (direct 1:1 and api-driven guest chats) carry a
+  // `peer` object with the opposite person's identity. Prefer that for the
+  // avatar so we don't show "?" when the conversation itself has no title
+  // or avatarUrl of its own (api conversations never do — the "other side"
+  // is a guest, and direct chats only get the peer enriched at list time).
+  if ((conversation.type === 'direct' || conversation.type === 'api') && conversation.peer) {
+    const peer = conversation.peer;
+    if (peer.avatar) {
+      return (
+        <img
+          src={peer.avatar}
+          alt={peer.name}
+          className={`${cls} rounded-full object-cover ring-1 ring-white/10`}
+        />
+      );
+    }
+    return (
+      <div className={`${cls} rounded-full bg-gradient-to-br ${pickGradient(peer._id)} flex items-center justify-center font-bold text-white shadow-sm`}>
+        {peer.name[0]?.toUpperCase() ?? '?'}
+      </div>
+    );
+  }
+
+  // Group / system / anything-else: use the conversation's own avatar + title.
   if (conversation.avatarUrl) {
     return (
       <img

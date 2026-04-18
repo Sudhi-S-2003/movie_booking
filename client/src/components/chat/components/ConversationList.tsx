@@ -1,10 +1,15 @@
-import React, { memo } from 'react';
-import { Search, Plus } from 'lucide-react';
+import React, { memo, useMemo } from 'react';
+import { Plus } from 'lucide-react';
 import { useChat } from '../context/ChatContext.js';
 import { ConversationRow } from './ConversationRow.js';
+import { ConversationFilters } from './ConversationFilters.js';
 
 /**
- * Left-panel conversation list with search and "new chat" button.
+ * Left-panel conversation list with the filter bar (search / type / sort /
+ * unread-only) and a "new chat" button.
+ *
+ * Server-side filters (`q`, `type`, `sortBy`, `sortOrder`) come back pre-paged.
+ * The `unreadOnly` switch is applied client-side against `unreadCounts`.
  */
 export const ConversationList: React.FC = memo(() => {
   const {
@@ -16,7 +21,24 @@ export const ConversationList: React.FC = memo(() => {
     loadMoreConversations,
     unreadCounts,
     setShowNewChat,
+    conversationFilters,
+    conversationFiltersDirty,
+    setConversationFilterQ,
+    setConversationFilterType,
+    setConversationFilterUnreadOnly,
+    setConversationFilterSortBy,
+    setConversationFilterSortOrder,
+    resetConversationFilters,
   } = useChat();
+
+  // Client-side "unread only" slice — keeps pagination untouched.
+  const visibleConversations = useMemo(() => {
+    if (!conversationFilters.unreadOnly) return conversations;
+    return conversations.filter((c) => (unreadCounts[c._id] ?? 0) > 0);
+  }, [conversations, conversationFilters.unreadOnly, unreadCounts]);
+
+  const showEmptyState =
+    visibleConversations.length === 0 && !conversationsLoading;
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -35,27 +57,25 @@ export const ConversationList: React.FC = memo(() => {
           </button>
         </div>
 
-        {/* Search (placeholder for now) */}
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" />
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/[0.06] rounded-xl text-[11px] text-white placeholder:text-white/20 outline-none focus:border-white/[0.12] transition-colors"
-          />
-        </div>
+        <ConversationFilters
+          value={conversationFilters}
+          onChangeQ={setConversationFilterQ}
+          onChangeType={setConversationFilterType}
+          onToggleUnread={setConversationFilterUnreadOnly}
+          onChangeSortBy={setConversationFilterSortBy}
+          onChangeSortOrder={setConversationFilterSortOrder}
+          onReset={resetConversationFilters}
+          isDirty={conversationFiltersDirty}
+        />
       </div>
 
       {/* List */}
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-        {conversations.length === 0 && !conversationsLoading && (
-          <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-            <p className="text-[10px] text-white/20 font-medium">No conversations yet</p>
-            <p className="text-[9px] text-white/10 mt-1">Start a new chat to begin messaging</p>
-          </div>
+        {showEmptyState && (
+          <EmptyState dirty={conversationFiltersDirty} onReset={resetConversationFilters} />
         )}
 
-        {conversations.map((conv) => (
+        {visibleConversations.map((conv) => (
           <ConversationRow
             key={conv._id}
             conversation={conv}
@@ -65,6 +85,7 @@ export const ConversationList: React.FC = memo(() => {
           />
         ))}
 
+        {/* Server-side pagination — unaffected by client-side unreadOnly slice. */}
         {hasMoreConversations && (
           <button
             onClick={loadMoreConversations}
@@ -75,7 +96,7 @@ export const ConversationList: React.FC = memo(() => {
           </button>
         )}
 
-        {conversationsLoading && conversations.length === 0 && (
+        {conversationsLoading && visibleConversations.length === 0 && (
           <div className="flex justify-center py-8">
             <div className="w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
           </div>
@@ -86,3 +107,27 @@ export const ConversationList: React.FC = memo(() => {
 });
 
 ConversationList.displayName = 'ConversationList';
+
+// ── Subcomponents ────────────────────────────────────────────────────────────
+
+const EmptyState: React.FC<{ dirty: boolean; onReset: () => void }> = ({ dirty, onReset }) => (
+  <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+    {dirty ? (
+      <>
+        <p className="text-[10px] text-white/30 font-medium">No matches</p>
+        <p className="text-[9px] text-white/20 mt-1">Try a different search or clear the filters</p>
+        <button
+          onClick={onReset}
+          className="mt-3 text-[10px] font-semibold text-accent-blue hover:text-accent-blue/80 transition-colors"
+        >
+          Clear filters
+        </button>
+      </>
+    ) : (
+      <>
+        <p className="text-[10px] text-white/20 font-medium">No conversations yet</p>
+        <p className="text-[9px] text-white/10 mt-1">Start a new chat to begin messaging</p>
+      </>
+    )}
+  </div>
+);

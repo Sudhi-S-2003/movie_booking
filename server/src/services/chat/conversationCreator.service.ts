@@ -168,3 +168,63 @@ export const createGroupConversation = async ({
   if (!lean) throw new Error('Group conversation disappeared after insert');
   return { ok: true, conversation: lean as unknown as LeanConversation };
 };
+
+// ─── API ────────────────────────────────────────────────────────────────────
+
+/**
+ * Find the existing API-driven conversation between an owner and an
+ * external email.
+ */
+export const findApiBetween = async (createdBy: IdLike, email: string) => {
+  return Conversation.findOne({
+    type: 'api',
+    createdBy: toObjectId(createdBy),
+    'externalUser.email': email.toLowerCase(),
+  }).lean();
+};
+
+export interface CreateApiArgs {
+  createdBy: IdLike;
+  externalUser: {
+    name:  string;
+    email: string;
+  };
+}
+
+/**
+ * Idempotent API-chat creation with inline external user info.
+ */
+export const createApiConversation = async ({
+  createdBy,
+  externalUser,
+}: CreateApiArgs): Promise<{
+  conversation: LeanConversation;
+  existing:     boolean;
+}> => {
+  const existing = await findApiBetween(createdBy, externalUser.email);
+  if (existing) return { conversation: existing as unknown as LeanConversation, existing: true };
+
+  const created = await retryOnSlugCollision(() =>
+    Conversation.create({
+      type:         'api',
+      createdBy:    toObjectId(createdBy),
+      messageCount: 0,
+      publicName:   generateAutoPublicName('api'),
+      externalUser: {
+        name:  externalUser.name.trim(),
+        email: externalUser.email.trim().toLowerCase(),
+      },
+    }),
+  );
+
+  // For API conversations, the only database participant is the key owner.
+  await syncParticipants(
+    created._id as mongoose.Types.ObjectId,
+    [createdBy],
+    { creatorId: createdBy },
+  );
+
+  const lean = await Conversation.findById(created._id).lean();
+  if (!lean) throw new Error('API conversation disappeared after insert');
+  return { conversation: lean as unknown as LeanConversation, existing: false };
+};

@@ -55,11 +55,12 @@ const randomSuffix = (len = 8): string => {
  *   system  → "s-<title-slug>-<random>"     e.g. "s-followers-xk2a8hpr"
  */
 export const generateAutoPublicName = (
-  type: 'direct' | 'system',
+  type: 'direct' | 'system' | 'api',
   opts: { title?: string } = {},
 ): string => {
   const suffix = randomSuffix(8);
   if (type === 'direct') return `d-${suffix}`;
+  if (type === 'api')    return `a-${suffix}`;
 
   const titleSlug = slugify(opts.title ?? '').slice(0, 16);
   return titleSlug ? `s-${titleSlug}-${suffix}` : `s-${suffix}`;

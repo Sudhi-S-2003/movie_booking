@@ -97,7 +97,7 @@ export const revokeInvite = async (
   ConversationInvite.findOneAndUpdate(
     { _id: toObjectId(inviteId), conversationId: toObjectId(conversationId) },
     { $set: { revoked: true } },
-    { new: true },
+    { returnDocument: 'after' },
   );
 
 // ─── Lookup helpers ─────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ export const consumeInvite = async (token: string): Promise<ConversationInviteDo
   return ConversationInvite.findOneAndUpdate(
     filter,
     { $inc: { usesCount: 1 } },
-    { new: true },
+    { returnDocument: 'after' },
   );
 };
 
