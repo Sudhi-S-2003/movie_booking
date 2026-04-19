@@ -108,7 +108,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
       selectConversation(conv);
       onClose();
     } else {
-      setCreateError('Failed to create group. The public name may already be taken or invalid.');
+      setCreateError('Please refresh and try again.');
     }
   }, [selected, groupTitle, groupPublicName, creating, createGroupChat, selectConversation, onClose]);
 

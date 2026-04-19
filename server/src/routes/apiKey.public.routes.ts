@@ -6,8 +6,9 @@ import {
     sendGuestMessage,
     deleteGuestMessage,
     markGuestMessagesRead,
+    getGuestSubscription,
     createChatConversation,
-    getSignedChatConversation
+    getSignedChatConversation,
 } from '../controllers/api.chat.controller.js';
 
 
@@ -24,6 +25,7 @@ router.post("/conversation/signed-url", isAuthenticatedApiKey, getSignedChatConv
 // from the conversation/:id path segment.
 router.get("/conversation/:id", isChatSignatureValid, getGuestConversation);
 router.get("/conversation/:id/messages", isChatSignatureValid, getGuestMessages);
+router.get("/conversation/:id/subscription", isChatSignatureValid, getGuestSubscription);
 router.post("/conversation/:id/messages", isChatSignatureValid, sendGuestMessage);
 router.post("/conversation/:id/messages/read", isChatSignatureValid, markGuestMessagesRead);
 router.delete("/conversation/:id/messages/:messageId", isChatSignatureValid, deleteGuestMessage);

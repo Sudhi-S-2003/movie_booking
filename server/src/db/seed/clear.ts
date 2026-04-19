@@ -20,6 +20,8 @@ import { Conversation, ChatMessage, ChatReadCursor, ConversationParticipant } fr
 import { ConversationInvite, ConversationJoinRequest } from '../../models/chatInvite.model.js';
 import { MessageRead } from '../../models/messageRead.model.js';
 import { ApiKey } from '../../models/apiKey.model.js';
+import { Subscription } from '../../models/subscription.model.js';
+import { TokenBucket } from '../../models/tokenBucket.model.js';
 import { log } from './helpers.js';
 
 export const clearDatabase = async () => {
@@ -51,6 +53,8 @@ export const clearDatabase = async () => {
     ConversationJoinRequest.deleteMany({}),
     MessageRead.deleteMany({}),
     ApiKey.deleteMany({}),
+    Subscription.deleteMany({}),
+    TokenBucket.deleteMany({}),
   ]);
   // Drop indexes to avoid stale unique-key conflicts on re-seed
   const db = mongoose.connection.db;

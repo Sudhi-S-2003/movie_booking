@@ -18,6 +18,7 @@ import { AdminLayout } from './layouts/AdminLayout.js';
 import { MarketingLayoutWrapper } from './layouts/MarketingLayout.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 import { BookingSessionProvider } from './providers/BookingSessionProvider.js';
+import { SubscriptionProvider } from './components/chat/hooks/useSubscription.js';
 
 import { AdminOverview } from './pages/dashboards/admin/AdminOverview.js';
 import { AdminMovies } from './pages/dashboards/admin/AdminMovies.js';
@@ -40,11 +41,13 @@ import { PublicChat } from './pages/PublicChat.js';
 import { ChatInvite } from './pages/ChatInvite.js';
 import { ApiKeys } from './pages/ApiKeys.js';
 import { ApiKeyChat } from './pages/ApiKeyChat.js';
+import { Subscription } from './pages/Subscription.js';
 
 
 const App = () => {
   return (
     <BrowserRouter>
+      <SubscriptionProvider>
       <BookingSessionProvider>
       <Routes>
         {}
@@ -69,6 +72,7 @@ const App = () => {
           {}
           <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
           <Route path="/success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
+          <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
 
           {/* Public chat onboarding — no auth required to view */}
           <Route path="/chat/g/:publicName"   element={<PublicChat />} />
@@ -150,6 +154,7 @@ const App = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </BookingSessionProvider>
+      </SubscriptionProvider>
     </BrowserRouter>
   );
 };

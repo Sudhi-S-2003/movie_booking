@@ -4,6 +4,7 @@ import { env } from '../env.js';
 import { User } from '../models/user.model.js';
 import { UserRole } from '../constants/enums.js';
 import type { JwtPayload } from '../interfaces/auth.interface.js';
+import { getOrCreateForUser as ensureSubscription } from '../services/subscription/subscription.service.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth middleware
@@ -14,6 +15,9 @@ import type { JwtPayload } from '../interfaces/auth.interface.js';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const JWT_SECRET = env.JWT_SECRET;
+
+/** Per-process cache of users we've already ensured a subscription for. */
+const seededUsers = new Set<string>();
 
 /** Pull a bearer token out of the Authorization header, or null. */
 const extractBearerToken = (req: Request): string | null => {
@@ -49,6 +53,14 @@ export const isAuthenticated = async (
     }
 
     req.user = user;
+    // Defensive: seed a free subscription + buckets for legacy users that
+    // pre-date the subscription system. Short-circuited via an in-process
+    // Set so we only do the DB work once per user per server lifetime.
+    const uid = user._id.toString();
+    if (!seededUsers.has(uid)) {
+      seededUsers.add(uid);
+      ensureSubscription(uid).catch(() => { /* non-fatal */ });
+    }
     next();
   } catch {
     return res.status(401).json({ success: false, message: 'Invalid or expired token' });

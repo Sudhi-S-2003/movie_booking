@@ -6,6 +6,7 @@ import { User } from '../models/user.model.js';
 import { UserRole, AuthProvider } from '../constants/enums.js';
 import type { AuthRequest } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
+import { getOrCreateForUser as ensureSubscription } from '../services/subscription/subscription.service.js';
 
 const generateToken = (id: string) =>
   jwt.sign({ id }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] } as SignOptions);
@@ -36,6 +37,8 @@ export const register = async (req: Request, res: Response) => {
       authProvider: AuthProvider.LOCAL,
     });
 
+    await ensureSubscription(user._id.toString()).catch(() => { /* non-fatal */ });
+
     const token = generateToken(user._id.toString());
 
     res.status(201).json({
@@ -59,11 +62,12 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password');
-    if (!user || user.authProvider !== AuthProvider.LOCAL) {
+
+    if (!user || user.authProvider !== AuthProvider.LOCAL || !user.password) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password || '');
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }

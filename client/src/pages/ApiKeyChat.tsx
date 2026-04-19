@@ -7,6 +7,7 @@ import {
   SignedLinkError,
   useSignedLinkPreflight,
 } from '@/components/chat-signed/index.js';
+import { SubscriptionProvider } from '@/components/chat/hooks/useSubscription.js';
 
 /**
  * Signed-URL guest chat route (`/chat/:conversationId?signature=…&expiresAt=…`).
@@ -52,7 +53,23 @@ export const ApiKeyChat = () => {
     return <SignedLinkError kind={preflight.kind} detail={preflight.detail} />;
   }
 
-  return <ChatPage guestSession={guestSession} />;
+  // Re-mount the subscription provider in guest mode so the header pill
+  // reads from the signature-authenticated endpoint (the API-key owner's
+  // pool) instead of the JWT-gated `/api/subscription`. The outer provider
+  // in App.tsx is eclipsed by this inner one for the subtree.
+  const inner = <ChatPage guestSession={guestSession} />;
+  if (!guestSession) return inner;
+  return (
+    <SubscriptionProvider
+      guest={{
+        signature:      guestSession.signature,
+        expiresAt:      guestSession.expiresAt,
+        conversationId: conversationId,
+      }}
+    >
+      {inner}
+    </SubscriptionProvider>
+  );
 };
 
 // ── Loading state ───────────────────────────────────────────────────────────

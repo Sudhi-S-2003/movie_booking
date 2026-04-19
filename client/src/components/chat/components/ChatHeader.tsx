@@ -1,7 +1,8 @@
-import React, { memo, useMemo } from 'react';
-import { ArrowLeft, Phone, Video, MoreVertical, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, Phone, Video, MoreVertical, Users, X } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ChatAvatar } from '../ui/ChatAvatar.js';
+import { TokenUsageBadge } from './TokenUsageBadge.js';
 import { useAuthStore } from '../../../store/authStore.js';
 import type { Conversation } from '../types.js';
 
@@ -46,7 +47,20 @@ export const ChatHeader = memo(({
 
   const isSystem = conversation.type === 'system';
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthStore();
+
+  /**
+   * Base chat path for the current role — drops the `:conversationId`
+   * segment. Example: `/owner/chat/69e…` → `/owner/chat`.
+   * Used for the "Close chat" menu action.
+   */
+  const chatBasePath = useMemo(() => {
+    const parts = location.pathname.split('/');
+    const chatIdx = parts.indexOf('chat');
+    if (chatIdx > 0) return parts.slice(0, chatIdx + 1).join('/');
+    return '/chat';
+  }, [location.pathname]);
 
   const membersPath = useMemo(() => {
     const role = (user?.role ?? 'user').toString().toLowerCase();
@@ -56,8 +70,31 @@ export const ChatHeader = memo(({
     return `${prefix}/chat/${conversation._id}/members`;
   }, [user, conversation._id]);
 
+  // ── 3-dot menu ────────────────────────────────────────────────────────────
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('keydown',   onKey);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown',   onKey);
+    };
+  }, [menuOpen]);
+
+  const handleCloseChat = () => {
+    setMenuOpen(false);
+    navigate(chatBasePath);
+  };
+
   return (
-    <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-sm">
+    <div className="relative z-30 flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-sm">
       {/* Back button (mobile) */}
       <button
         onClick={onBack}
@@ -79,6 +116,9 @@ export const ChatHeader = memo(({
         </p>
       </div>
 
+      {/* Token usage pill — visible on all chat types; hidden on guest views */}
+      <TokenUsageBadge />
+
       {/* Action buttons */}
       {!isSystem && (
         <div className="flex items-center gap-1">
@@ -97,9 +137,50 @@ export const ChatHeader = memo(({
           <button className="w-8 h-8 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-white/30 hover:text-white/60 transition-all">
             <Video size={15} />
           </button>
-          <button className="w-8 h-8 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-white/30 hover:text-white/60 transition-all">
-            <MoreVertical size={15} />
-          </button>
+          <div ref={menuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-label="More actions"
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                menuOpen
+                  ? 'bg-white/[0.1] text-white'
+                  : 'text-white/30 hover:text-white/60 hover:bg-white/[0.06]'
+              }`}
+            >
+              <MoreVertical size={15} />
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1rem)] rounded-2xl bg-[#0b0b0e] border border-white/[0.1] shadow-2xl shadow-black/70 overflow-hidden z-[55]"
+              >
+                {/* Header strip — tells the user what this menu is about. */}
+                <div className="px-4 pt-3 pb-2">
+                  <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">
+                    Conversation
+                  </span>
+                  <p className="mt-0.5 text-[11px] font-bold text-white/70 truncate">
+                    {displayName}
+                  </p>
+                </div>
+
+                <div className="h-px bg-white/[0.06] mx-2" />
+
+                {/* Actions */}
+                <div className="p-1.5">
+                  <MenuAction
+                    icon={<X size={14} />}
+                    label="Close chat"
+                    hint="Go back to the conversation list"
+                    onClick={handleCloseChat}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -107,3 +188,42 @@ export const ChatHeader = memo(({
 });
 
 ChatHeader.displayName = 'ChatHeader';
+
+// ── Menu row ────────────────────────────────────────────────────────────────
+
+/**
+ * Single row inside the 3-dot menu. Two-line layout so each action has room
+ * to explain what it actually does — much friendlier than a bare verb.
+ */
+const MenuAction = ({
+  icon, label, hint, onClick, tone = 'default',
+}: {
+  icon:   React.ReactNode;
+  label:  string;
+  hint?:  string;
+  onClick: () => void;
+  tone?:  'default' | 'danger';
+}) => (
+  <button
+    role="menuitem"
+    type="button"
+    onClick={onClick}
+    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+      tone === 'danger'
+        ? 'hover:bg-rose-500/10 text-rose-200 hover:text-rose-100'
+        : 'hover:bg-white/[0.06] text-white/80 hover:text-white'
+    }`}
+  >
+    <span className={`mt-0.5 shrink-0 ${tone === 'danger' ? 'text-rose-300' : 'text-white/40'}`}>
+      {icon}
+    </span>
+    <span className="flex-1 min-w-0">
+      <span className="block text-[12px] font-black">{label}</span>
+      {hint && (
+        <span className="block text-[10px] font-medium text-white/40 mt-0.5">
+          {hint}
+        </span>
+      )}
+    </span>
+  </button>
+);

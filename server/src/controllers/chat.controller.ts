@@ -53,6 +53,7 @@ import {
 import { emitNewMessage, emitMessageDeleted, emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
 import { emitChatUnreadChanged, emitConversationUpdated, emitNewConversation } from '../socket/channels/chat-list.channel.js';
 import { decorateMessages, broadcastNewConversation } from './chat/chat.helpers.js';
+import { guardTokens } from '../services/subscription/tokenGuard.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -583,6 +584,11 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'Message text is required' });
     }
 
+    // Token metering — debit before persisting. On overflow the guard writes
+    // the 402 response itself; we just short-circuit.
+    const tokens = await guardTokens(String(userId), text.trim(), res);
+    if (!tokens) return;
+
     const message = await ChatMessage.create({
       conversationId,
       senderId: userId,
@@ -654,16 +660,22 @@ export const sendMessage = async (req: Request, res: Response) => {
       });
     });
 
-    // Advance the sender's read cursor to their own message.
+    // Advance the sender's read cursor + MessageRead entry to their own send.
     // When a user sends a message they've obviously read everything up to it.
-    // Without this, reopening the conversation would show stale "unread" state.
+    // Without this, reopening the conversation would show stale "unread" state
+    // and the delivery-status aggregation would miss the sender as a reader.
     markSentMessageRead({
-      userId: String(userId),
+      userId:           String(userId),
       conversationId,
+      messageId:        message._id,
       messageCreatedAt: message.createdAt,
     }).catch(() => {/* fire-and-forget */ });
 
-    res.status(201).json({ success: true, message: decorated });
+    res.status(201).json({
+      success: true,
+      message: decorated,
+      tokens: { remaining: tokens.remaining, plan: tokens.plan, cost: tokens.cost },
+    });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
   }

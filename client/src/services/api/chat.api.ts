@@ -28,8 +28,15 @@ interface MessagesResponse {
   lastReadMessageId?: string | null;
 }
 
+export interface TokenResponse {
+  plan:      'free' | 'pro';
+  cost:      number;
+  remaining: { daily?: number; weekly?: number; monthly?: number };
+}
+
 interface SendMessageResponse {
   message: ChatMessage;
+  tokens?: TokenResponse;
 }
 
 interface UnreadCountsResponse {

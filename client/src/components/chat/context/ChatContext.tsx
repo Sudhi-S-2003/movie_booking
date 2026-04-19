@@ -11,6 +11,7 @@ import {
   useChatScroll,
   useConversationFilters,
 } from '../hooks/index.js';
+import { useSubscription } from '../hooks/useSubscription.js';
 import type {
   ConversationFiltersState,
   ConversationTypeFilter,
@@ -325,7 +326,9 @@ export const ChatProvider: React.FC<{
     }
   }, [clearConversationUnread, navigate, baseChatPath]);
 
-  const createDirectChat = useCallback(async (targetUserId: string): Promise<Conversation | null> => {
+  const createDirectChat = useCallback(async (
+    targetUserId: string,
+  ): Promise<Conversation | null> => {
     try {
       const { conversation } = await chatApi.createConversation({
         type:           'direct',
@@ -370,6 +373,8 @@ export const ChatProvider: React.FC<{
    * and `retryMessage` (manual retry from the failed tick) go through the
    * same code path — no duplicated body-building or error handling.
    */
+  const { merge: mergeSubscription } = useSubscription();
+
   const dispatchSend = useCallback(async (optimistic: ChatMessage) => {
     const body = {
       text: optimistic.text,
@@ -383,15 +388,27 @@ export const ChatProvider: React.FC<{
     };
 
     try {
-      const { message } = guestSession
+      const res = guestSession
         ? await chatApi.sendGuestMessage(optimistic.conversationId, body, guestSession)
         : await chatApi.sendMessage(optimistic.conversationId, body);
+      const { message, tokens } = res;
       confirmOptimistic(optimistic._id, { ...message, isYou: true, deliveryStatus: 'sent' });
+
+      // Feed the authoritative post-debit balance straight into the subscription
+      // provider so the header pill updates instantly without a refetch. On
+      // guest pages the provider is guest-scoped (API-key owner's pool), so
+      // the merged values still reflect the right subject.
+      if (tokens) {
+        mergeSubscription({
+          plan:      tokens.plan,
+          remaining: { plan: tokens.plan, ...tokens.remaining },
+        });
+      }
     } catch (e) {
       console.error('[ChatContext] dispatchSend failed:', e);
       confirmOptimistic(optimistic._id, { ...optimistic, _status: 'failed' });
     }
-  }, [confirmOptimistic, guestSession]);
+  }, [confirmOptimistic, guestSession, mergeSubscription]);
 
   const sendMessage = useCallback(async (text: string, replyTo?: ChatMessage) => {
     if (!selectedConversation) return;

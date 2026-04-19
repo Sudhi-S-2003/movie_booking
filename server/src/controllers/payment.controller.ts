@@ -1,62 +1,92 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import crypto from 'crypto';
 import { SeatReservation } from '../models/seatReservation.model.js';
 import { SeatStatus } from '../constants/enums.js';
 import { getIO } from '../socket/index.js';
 import type { AuthRequest } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
+import { activatePaidPlan } from '../services/subscription/subscription.service.js';
+import type { BillingCycle } from '../models/subscription.model.js';
+import type { PaidPlanKey } from '../services/subscription/subscriptionPlans.js';
 
-interface PaymentIntent {
+export type PaymentKind = 'seat' | 'subscription';
+
+export interface PaymentIntent {
   paymentIntentId: string;
-  clientSecret: string;
-  amount: number;
-  currency: string;
-  status: 'requires_payment' | 'processing' | 'succeeded' | 'failed';
-  reservationIds: string[];
-  userId: string;
-  transactionId?: string;
-  createdAt: Date;
+  clientSecret:    string;
+  amount:          number;
+  currency:        string;
+  status:          'requires_payment' | 'processing' | 'succeeded' | 'failed';
+  kind:            PaymentKind;
+  userId:          string;
+  transactionId?:  string;
+  createdAt:       Date;
+  // Seat-specific
+  reservationIds?: string[];
+  // Arbitrary per-kind payload (e.g. subscription cycle)
+  metadata?:       Record<string, unknown>;
 }
 
 // In-memory store for dummy payment intents
 const paymentIntents = new Map<string, PaymentIntent>();
 
+/** Internal accessor used by other controllers (e.g. subscription). */
+export const paymentIntentsStore = {
+  get: (id: string) => paymentIntents.get(id),
+  set: (id: string, intent: PaymentIntent) => paymentIntents.set(id, intent),
+};
+
 const generateId = (prefix: string) => `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+/**
+ * Create a new dummy payment intent.
+ *
+ * Body:
+ *   - `kind` (optional, default `seat`): `seat` | `subscription`
+ *   - Seat kind requires `reservationIds: string[]` and verifies ownership.
+ *   - Subscription kind accepts `metadata: Record<string, unknown>` only; the
+ *     caller (subscription controller) is responsible for supplying amount.
+ */
 export const createPaymentIntent = async (req: AuthRequest, res: Response) => {
   try {
-    const { amount, currency, reservationIds } = req.body;
+    const { amount, currency, reservationIds, kind: kindRaw, metadata } = req.body;
+    const kind: PaymentKind = kindRaw === 'subscription' ? 'subscription' : 'seat';
     const userId = req.user!.id;
 
-    if (!amount || !currency || !reservationIds || !Array.isArray(reservationIds)) {
-      return res.status(400).json({ success: false, message: 'amount, currency, and reservationIds are required' });
+    if (!amount || !currency) {
+      return res.status(400).json({ success: false, message: 'amount and currency are required' });
     }
 
-    // Verify that the reservations belong to this user and are in LOCKED status
-    const reservations = await SeatReservation.find({
-      _id: { $in: reservationIds },
-      userId,
-      status: SeatStatus.LOCKED
-    });
-
-    if (reservations.length !== reservationIds.length) {
-      return res.status(400).json({ success: false, message: 'Some reservations are invalid, expired, or not owned by you' });
+    if (kind === 'seat') {
+      if (!reservationIds || !Array.isArray(reservationIds)) {
+        return res.status(400).json({ success: false, message: 'reservationIds are required' });
+      }
+      const reservations = await SeatReservation.find({
+        _id: { $in: reservationIds },
+        userId,
+        status: SeatStatus.LOCKED,
+      });
+      if (reservations.length !== reservationIds.length) {
+        return res.status(400).json({ success: false, message: 'Some reservations are invalid, expired, or not owned by you' });
+      }
     }
 
     const paymentIntentId = generateId('pi');
-    const clientSecret = generateId('secret');
+    const clientSecret    = generateId('secret');
 
     const intent: PaymentIntent = {
       paymentIntentId,
       clientSecret,
       amount,
       currency,
-      status: 'requires_payment',
-      reservationIds,
+      status:    'requires_payment',
+      kind,
       userId,
-      createdAt: new Date()
+      createdAt: new Date(),
+      ...(kind === 'seat' ? { reservationIds: reservationIds as string[] } : {}),
+      ...(metadata && typeof metadata === 'object' ? { metadata: metadata as Record<string, unknown> } : {}),
     };
 
     paymentIntents.set(paymentIntentId, intent);
@@ -67,7 +97,7 @@ export const createPaymentIntent = async (req: AuthRequest, res: Response) => {
       paymentIntentId,
       amount,
       currency,
-      status: 'requires_payment'
+      status: 'requires_payment',
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
@@ -83,7 +113,6 @@ export const confirmPayment = async (req: AuthRequest, res: Response) => {
     }
 
     const intent = paymentIntents.get(paymentIntentId);
-
     if (!intent) {
       return res.status(404).json({ success: false, message: 'Payment intent not found' });
     }
@@ -96,45 +125,77 @@ export const confirmPayment = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, message: 'Payment already confirmed' });
     }
 
-    // Update status to processing
     intent.status = 'processing';
-
-    // Simulate 1.5s payment processing delay
     await delay(1500);
-
-    // Generate a transaction ID
     const transactionId = generateId('txn');
 
-    // Update seat reservations to BOOKED
-    const reservations = await SeatReservation.updateMany(
-      {
-        _id: { $in: intent.reservationIds },
-        userId: req.user!.id,
-        status: SeatStatus.LOCKED
-      },
-      {
-        status: SeatStatus.BOOKED,
-        transactionId,
-        $unset: { expiresAt: 1 }
+    if (intent.kind === 'seat') {
+      const reservationIds = intent.reservationIds ?? [];
+      const reservations = await SeatReservation.updateMany(
+        {
+          _id:    { $in: reservationIds },
+          userId: req.user!.id,
+          status: SeatStatus.LOCKED,
+        },
+        {
+          status: SeatStatus.BOOKED,
+          transactionId,
+          $unset: { expiresAt: 1 },
+        },
+      );
+
+      if (reservations.modifiedCount === 0) {
+        intent.status = 'failed';
+        return res.status(400).json({ success: false, message: 'No valid locked seats found. They may have expired.' });
       }
-    );
 
-    if (reservations.modifiedCount === 0) {
-      intent.status = 'failed';
-      return res.status(400).json({ success: false, message: 'No valid locked seats found. They may have expired.' });
+      intent.status = 'succeeded';
+      intent.transactionId = transactionId;
+      getIO().emit('seats_booked', { reservationIds, transactionId });
+    } else {
+      // Subscription path — metadata.plan + cycle/custom fields drive activation.
+      const meta = intent.metadata ?? {};
+      const planKey = (meta['plan'] as PaidPlanKey | 'enterprise' | undefined) ?? 'pro';
+
+      if (planKey === 'enterprise') {
+        const customMonthlyLimit   = meta['customMonthlyLimit']   as number | undefined;
+        const customDurationMonths = meta['customDurationMonths'] as number | undefined;
+        try {
+          await activatePaidPlan(intent.userId, {
+            plan: 'enterprise',
+            paymentId: paymentIntentId,
+            ...(customMonthlyLimit   !== undefined ? { customMonthlyLimit }   : {}),
+            ...(customDurationMonths !== undefined ? { customDurationMonths } : {}),
+          });
+        } catch (err: unknown) {
+          intent.status = 'failed';
+          return res.status(400).json({ success: false, message: getErrorMessage(err) });
+        }
+      } else if (planKey === 'pro' || planKey === 'proMax') {
+        const cycle = (meta['cycle'] as BillingCycle | undefined) ?? 'monthly';
+        if (cycle !== 'monthly' && cycle !== 'quarterly') {
+          intent.status = 'failed';
+          return res.status(400).json({ success: false, message: 'Invalid subscription cycle' });
+        }
+        await activatePaidPlan(intent.userId, {
+          plan: planKey,
+          cycle,
+          paymentId: paymentIntentId,
+        });
+      } else {
+        intent.status = 'failed';
+        return res.status(400).json({ success: false, message: 'Invalid subscription plan' });
+      }
+
+      intent.status = 'succeeded';
+      intent.transactionId = transactionId;
     }
-
-    // Update the payment intent
-    intent.status = 'succeeded';
-    intent.transactionId = transactionId;
-
-    // Emit socket event to notify other users
-    getIO().emit('seats_booked', { reservationIds: intent.reservationIds, transactionId });
 
     res.status(200).json({
       success: true,
-      status: 'succeeded',
-      transactionId
+      status:  'succeeded',
+      transactionId,
+      kind:    intent.kind,
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
@@ -144,7 +205,6 @@ export const confirmPayment = async (req: AuthRequest, res: Response) => {
 export const getPaymentStatus = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-
     const intent = paymentIntents.get(id);
 
     if (!intent) {
@@ -158,11 +218,12 @@ export const getPaymentStatus = async (req: AuthRequest, res: Response) => {
     res.status(200).json({
       success: true,
       paymentIntentId: intent.paymentIntentId,
-      amount: intent.amount,
-      currency: intent.currency,
-      status: intent.status,
-      transactionId: intent.transactionId || null,
-      createdAt: intent.createdAt
+      amount:          intent.amount,
+      currency:        intent.currency,
+      status:          intent.status,
+      kind:            intent.kind,
+      transactionId:   intent.transactionId || null,
+      createdAt:       intent.createdAt,
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });

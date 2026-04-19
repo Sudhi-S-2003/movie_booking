@@ -20,3 +20,9 @@ export type { PlatformStats, AdminStats, GenreBucket, DailyBookingBucket, TopMov
 export { chatApi } from './chat.api.js';
 export { apiKeysApi } from './apiKeys.api.js';
 export type { ApiKeyRecord, ApiKeyCategory } from './apiKeys.api.js';
+export { subscriptionApi } from './subscription.api.js';
+export type {
+  SubscriptionPlan, BillingCycle, SubscriptionInfo, TokenRemaining,
+  SubscriptionSummaryResponse, PlanCatalogItem, PlanCatalogResponse,
+  SubscriptionCheckoutResponse, TokenResponse,
+} from './subscription.api.js';

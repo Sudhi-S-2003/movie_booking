@@ -29,12 +29,12 @@ export const Auth = () => {
 
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const payload = isLogin 
-        ? { email: formData.email, password: formData.password } 
+      const payload = isLogin
+        ? { email: formData.email, password: formData.password }
         : formData;
-        
+
       const { data } = await axios.post(`${API_URL}${endpoint}`, payload);
-      
+
       setAuth(data.user, data.token);
       navigate(from, { replace: true });
     } catch (err: any) {
@@ -138,8 +138,8 @@ export const Auth = () => {
 
             {error && <p className="text-red-500 text-xs font-black uppercase text-center">{error}</p>}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-2xl ${
                 loading ? 'bg-gray-800 text-gray-500 scale-95' : 'bg-accent-pink text-white hover:scale-105 active:scale-95 shadow-accent-pink/40'

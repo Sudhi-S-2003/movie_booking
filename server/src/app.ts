@@ -20,6 +20,7 @@ import statsRoutes from './routes/stats.routes.js';
 import chatRoutes from './routes/chat.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
 import apiKeyPublicRoutes from './routes/apiKey.public.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
 
 const app = express();
 
@@ -56,5 +57,6 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/public/chat', apiKeyPublicRoutes);
 app.use('/api/keys', apiKeyRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 export default app;

@@ -34,6 +34,8 @@ import {
 } from '../socket/index.js';
 import { emitNewMessage, emitMessageDeleted, emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
 import { emitChatUnreadChanged, emitConversationUpdated } from '../socket/channels/chat-list.channel.js';
+import { guardTokens } from '../services/subscription/tokenGuard.js';
+import { getSummary as getSubscriptionSummary } from '../services/subscription/subscription.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -245,6 +247,15 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
     const conversation = await Conversation.findOne({ _id: conversationId, isActive: true });
     if (!conversation) return res.status(404).json({ success: false, message: 'Inactive conversation' });
 
+    // Guest sends are metered against the API-key owner (conversation.createdBy).
+    // If the owner can't be resolved, we treat the message as rejected rather
+    // than silently allowing unlimited free traffic.
+    if (!conversation.createdBy) {
+      return res.status(400).json({ success: false, message: 'Conversation has no owner to bill' });
+    }
+    const tokens = await guardTokens(String(conversation.createdBy), text.trim(), res);
+    if (!tokens) return;
+
     const message = await ChatMessage.create({
       conversationId,
       senderId: null, // Always null for external guests
@@ -307,14 +318,19 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
       });
     });
 
-    // Advance the guest's read cursor to their own message
+    // Advance the guest's read cursor + MessageRead entry to their own send.
     markSentMessageRead({
       externalUserName: identity.name,
       conversationId,
+      messageId:        message._id,
       messageCreatedAt: message.createdAt,
     }).catch(() => { });
 
-    res.status(201).json({ success: true, message: decorated });
+    res.status(201).json({
+      success: true,
+      message: decorated,
+      tokens: { remaining: tokens.remaining, plan: tokens.plan, cost: tokens.cost },
+    });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
   }
@@ -405,6 +421,51 @@ export const deleteGuestMessage = async (req: Request, res: Response) => {
     emitMessageDeleted(chatMsgNs, conversationId, messageId);
 
     res.json({ success: true, message });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/**
+ * GET /api/public/chat/conversation/:id/subscription
+ *
+ * Signature-authenticated: returns the remaining-token summary for the
+ * **API-key owner** of this conversation (the party whose pool is charged
+ * for every guest send). The guest UI uses this for its header pill in place
+ * of `/api/subscription`, which requires a JWT the guest doesn't hold.
+ *
+ * Response shape mirrors `GET /api/subscription` so the shared
+ * `useSubscription` provider can consume either endpoint interchangeably.
+ */
+export const getGuestSubscription = async (req: Request, res: Response) => {
+  try {
+    const identity = req.externalUser;
+    if (!identity) return res.status(401).json({ success: false, message: 'Not authenticated' });
+
+    const conversationId = req.params.id as string;
+    const conversation = await Conversation
+      .findById(conversationId, { createdBy: 1 })
+      .lean();
+
+    if (!conversation || !conversation.createdBy) {
+      return res.status(404).json({ success: false, message: 'Conversation or owner not found' });
+    }
+
+    const summary = await getSubscriptionSummary(conversation.createdBy);
+    res.json({
+      success: true,
+      subscription: {
+        plan:         summary.sub.plan,
+        billingCycle: summary.sub.billingCycle ?? null,
+        status:       summary.sub.status,
+        startsAt:     summary.sub.startsAt,
+        expiresAt:    summary.sub.expiresAt ?? null,
+        customMonthlyLimit:   summary.sub.customMonthlyLimit   ?? null,
+        customDurationMonths: summary.sub.customDurationMonths ?? null,
+        purchasesCount:       summary.sub.purchasesCount ?? 0,
+      },
+      remaining: summary.remaining,
+    });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
   }

@@ -6,7 +6,7 @@ import { useBookingStore } from '../store/bookingStore.js';
 import { useBookingSession } from '../providers/BookingSessionProvider.js';
 import { bookingsApi } from '../services/api/index.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { usePaymentFlow } from '../hooks/usePaymentFlow.js';
+import { useSeatPaymentFlow } from '../hooks/usePaymentFlow.js';
 import { usePaymentMethodForm } from '../hooks/usePaymentMethodForm.js';
 import { computeCheckoutTotals } from '../utils/checkoutTotals.js';
 
@@ -21,7 +21,10 @@ export const Checkout = () => {
   const { subtotal: totalPrice, convenienceFee, gst, total: finalTotal } =
     computeCheckoutTotals(selectedSeats.map((s) => s.price));
 
-  const { paymentStep, errorMessage, startPayment, reset } = usePaymentFlow({
+  const { paymentStep, errorMessage, startPayment, reset } = useSeatPaymentFlow({
+    amount: finalTotal,
+    currency: 'INR',
+    reservationIds: activeReservationIds,
     onSuccess: (transactionId) => {
       setTimeout(() => {
         clearSelection();
@@ -56,12 +59,7 @@ export const Checkout = () => {
 
   const handlePayment = () => {
     if (!canPay) return;
-    void startPayment({
-      amount: finalTotal,
-      currency: 'INR',
-      reservationIds: activeReservationIds,
-      method: form.buildPaymentMethod(),
-    });
+    void startPayment(form.buildPaymentMethod());
   };
 
   const selectedMethod = form.method;

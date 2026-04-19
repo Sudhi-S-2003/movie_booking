@@ -44,7 +44,15 @@
       "Bash(echo \"SERVER-EXIT:$?\")",
       "Bash(echo \"CLIENT-EXIT:$?\")",
       "Bash(find /c/Users/sudhi/OneDrive/Desktop/test/move-booking/server/src -name \"*.ts\" -size +600c -exec wc -l {} +)",
-      "Bash(echo \"exit:$?\")"
+      "Bash(echo \"exit:$?\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npm test *)",
+      "Read(//c/c/Users/sudhi/OneDrive/Desktop/test/move-booking/server/src/**)",
+      "Bash(rm -f server/src/utils/formChallenge.util.ts server/src/middleware/formGuard.middleware.ts server/src/middleware/ipRateLimit.middleware.ts server/src/controllers/formGuard.controller.ts server/src/routes/formGuard.routes.ts server/src/services/auth/authThrottle.service.ts server/src/utils/sleep.ts server/src/utils/bcrypt.util.ts server/test/formChallenge.test.ts server/test/formGuardMiddleware.test.ts server/test/authThrottle.test.ts client/src/services/api/formGuard.api.ts client/src/hooks/useFormGuard.ts client/src/components/forms/FormGuardFields.tsx client/src/workers/pow.worker.ts)",
+      "Bash(rmdir server/src/services/auth)",
+      "Bash(rmdir server/test)",
+      "Bash(rmdir client/src/components/forms)",
+      "Bash(rmdir client/src/workers)"
     ]
   }
 }

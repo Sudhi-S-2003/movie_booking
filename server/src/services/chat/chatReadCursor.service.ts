@@ -14,6 +14,7 @@
 import mongoose, { type HydratedDocument } from 'mongoose';
 import { ChatReadCursor } from '../../models/chat.model.js';
 import type { ChatReadCursorDoc } from '../../models/chat.model.js';
+import { recordReads } from './messageRead.service.js';
 
 export interface ReadReceiptIdentity {
   userId?:           string;
@@ -76,36 +77,63 @@ export const markConversationRead = async (
 };
 
 /**
- * Advance the sender's own read cursor to the moment they just sent a message.
- * Cheap idempotent upsert — the sender has obviously read everything up to
- * and including their own send.
+ * Advance the sender's own read cursor to the message they just sent and
+ * record a MessageRead entry for it.
+ *
+ * Two state updates, both idempotent:
+ *   1. `ChatReadCursor.lastReadAt` + `lastReadMessageId` bump (monotonic).
+ *   2. `MessageRead` upsert for (messageId, viewer) — so per-message read
+ *      aggregations treat the sender as having already read their own send.
+ *
+ * Everything is fire-and-forget safe: on duplicate-key race we no-op.
  */
 export const markSentMessageRead = async (args: {
   userId?:          string;
   externalUserName?: string;
   conversationId:   string;
+  messageId:        mongoose.Types.ObjectId | string;
   messageCreatedAt: Date;
 }): Promise<void> => {
   const convObjId = new mongoose.Types.ObjectId(args.conversationId);
+  const msgObjId  = typeof args.messageId === 'string'
+    ? new mongoose.Types.ObjectId(args.messageId)
+    : args.messageId;
+
   const filter = buildIdentityFilter(convObjId, {
     ...(args.userId           && { userId: args.userId }),
     ...(args.externalUserName && { externalUserName: args.externalUserName }),
   });
   if (!filter) return;
 
+  // 1. Advance the coarse cursor with BOTH timestamp and messageId so the
+  //    unread-divider anchor on next initial load points at the right spot.
   try {
     await ChatReadCursor.updateOne(
       { ...filter, $or: [{ lastReadAt: { $lt: args.messageCreatedAt } }, { lastReadAt: { $exists: false } }] },
       {
-        $set:         { lastReadAt: args.messageCreatedAt },
+        $set: {
+          lastReadAt:        args.messageCreatedAt,
+          lastReadMessageId: msgObjId,
+        },
         $setOnInsert: { ...filter },
       },
       { upsert: true },
     );
   } catch (err: unknown) {
-    if (err && typeof err === 'object' && (err as { code?: number }).code === 11000) return;
-    throw err;
+    if (!(err && typeof err === 'object' && (err as { code?: number }).code === 11000)) {
+      throw err;
+    }
   }
+
+  // 2. Record the per-message read event for the sender. Keeps the
+  //    MessageRead collection consistent so delivery-status aggregation
+  //    treats self-sent messages as already-read-by-self.
+  await recordReads({
+    conversationId: args.conversationId,
+    messageIds:     [msgObjId.toString()],
+    ...(args.userId           && { userId: args.userId }),
+    ...(args.externalUserName && { externalUserName: args.externalUserName }),
+  }).catch(() => { /* already recorded — fine */ });
 };
 
 /**

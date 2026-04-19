@@ -46,6 +46,7 @@ export const Navbar = () => {
             <div className="hidden lg:flex items-center gap-6 border-l border-white/10 pl-8 ml-2">
                 <Link to="/movies" className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-accent-pink transition-colors">Movies</Link>
                 <Link to="/cinemas" className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-accent-blue transition-colors">Cinemas</Link>
+                <Link to="/subscription" className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-accent-pink transition-colors">Pricing</Link>
             </div>
           </div>
 

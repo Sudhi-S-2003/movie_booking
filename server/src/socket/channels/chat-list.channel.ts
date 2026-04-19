@@ -66,6 +66,19 @@ export interface WireConversation {
   [key: string]:      unknown;
 }
 
+/** Subscription or bucket state changed — chat header badge refresh hint. */
+export const emitSubscriptionUpdated = (
+  namespace: Namespace,
+  userId: string,
+  payload: {
+    plan:      'free' | 'pro' | 'proMax' | 'enterprise';
+    remaining: { daily?: number; weekly?: number; monthly?: number };
+    expiresAt?: string | null;
+  },
+) => {
+  namespace.to(`user:${userId}`).emit('subscription_updated', payload);
+};
+
 /** A new conversation was created that includes this user. */
 export const emitNewConversation = (
   namespace: Namespace,
