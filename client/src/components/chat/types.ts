@@ -10,7 +10,8 @@ export type ChatContentType =
   | 'file'
   | 'system'
   | 'date'
-  | 'event';
+  | 'event'
+  | 'longtext';
 
 export interface ChatContactPayload {
   name?:       string;
@@ -93,6 +94,12 @@ export interface ChatMessage {
   location?:      ChatLocationPayload;
   date?:          ChatDatePayload;
   event?:         ChatEventPayload;
+  /** longtext: id of the first chunk (the chunk AFTER the preview). */
+  startChunkId?:  string;
+  /** longtext: id of the last chunk — UI stops fetching once this lands. */
+  endChunkId?:    string;
+  /** longtext: total chars (preview + all chunks). Drives "+X more" label. */
+  fullLength?:    number;
   replyTo?: {
     messageId:  string;
     senderName: string;

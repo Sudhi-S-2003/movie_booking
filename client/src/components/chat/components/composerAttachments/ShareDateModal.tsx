@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Calendar } from 'lucide-react';
 import type { ChatDatePayload } from '../../types.js';
+import { CharCounter, getCharState } from './CharCounter.js';
+
+const LABEL_MAX = 120;
 
 interface ShareDateModalProps {
   open:     boolean;
@@ -74,13 +77,18 @@ export const ShareDateModal: React.FC<ShareDateModalProps> = ({ open, onClose, o
         />
 
         <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-1">Label (optional)</label>
-        <input
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          maxLength={120}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/90 mb-3 focus:outline-none focus:border-accent-blue/50"
-          placeholder="Move-out day"
-        />
+        <div className="relative mb-3">
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            maxLength={LABEL_MAX}
+            className={`w-full bg-white/[0.04] border ${
+              getCharState(label, LABEL_MAX) === 'over' ? 'border-red-400/60' : 'border-white/[0.08]'
+            } rounded-lg pl-3 pr-14 py-2 text-sm text-white/90 focus:outline-none focus:border-accent-blue/50`}
+            placeholder="Move-out day"
+          />
+          <CharCounter value={label} max={LABEL_MAX} />
+        </div>
 
         {err && <p className="text-[11px] text-red-400 mb-2">{err}</p>}
 

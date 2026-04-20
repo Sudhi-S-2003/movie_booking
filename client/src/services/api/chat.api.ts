@@ -322,6 +322,36 @@ export const chatApi = {
   acceptInvite: (token: string) =>
     http.post<{ conversationId: string }>(`/chat/invites/${encodeURIComponent(token)}/accept`),
 
+  // ── Longtext (chunked upload for messages > 1000 chars) ─────────────────
+  // `text` = the head of the message (≤ 1000 chars, rendered in the bubble
+  // preview). Stashed in a 1-hour TTL session row on start; `complete`
+  // only needs `uploadId` + `expectedChunkCount`. The authoritative total
+  // length is computed server-side from the persisted chunks — the client
+  // does NOT send it (that would be a token-metering bypass).
+  longtextStart: (body: { text: string }) =>
+    http.post<{ uploadId: string }>('/chat/longtext/start', body),
+
+  longtextChunk: (body: { uploadId: string; index: number; content: string }) =>
+    http.post<{ ok: true }>('/chat/longtext/chunk', body),
+
+  longtextComplete: (
+    conversationId: string,
+    body: {
+      uploadId:           string;
+      expectedChunkCount: number;
+      replyTo?: { messageId: string; senderName: string; text: string };
+    },
+  ) =>
+    http.post<SendMessageResponse>(
+      `/chat/conversations/${conversationId}/messages/longtext`,
+      body,
+    ),
+
+  getMessageChunk: (messageId: string, chunkId: string) =>
+    http.get<{ content: string; nextChunkId: string | null }>(
+      `/chat/messages/${messageId}/chunks/next/${chunkId}`,
+    ),
+
   // ── Guest API (Signature Verified) ──────────────────────────────────────
   getGuestConversation: (id: string, params: { signature: string; expiresAt: string }) =>
     http.get<SingleConversationResponse>(`/public/chat/conversation/${id}`, { params: params as any }),
@@ -345,4 +375,55 @@ export const chatApi = {
 
   deleteGuestMessage: (id: string, messageId: string, params: { signature: string; expiresAt: string }) =>
     http.delete<{ message: ChatMessage }>(`/public/chat/conversation/${id}/messages/${messageId}`, { params: params as any }),
+
+  // ── Guest longtext (chunked upload on a signed URL) ─────────────────────
+  // Same contract as the authed variants, but every call carries the signed-
+  // URL query params so `isChatSignatureValid` accepts the request.
+  longtextStartGuest: (
+    conversationId: string,
+    body: { text: string },
+    params: { signature: string; expiresAt: string },
+  ) =>
+    http.post<{ uploadId: string }>(
+      `/public/chat/conversation/${conversationId}/longtext/start`,
+      body,
+      { params: params as any },
+    ),
+
+  longtextChunkGuest: (
+    conversationId: string,
+    body: { uploadId: string; index: number; content: string },
+    params: { signature: string; expiresAt: string },
+  ) =>
+    http.post<{ ok: true }>(
+      `/public/chat/conversation/${conversationId}/longtext/chunk`,
+      body,
+      { params: params as any },
+    ),
+
+  longtextCompleteGuest: (
+    conversationId: string,
+    body: {
+      uploadId:           string;
+      expectedChunkCount: number;
+      replyTo?: { messageId: string; senderName: string; text: string };
+    },
+    params: { signature: string; expiresAt: string },
+  ) =>
+    http.post<SendMessageResponse>(
+      `/public/chat/conversation/${conversationId}/longtext/complete`,
+      body,
+      { params: params as any },
+    ),
+
+  getGuestMessageChunk: (
+    conversationId: string,
+    messageId: string,
+    chunkId: string,
+    params: { signature: string; expiresAt: string },
+  ) =>
+    http.get<{ content: string; nextChunkId: string | null }>(
+      `/public/chat/conversation/${conversationId}/messages/${messageId}/chunks/next/${chunkId}`,
+      { params: params as any },
+    ),
 };

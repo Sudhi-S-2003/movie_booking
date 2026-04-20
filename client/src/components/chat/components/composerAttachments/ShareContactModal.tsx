@@ -2,6 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, User } from 'lucide-react';
 import type { ChatContactPayload } from '../../types.js';
+import { CharCounter, getCharState } from './CharCounter.js';
+
+const NAME_MAX  = 120;
+const CODE_MAX  = 5;
+const CODE_MIN  = 2;
+const PHONE_MAX = 20;
+const PHONE_MIN = 3;
+
+const overCls = (over: boolean): string =>
+  over ? 'border-red-400/60' : 'border-white/[0.08]';
 
 interface ShareContactModalProps {
   open:     boolean;
@@ -75,28 +85,40 @@ export const ShareContactModal: React.FC<ShareContactModalProps> = ({ open, onCl
         </div>
 
         <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-1">Name (optional)</label>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/90 mb-3 focus:outline-none focus:border-accent-blue/50"
-          placeholder="Alex"
-          autoFocus
-        />
+        <div className="relative mb-3">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={NAME_MAX}
+            className={`w-full bg-white/[0.04] border ${overCls(getCharState(name, NAME_MAX) === 'over')} rounded-lg pl-3 pr-14 py-2 text-sm text-white/90 focus:outline-none focus:border-accent-blue/50`}
+            placeholder="Alex"
+            autoFocus
+          />
+          <CharCounter value={name} max={NAME_MAX} />
+        </div>
 
         <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-1">Phone</label>
         <div className="flex gap-2 mb-3">
-          <input
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="w-20 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/90 tabular-nums focus:outline-none focus:border-accent-blue/50"
-          />
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/90 tabular-nums focus:outline-none focus:border-accent-blue/50"
-            placeholder="9876543210"
-            inputMode="tel"
-          />
+          <div className="relative w-24">
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              maxLength={CODE_MAX}
+              className={`w-full bg-white/[0.04] border ${overCls(getCharState(code, CODE_MAX, CODE_MIN) === 'over')} rounded-lg pl-3 pr-10 py-2 text-sm text-white/90 tabular-nums focus:outline-none focus:border-accent-blue/50`}
+            />
+            <CharCounter value={code} max={CODE_MAX} min={CODE_MIN} />
+          </div>
+          <div className="relative flex-1">
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              maxLength={PHONE_MAX}
+              className={`w-full bg-white/[0.04] border ${overCls(getCharState(phone, PHONE_MAX, PHONE_MIN) === 'over')} rounded-lg pl-3 pr-14 py-2 text-sm text-white/90 tabular-nums focus:outline-none focus:border-accent-blue/50`}
+              placeholder="9876543210"
+              inputMode="tel"
+            />
+            <CharCounter value={phone} max={PHONE_MAX} min={PHONE_MIN} />
+          </div>
         </div>
 
         {err && <p className="text-[11px] text-red-400 mb-2">{err}</p>}

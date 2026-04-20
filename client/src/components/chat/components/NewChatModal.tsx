@@ -5,6 +5,13 @@ import { chatApi } from '../../../services/api/chat.api.js';
 import { ChatAvatar } from '../ui/ChatAvatar.js';
 import { useChat } from '../context/ChatContext.js';
 import type { SearchedUser } from '../types.js';
+import { CharCounter, getCharState } from './composerAttachments/CharCounter.js';
+
+// UI caps. publicName is the server slug (3–32 via publicName.util.ts);
+// group title has no server cap — 60 is UI-side only.
+const TITLE_MAX = 60, TITLE_MIN = 1, PUBLIC_NAME_MAX = 32, PUBLIC_NAME_MIN = 3;
+const borderFor = (v: string, max: number, min = 0): string =>
+  getCharState(v, max, min) === 'over' ? 'border-red-400/60' : 'border-white/[0.06]';
 
 interface NewChatModalProps {
   show:    boolean;
@@ -26,18 +33,13 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Focus search on open
+  // Focus search on open + reset modal state
   useEffect(() => {
-    if (show) {
-      setTimeout(() => searchRef.current?.focus(), 100);
-      setQuery('');
-      setResults([]);
-      setSelected([]);
-      setGroupTitle('');
-      setGroupPublic('');
-      setCreateError(null);
-      setMode('search');
-    }
+    if (!show) return;
+    setTimeout(() => searchRef.current?.focus(), 100);
+    setQuery(''); setResults([]); setSelected([]);
+    setGroupTitle(''); setGroupPublic(''); setCreateError(null);
+    setMode('search');
   }, [show]);
 
   const handleSearch = useCallback((q: string) => {
@@ -84,17 +86,10 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
   const handleCreateGroup = useCallback(async () => {
     if (selected.length < 1 || creating) return;
 
-    // publicName is mandatory server-side. Pre-flight the UX check so users
-    // get a clearer message than a generic 400.
+    // publicName is mandatory server-side. Pre-flight so users get a clearer message than a generic 400.
     const trimmedSlug = groupPublicName.trim();
-    if (!trimmedSlug) {
-      setCreateError('Public name is required — pick something like "movie-buffs".');
-      return;
-    }
-    if (trimmedSlug.length < 3) {
-      setCreateError('Public name must be at least 3 characters.');
-      return;
-    }
+    if (!trimmedSlug) { setCreateError('Public name is required — pick something like "movie-buffs".'); return; }
+    if (trimmedSlug.length < 3) { setCreateError('Public name must be at least 3 characters.'); return; }
 
     setCreating(true);
     setCreateError(null);
@@ -165,32 +160,33 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
             {/* Group title + optional public name */}
             {mode === 'group' && (
               <div className="px-4 pt-3 space-y-2">
-                <input
-                  value={groupTitle}
-                  onChange={(e) => setGroupTitle(e.target.value)}
-                  placeholder="Group name..."
-                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.06] rounded-xl text-[11px] text-white placeholder:text-white/20 outline-none focus:border-white/[0.12] transition-colors"
-                />
-                <div className="flex items-center bg-white/[0.04] border border-white/[0.06] rounded-xl focus-within:border-white/[0.12] transition-colors">
+                <div className="relative">
+                  <input
+                    value={groupTitle}
+                    onChange={(e) => setGroupTitle(e.target.value)}
+                    maxLength={TITLE_MAX}
+                    placeholder="Group name..."
+                    className={`w-full pl-3 pr-14 py-2 bg-white/[0.04] border ${borderFor(groupTitle, TITLE_MAX, TITLE_MIN)} rounded-xl text-[11px] text-white placeholder:text-white/20 outline-none focus:border-white/[0.12] transition-colors`}
+                  />
+                  <CharCounter value={groupTitle} max={TITLE_MAX} min={TITLE_MIN} />
+                </div>
+                <div className={`relative flex items-center bg-white/[0.04] border ${borderFor(groupPublicName, PUBLIC_NAME_MAX, PUBLIC_NAME_MIN)} rounded-xl focus-within:border-white/[0.12] transition-colors`}>
                   <span className="pl-3 pr-1 text-[10px] font-mono text-white/30 select-none">
                     /chat/g/
                   </span>
                   <input
                     value={groupPublicName}
-                    onChange={(e) => setGroupPublic(
-                      // Live-normalize to the server's slug rules so users see what they'll get.
-                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
-                    )}
+                    // Live-normalize to the server's slug rules so users see what they'll get.
+                    onChange={(e) => setGroupPublic(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                    maxLength={PUBLIC_NAME_MAX}
                     placeholder="public-name (required)"
                     required
-                    className="flex-1 pr-3 py-2 bg-transparent text-[11px] text-white placeholder:text-white/20 outline-none"
+                    className="flex-1 pr-14 py-2 bg-transparent text-[11px] text-white placeholder:text-white/20 outline-none"
                   />
+                  <CharCounter value={groupPublicName} max={PUBLIC_NAME_MAX} min={PUBLIC_NAME_MIN} />
                 </div>
                 <p className="text-[9px] text-white/25 leading-relaxed px-1">
-                  Required. Becomes the group's permanent slug at{' '}
-                  <code className="text-white/40">/chat/g/your-slug</code> —
-                  used by the public resolver and join-request flow. Must be
-                  unique across all groups.
+                  Required. Permanent slug at <code className="text-white/40">/chat/g/your-slug</code> — must be unique across all groups.
                 </p>
                 {createError && (
                   <p className="text-[10px] font-bold text-rose-300">{createError}</p>

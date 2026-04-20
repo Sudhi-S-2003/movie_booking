@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { TokenBucket, type BucketWindow, type TokenBucketDoc } from '../../models/tokenBucket.model.js';
 import { FREE_PLAN, PRO_PLAN, PRO_MAX_PLAN, ENTERPRISE_PLAN } from './subscriptionPlans.js';
 import { Subscription, type SubscriptionPlan } from '../../models/subscription.model.js';
+import { withSession } from '../../utils/transaction.util.js';
 
 type UserIdLike = mongoose.Types.ObjectId | string;
 
@@ -83,32 +84,41 @@ const computeResetAt = (spec: WindowSpec, now: Date): Date =>
 const specsFor = async (
   userId: mongoose.Types.ObjectId,
   plan: SubscriptionPlan,
+  session: mongoose.ClientSession | undefined,
 ): Promise<WindowSpec[]> => {
   if (plan === 'pro')    return proSpecs();
   if (plan === 'proMax') return proMaxSpecs();
   if (plan === 'enterprise') {
     // Look up custom limit from the sub doc.
-    const sub = await Subscription.findOne({ userId }).lean();
+    const sub = await Subscription.findOne({ userId }, null, withSession(session)).lean();
     const limit = sub?.customMonthlyLimit ?? 0;
     return enterpriseSpecs(limit);
   }
   return freeSpecs();
 };
 
-const rollOverIfDue = async (bucket: TokenBucketDoc, spec: WindowSpec): Promise<TokenBucketDoc> => {
+const rollOverIfDue = async (
+  bucket: TokenBucketDoc,
+  spec: WindowSpec,
+  session: mongoose.ClientSession | undefined,
+): Promise<TokenBucketDoc> => {
   const now = new Date();
   if (bucket.resetAt.getTime() <= now.getTime()) {
     bucket.used = 0;
     bucket.resetAt = computeResetAt(spec, now);
     bucket.limit = spec.limit;
-    await bucket.save();
+    await bucket.save(withSession(session));
   } else if (bucket.limit !== spec.limit) {
     // Plan change (e.g. upgrade/downgrade) — resync the stored limit.
     bucket.limit = spec.limit;
-    await bucket.save();
+    await bucket.save(withSession(session));
   }
   return bucket;
 };
+
+export interface SessionOpts {
+  session?: mongoose.ClientSession | null | undefined;
+}
 
 /**
  * Ensure the caller has exactly the bucket set their current plan demands.
@@ -118,30 +128,39 @@ const rollOverIfDue = async (bucket: TokenBucketDoc, spec: WindowSpec): Promise<
 export const ensureBuckets = async (
   userId: UserIdLike,
   plan: SubscriptionPlan,
+  opts: SessionOpts = {},
 ): Promise<TokenBucketDoc[]> => {
+  const session = opts.session ?? undefined;
   const uid = toObjectId(userId);
-  const specs = await specsFor(uid, plan);
+  const specs = await specsFor(uid, plan, session);
   const wantedWindows = new Set(specs.map((s) => s.window));
 
   // Delete buckets that no longer match the plan's window set.
-  await TokenBucket.deleteMany({
-    userId: uid,
-    window: { $nin: Array.from(wantedWindows) },
-  });
+  await TokenBucket.deleteMany(
+    { userId: uid, window: { $nin: Array.from(wantedWindows) } },
+    withSession(session),
+  );
 
   const now = new Date();
   const buckets: TokenBucketDoc[] = [];
   for (const spec of specs) {
-    const existing = await TokenBucket.findOne({ userId: uid, window: spec.window });
+    const existing = await TokenBucket.findOne(
+      { userId: uid, window: spec.window },
+      null,
+      withSession(session),
+    );
     const bucket = existing
-      ? await rollOverIfDue(existing as unknown as TokenBucketDoc, spec)
-      : (await TokenBucket.create({
-          userId:  uid,
-          window:  spec.window,
-          limit:   spec.limit,
-          used:    0,
-          resetAt: computeResetAt(spec, now),
-        })) as unknown as TokenBucketDoc;
+      ? await rollOverIfDue(existing as unknown as TokenBucketDoc, spec, session)
+      : ((await TokenBucket.create(
+          [{
+            userId:  uid,
+            window:  spec.window,
+            limit:   spec.limit,
+            used:    0,
+            resetAt: computeResetAt(spec, now),
+          }],
+          withSession(session),
+        ))[0] as unknown as TokenBucketDoc);
     buckets.push(bucket);
   }
   return buckets;
@@ -166,8 +185,9 @@ export interface RemainingSummary {
 export const getRemaining = async (
   userId: UserIdLike,
   plan: SubscriptionPlan,
+  opts: SessionOpts = {},
 ): Promise<RemainingSummary> => {
-  const buckets = await ensureBuckets(userId, plan);
+  const buckets = await ensureBuckets(userId, plan, opts);
   const summary: RemainingSummary = { plan };
   const resetAt: RemainingSummary['resetAt'] = {};
   for (const b of buckets) {
@@ -195,14 +215,16 @@ export const debit = async (
   userId: UserIdLike,
   cost: number,
   plan: SubscriptionPlan,
+  opts: SessionOpts = {},
 ): Promise<DebitResult> => {
+  const session = opts.session ?? undefined;
   const uid = toObjectId(userId);
   if (!Number.isFinite(cost) || cost <= 0) {
-    const remaining = await getRemaining(uid, plan);
+    const remaining = await getRemaining(uid, plan, { session });
     return { ok: true, remaining };
   }
 
-  const buckets = await ensureBuckets(uid, plan);
+  const buckets = await ensureBuckets(uid, plan, { session });
   const debited: { _id: mongoose.Types.ObjectId; window: BucketWindow; cost: number }[] = [];
 
   for (const bucket of buckets) {
@@ -212,14 +234,20 @@ export const debit = async (
         used: { $lte: bucket.limit - cost },
       },
       { $inc: { used: cost } },
-      { returnDocument: 'after' },
+      { returnDocument: 'after', ...withSession(session) },
     );
     if (!updated) {
       // Roll back previously-debited buckets (best-effort refund).
+      // When inside a transaction this path is rarely hit — the session abort
+      // handles rollback — but we still run it for non-transactional mode.
       for (const d of debited) {
-        await TokenBucket.updateOne({ _id: d._id }, { $inc: { used: -d.cost } });
+        await TokenBucket.updateOne(
+          { _id: d._id },
+          { $inc: { used: -d.cost } },
+          withSession(session),
+        );
       }
-      const remaining = await getRemaining(uid, plan);
+      const remaining = await getRemaining(uid, plan, { session });
       return { ok: false, remaining, blockedBy: bucket.window };
     }
     debited.push({
@@ -229,6 +257,6 @@ export const debit = async (
     });
   }
 
-  const remaining = await getRemaining(uid, plan);
+  const remaining = await getRemaining(uid, plan, { session });
   return { ok: true, remaining };
 };

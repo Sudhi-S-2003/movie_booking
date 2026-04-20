@@ -110,6 +110,9 @@ interface ChatContextValue {
   showNewChat:    boolean;
   setShowNewChat: (v: boolean) => void;
 
+  // Longtext upload progress (null when not uploading)
+  sendProgress:  { current: number; total: number } | null;
+
   // User
   currentUserId?: string;
 
@@ -335,6 +338,10 @@ export const ChatProvider: React.FC<{
   // Temp ID counter for optimistic messages
   const tempIdRef = useRef(0);
 
+  // Longtext upload progress — non-null only while a chunked upload is active.
+  const [sendProgress, setSendProgress] = useState<{ current: number; total: number } | null>(null);
+
+
   const selectConversation = useCallback((conv: Conversation | null) => {
     setSelectedConversation(conv);
     setReplyingTo(null);
@@ -440,6 +447,97 @@ export const ChatProvider: React.FC<{
     }
   }, [confirmOptimistic, guestSession, mergeSubscription]);
 
+  /**
+   * Upload a text payload > 1000 chars via the chunked longtext pipeline.
+   * Caller has already appended an optimistic bubble with the preview slice;
+   * we either confirm it with the persisted message or mark it failed.
+   * Uploads chunks serially (simple failure semantics; N is small).
+   */
+  const dispatchLongtextSend = useCallback(async (
+    optimistic: ChatMessage,
+    fullText:   string,
+    replyTo?:   ChatMessage,
+  ) => {
+    const LONGTEXT_PREVIEW = 1000;
+    const LONGTEXT_CHUNK   = 10_000;
+
+    const preview = fullText.slice(0, LONGTEXT_PREVIEW);
+    const tail    = fullText.slice(LONGTEXT_PREVIEW);
+    const chunks: string[] = [];
+    for (let i = 0; i < tail.length; i += LONGTEXT_CHUNK) {
+      chunks.push(tail.slice(i, i + LONGTEXT_CHUNK));
+    }
+
+    try {
+      // Open a session with the head + total length baked in. Both are
+      // stashed server-side for 1 hour; subsequent chunk + complete calls
+      // only reference `uploadId`. Branches on guestSession to route through
+      // the signature-authed surface when the user is on a signed URL.
+      // The server computes the authoritative total length from the actual
+      // persisted chunks at `complete` time — we only need to ship the
+      // preview head here. Sending a `fullLength` would let a tampered
+      // client under-declare and short-change token metering.
+      const { uploadId } = guestSession
+        ? await chatApi.longtextStartGuest(
+            optimistic.conversationId,
+            { text: preview },
+            guestSession,
+          )
+        : await chatApi.longtextStart({ text: preview });
+
+      for (let i = 0; i < chunks.length; i += 1) {
+        setSendProgress({ current: i + 1, total: chunks.length });
+        // eslint-disable-next-line no-await-in-loop
+        if (guestSession) {
+          await chatApi.longtextChunkGuest(
+            optimistic.conversationId,
+            { uploadId, index: i, content: chunks[i]! },
+            guestSession,
+          );
+        } else {
+          await chatApi.longtextChunk({ uploadId, index: i, content: chunks[i]! });
+        }
+      }
+
+      const body: {
+        uploadId:           string;
+        expectedChunkCount: number;
+        replyTo?: { messageId: string; senderName: string; text: string };
+      } = {
+        uploadId,
+        expectedChunkCount: chunks.length,
+      };
+      if (replyTo) {
+        body.replyTo = {
+          messageId:  replyTo._id,
+          senderName: replyTo.senderName,
+          text:       replyTo.text.slice(0, 200),
+        };
+      }
+
+      const { message, tokens } = guestSession
+        ? await chatApi.longtextCompleteGuest(
+            optimistic.conversationId,
+            body,
+            guestSession,
+          )
+        : await chatApi.longtextComplete(optimistic.conversationId, body);
+      confirmOptimistic(optimistic._id, { ...message, isYou: true, deliveryStatus: 'sent' });
+
+      if (tokens) {
+        mergeSubscription({
+          plan:      tokens.plan,
+          remaining: { plan: tokens.plan, ...tokens.remaining },
+        });
+      }
+    } catch (e) {
+      console.error('[ChatContext] longtext send failed:', e);
+      confirmOptimistic(optimistic._id, { ...optimistic, _status: 'failed' });
+    } finally {
+      setSendProgress(null);
+    }
+  }, [confirmOptimistic, mergeSubscription, guestSession]);
+
   const sendMessage = useCallback(async (
     payload: SendMessagePayload | string,
     replyTo?: ChatMessage,
@@ -462,6 +560,48 @@ export const ChatProvider: React.FC<{
     let location: ChatLocationPayload | undefined;
     let date: ChatDatePayload | undefined;
     let event: ChatEventPayload | undefined;
+    // ── Longtext escape hatch ──────────────────────────────────────────────
+    // Text payloads > 1000 chars follow the chunked-upload path. Both the
+    // JWT and signed-URL (guest) flavors are supported; `dispatchLongtextSend`
+    // branches on `guestSession` internally.
+    if (
+      normalized.kind === 'text' &&
+      normalized.text.length > 1000
+    ) {
+      const fullText = normalized.text;
+      const previewSlice = fullText.slice(0, 1000);
+      const tempId = `temp-${++tempIdRef.current}-${Date.now()}`;
+      const optimistic: ChatMessage = {
+        _id:            tempId,
+        conversationId: selectedConversation._id,
+        senderId:       user?.id ?? null,
+        senderName:     user?.name ?? 'You',
+        contentType:    'longtext',
+        text:           previewSlice,
+        attachments:    [],
+        isSystem:       false,
+        isYou:          true,
+        deliveryStatus: 'sent',
+        _status:        'sending',
+        fullLength:     fullText.length,
+        createdAt:      new Date().toISOString(),
+        ...(replyTo && {
+          replyTo: {
+            messageId:  replyTo._id,
+            senderName: replyTo.senderName,
+            text:       replyTo.text.slice(0, 200),
+          },
+        }),
+      };
+      appendOptimistic(optimistic);
+      setReplyingTo(null);
+      sendStopTyping();
+      setLastReadMessageId(null);
+      requestAnimationFrame(() => scroll.scrollToBottom(true));
+      await dispatchLongtextSend(optimistic, fullText, replyTo);
+      return;
+    }
+
     switch (normalized.kind) {
       case 'text':
         text = normalized.text;
@@ -541,7 +681,7 @@ export const ChatProvider: React.FC<{
     requestAnimationFrame(() => scroll.scrollToBottom(true));
 
     await dispatchSend(optimistic);
-  }, [selectedConversation, user, appendOptimistic, dispatchSend, sendStopTyping, scroll, guestSession]);
+  }, [selectedConversation, user, appendOptimistic, dispatchSend, dispatchLongtextSend, sendStopTyping, scroll, guestSession]);
 
   /**
    * Re-send a previously-failed optimistic message. The retry replaces the
@@ -631,6 +771,7 @@ export const ChatProvider: React.FC<{
     setReplyingTo,
     showNewChat,
     setShowNewChat,
+    sendProgress,
     currentUserId: userId,
     guestSession,
   }), [
@@ -646,7 +787,7 @@ export const ChatProvider: React.FC<{
     unreadCounts, totalUnread, clearConversationUnread,
     lastReadMessageId,
     typingUsers, sendTyping, sendStopTyping,
-    replyingTo, showNewChat, userId, guestSession
+    replyingTo, showNewChat, sendProgress, userId, guestSession
   ]);
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

@@ -130,7 +130,8 @@ export type ChatContentType =
   | 'file'
   | 'system'
   | 'date'
-  | 'event';
+  | 'event'
+  | 'longtext';
 
 export interface ChatContactPayload {
   name?:        string;
@@ -169,6 +170,12 @@ export interface ChatMessageDoc extends Document {
   location?:      ChatLocationPayload;
   date?:          ChatDatePayload;
   event?:         ChatEventPayload;
+  /** longtext: pointer to the first chunk (index 0). */
+  startChunkId?:  mongoose.Types.ObjectId;
+  /** longtext: pointer to the last chunk (so the client knows when to stop). */
+  endChunkId?:    mongoose.Types.ObjectId;
+  /** longtext: total length of preview + all chunks (chars). */
+  fullLength?:    number;
   replyTo?: {
     messageId:  mongoose.Types.ObjectId;
     senderName: string;
@@ -186,7 +193,7 @@ const ChatMessageSchema = new Schema<ChatMessageDoc>(
     senderName:     { type: String, required: true },
     contentType: {
       type:    String,
-      enum:    ['text', 'emoji', 'contact', 'location', 'image', 'file', 'system', 'date', 'event'],
+      enum:    ['text', 'emoji', 'contact', 'location', 'image', 'file', 'system', 'date', 'event', 'longtext'],
       default: 'text',
     },
     // `text` stays required so any code path that reads `.text` for preview
@@ -254,6 +261,10 @@ const ChatMessageSchema = new Schema<ChatMessageDoc>(
       location:    { type: String, trim: true },
       description: { type: String, trim: true },
     },
+
+    startChunkId: { type: Schema.Types.ObjectId, ref: 'MessageChunk' },
+    endChunkId:   { type: Schema.Types.ObjectId, ref: 'MessageChunk' },
+    fullLength:   { type: Number, min: 0 },
 
     replyTo: {
       messageId:  { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
@@ -330,6 +341,25 @@ ChatMessageSchema.pre('validate', function chatContentTypeValidator(this: ChatMe
     throw new Error('date payload not allowed for this contentType');
   } else if (doc.date) {
     doc.set('date', undefined);
+  }
+
+  if (doc.contentType === 'longtext') {
+    if (typeof doc.text !== 'string' || doc.text.length < 1 || doc.text.length > 1000) {
+      throw new Error('longtext preview (text) must be 1..1000 chars');
+    }
+    if (typeof doc.fullLength !== 'number' || doc.fullLength <= 1000) {
+      throw new Error('longtext fullLength must be > 1000');
+    }
+    // startChunkId / endChunkId are stamped AFTER initial save (two-phase
+    // complete), so we don't require them here — their presence is validated
+    // application-side once the chunks are linked.
+  } else {
+    if (doc.startChunkId || doc.endChunkId || typeof doc.fullLength === 'number') {
+      // Drop silently — same pattern as contact/location subdocs above.
+      doc.set('startChunkId', undefined);
+      doc.set('endChunkId',   undefined);
+      doc.set('fullLength',   undefined);
+    }
   }
 
   if (doc.contentType === 'event') {

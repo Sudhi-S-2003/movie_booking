@@ -7,4 +7,5 @@ export { FileBubble } from './FileBubble.js';
 export { SystemBubble } from './SystemBubble.js';
 export { DateBubble } from './DateBubble.js';
 export { EventBubble } from './EventBubble.js';
+export { LongTextBubble } from './LongTextBubble.js';
 export { ImageLightbox } from './ImageLightbox.js';

@@ -2,6 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CalendarPlus } from 'lucide-react';
 import type { ChatEventPayload } from '../../types.js';
+import { CharCounter, getCharState } from './CharCounter.js';
+
+const TITLE_MAX = 120;
+const TITLE_MIN = 1;
+const LOC_MAX   = 200;
+const DESC_MAX  = 500;
+
+const overCls = (over: boolean): string =>
+  over ? 'border-red-400/60' : 'border-white/[0.08]';
 
 interface CreateEventModalProps {
   open:     boolean;
@@ -84,14 +93,17 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClos
         </div>
 
         <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-1">Title</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={120}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/90 mb-3 focus:outline-none focus:border-accent-blue/50"
-          placeholder="Move-in walkthrough"
-          autoFocus
-        />
+        <div className="relative mb-3">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={TITLE_MAX}
+            className={`w-full bg-white/[0.04] border ${overCls(getCharState(title, TITLE_MAX, TITLE_MIN) === 'over')} rounded-lg pl-3 pr-14 py-2 text-sm text-white/90 focus:outline-none focus:border-accent-blue/50`}
+            placeholder="Move-in walkthrough"
+            autoFocus
+          />
+          <CharCounter value={title} max={TITLE_MAX} min={TITLE_MIN} />
+        </div>
 
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
@@ -115,23 +127,41 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({ open, onClos
         </div>
 
         <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-1">Location (optional)</label>
-        <input
-          value={loc}
-          onChange={(e) => setLoc(e.target.value)}
-          maxLength={200}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/90 mb-3 focus:outline-none focus:border-accent-blue/50"
-          placeholder="123 Main St, SF"
-        />
+        <div className="relative mb-3">
+          <input
+            value={loc}
+            onChange={(e) => setLoc(e.target.value)}
+            maxLength={LOC_MAX}
+            className={`w-full bg-white/[0.04] border ${overCls(getCharState(loc, LOC_MAX) === 'over')} rounded-lg pl-3 pr-14 py-2 text-sm text-white/90 focus:outline-none focus:border-accent-blue/50`}
+            placeholder="123 Main St, SF"
+          />
+          <CharCounter value={loc} max={LOC_MAX} />
+        </div>
 
         <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-1">Description (optional)</label>
-        <textarea
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          maxLength={500}
-          rows={3}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/90 mb-3 focus:outline-none focus:border-accent-blue/50 resize-none"
-          placeholder="Bring a copy of the signed contract."
-        />
+        <div className="relative mb-3">
+          <textarea
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            maxLength={DESC_MAX}
+            rows={3}
+            className={`w-full bg-white/[0.04] border ${overCls(getCharState(desc, DESC_MAX) === 'over')} rounded-lg pl-3 pr-14 py-2 pb-4 text-sm text-white/90 focus:outline-none focus:border-accent-blue/50 resize-none`}
+            placeholder="Bring a copy of the signed contract."
+          />
+          {/* Inline progress bar — the description can run long; a subtle fill
+              against the accent colour gives people a quick glance at how
+              much runway they have left. Caps visually at 100%. */}
+          <div
+            aria-hidden
+            className="absolute left-3 right-3 bottom-1.5 h-0.5 bg-white/[0.04] rounded-full overflow-hidden"
+          >
+            <div
+              className={`h-full ${getCharState(desc, DESC_MAX) === 'over' ? 'bg-red-400/70' : 'bg-accent-blue/40'}`}
+              style={{ width: `${Math.min(100, (desc.length / DESC_MAX) * 100)}%` }}
+            />
+          </div>
+          <CharCounter value={desc} max={DESC_MAX} variant="textarea" />
+        </div>
 
         {err && <p className="text-[11px] text-red-400 mb-2">{err}</p>}
 

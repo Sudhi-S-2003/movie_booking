@@ -13,6 +13,7 @@ import {
   SystemBubble,
   DateBubble,
   EventBubble,
+  LongTextBubble,
 } from './bubbles/index.js';
 import type { ChatMessage } from '../types.js';
 
@@ -85,6 +86,17 @@ export const MessageBubble = memo(({
         return <DateBubble msg={msg} isOwn={isOwn} />;
       case 'event':
         return <EventBubble msg={msg} isOwn={isOwn} />;
+      case 'longtext':
+        return (
+          <LongTextBubble
+            msg={msg}
+            isOwn={isOwn}
+            isSameGroupPrev={isSameGroupPrev}
+            showDateSeparator={showDateSeparator}
+            isFailed={isFailed}
+            {...(onJumpToMessage ? { onJumpToMessage } : {})}
+          />
+        );
       case 'text':
       default:
         return (

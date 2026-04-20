@@ -10,6 +10,12 @@ import {
     createChatConversation,
     getSignedChatConversation,
 } from '../controllers/api.chat.controller.js';
+import {
+    guestLongtextStart,
+    guestLongtextChunk,
+    guestLongtextComplete,
+    getGuestMessageChunkNext,
+} from '../controllers/chat/guestLongtext.controller.js';
 
 
 const router = Router();
@@ -29,5 +35,15 @@ router.get("/conversation/:id/subscription", isChatSignatureValid, getGuestSubsc
 router.post("/conversation/:id/messages", isChatSignatureValid, sendGuestMessage);
 router.post("/conversation/:id/messages/read", isChatSignatureValid, markGuestMessagesRead);
 router.delete("/conversation/:id/messages/:messageId", isChatSignatureValid, deleteGuestMessage);
+
+// Longtext (chunked upload of messages > 1000 chars) for the guest flow.
+router.post("/conversation/:id/longtext/start",    isChatSignatureValid, guestLongtextStart);
+router.post("/conversation/:id/longtext/chunk",    isChatSignatureValid, guestLongtextChunk);
+router.post("/conversation/:id/longtext/complete", isChatSignatureValid, guestLongtextComplete);
+router.get(
+    "/conversation/:id/messages/:messageId/chunks/next/:chunkId",
+    isChatSignatureValid,
+    getGuestMessageChunkNext,
+);
 
 export default router;

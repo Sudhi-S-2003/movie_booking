@@ -55,6 +55,8 @@ import { emitChatUnreadChanged, emitConversationUpdated, emitNewConversation } f
 import { decorateMessages, broadcastNewConversation } from './chat/chat.helpers.js';
 import { guardTokens } from '../services/subscription/tokenGuard.js';
 import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
+import { withOptionalTransaction, withSession } from '../utils/transaction.util.js';
+import type { ChatMessageDoc } from '../models/chat.model.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -590,45 +592,73 @@ export const sendMessage = async (req: Request, res: Response) => {
     // the 402 response itself; we just short-circuit. Use the rendered text
     // so non-text messages still meter proportionally to their preview.
     const meterInput = normalized.text || normalized.emoji || '';
-    const tokens = await guardTokens(String(userId), meterInput, res);
-    if (!tokens) return;
+    const previewText = buildPreviewText(normalized);
 
-    const message = await ChatMessage.create({
-      conversationId,
-      senderId: userId,
-      senderName: user.name,
-      contentType: normalized.contentType,
-      text:        normalized.text,
-      attachments: normalized.attachments,
-      isSystem:    false,
-      ...(normalized.emoji    !== undefined && { emoji:    normalized.emoji }),
-      ...(normalized.contact  !== undefined && { contact:  normalized.contact }),
-      ...(normalized.location !== undefined && { location: normalized.location }),
-      ...(normalized.date     !== undefined && { date:     normalized.date }),
-      ...(normalized.event    !== undefined && { event:    normalized.event }),
-      ...(normalized.replyTo && {
-        replyTo: {
-          messageId:  normalized.replyTo.messageId,
-          senderName: normalized.replyTo.senderName,
-          text:       normalized.replyTo.text,
+    // Atomic debit + message-create + conversation-denorm. Returns a tagged
+    // union so we can write the 402 response OUTSIDE the transaction without
+    // throw/catch control flow. The idempotent cursor advance + socket emits
+    // stay outside.
+    type TxResult =
+      | { ok: true; message: ChatMessageDoc; tokens: NonNullable<Awaited<ReturnType<typeof guardTokens>>> }
+      | { ok: false; status: number; body: Record<string, unknown> };
+
+    const outcome = await withOptionalTransaction<TxResult>(async (rawSession) => {
+      const session = rawSession ?? undefined;
+      const tokens = await guardTokens(String(userId), meterInput, res, { session });
+      if (!tokens) {
+        // guardTokens already wrote the 402 response — signal caller to bail.
+        return { ok: false, status: 402, body: {} };
+      }
+
+      const [createdMessage] = await ChatMessage.create(
+        [{
+          conversationId,
+          senderId: userId,
+          senderName: user.name,
+          contentType: normalized.contentType,
+          text:        normalized.text,
+          attachments: normalized.attachments,
+          isSystem:    false,
+          ...(normalized.emoji    !== undefined && { emoji:    normalized.emoji }),
+          ...(normalized.contact  !== undefined && { contact:  normalized.contact }),
+          ...(normalized.location !== undefined && { location: normalized.location }),
+          ...(normalized.date     !== undefined && { date:     normalized.date }),
+          ...(normalized.event    !== undefined && { event:    normalized.event }),
+          ...(normalized.replyTo && {
+            replyTo: {
+              messageId:  normalized.replyTo.messageId,
+              senderName: normalized.replyTo.senderName,
+              text:       normalized.replyTo.text,
+            },
+          }),
+        }],
+        withSession(session),
+      );
+      const message = createdMessage!;
+
+      await Conversation.updateOne(
+        { _id: conversationId },
+        {
+          $set: {
+            lastMessageId: message._id,
+            lastMessageAt: message.createdAt,
+            lastMessageText: previewText,
+            lastMessageSender: user.name,
+          },
+          $inc: { messageCount: 1 },
         },
-      }),
+        withSession(session),
+      );
+
+      return { ok: true, message, tokens };
     });
 
-    // Update conversation denormalized fields
-    const previewText = buildPreviewText(normalized);
-    await Conversation.updateOne(
-      { _id: conversationId },
-      {
-        $set: {
-          lastMessageId: message._id,
-          lastMessageAt: message.createdAt,
-          lastMessageText: previewText,
-          lastMessageSender: user.name,
-        },
-        $inc: { messageCount: 1 },
-      },
-    );
+    if (!outcome.ok) {
+      if (outcome.status === 402) return; // response already written by guardTokens
+      return res.status(outcome.status).json({ success: false, ...outcome.body });
+    }
+
+    const { message, tokens } = outcome;
 
     const decorated = {
       ...message.toObject(),

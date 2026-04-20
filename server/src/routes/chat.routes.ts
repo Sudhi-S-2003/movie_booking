@@ -28,6 +28,12 @@ import {
   getInviteByToken,
   acceptInvite,
 } from '../controllers/chatPublic.controller.js';
+import {
+  longtextStart,
+  longtextChunk,
+  longtextComplete,
+  getMessageChunkNext,
+} from '../controllers/chat/longtext.controller.js';
 
 const router = Router();
 
@@ -74,6 +80,12 @@ router.get('/conversations/:id/messages',                     getMessages);
 router.post('/conversations/:id/messages',                    sendMessage);
 router.delete('/conversations/:id/messages/:messageId',       deleteMessage);
 router.post('/conversations/:id/messages/read',               markMessagesRead);
+
+// Longtext (chunked upload of messages > 1000 chars).
+router.post('/longtext/start',                                longtextStart);
+router.post('/longtext/chunk',                                longtextChunk);
+router.post('/conversations/:id/messages/longtext',           longtextComplete);
+router.get('/messages/:messageId/chunks/next/:chunkId',       getMessageChunkNext);
 
 // Unread
 router.get('/unread-counts', getUnreadCounts);
