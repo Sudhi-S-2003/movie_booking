@@ -35,6 +35,7 @@ import {
 import { emitNewMessage, emitMessageDeleted, emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
 import { emitChatUnreadChanged, emitConversationUpdated } from '../socket/channels/chat-list.channel.js';
 import { guardTokens } from '../services/subscription/tokenGuard.js';
+import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
 import { getSummary as getSubscriptionSummary } from '../services/subscription/subscription.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
@@ -210,7 +211,6 @@ export const getGuestMessages = async (req: Request, res: Response) => {
 
     const decorated = await decorateMessages(
       result.messages,
-      conversationId,
       { externalUserName: identity.name },
     );
 
@@ -238,11 +238,12 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
     if (!identity) return res.status(401).json({ success: false, message: 'Not authenticated' });
 
     const conversationId = req.params.id as string;
-    const { text, replyTo, messageType } = req.body;
 
-    if (!text || !text.trim()) {
-      return res.status(400).json({ success: false, message: 'Message text is required' });
+    const validation = validateIncomingMessage(req.body ?? {});
+    if (!validation.ok) {
+      return res.status(400).json({ success: false, reason: validation.reason });
     }
+    const normalized = validation.message;
 
     const conversation = await Conversation.findOne({ _id: conversationId, isActive: true });
     if (!conversation) return res.status(404).json({ success: false, message: 'Inactive conversation' });
@@ -253,26 +254,34 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
     if (!conversation.createdBy) {
       return res.status(400).json({ success: false, message: 'Conversation has no owner to bill' });
     }
-    const tokens = await guardTokens(String(conversation.createdBy), text.trim(), res);
+    const meterInput = normalized.text || normalized.emoji || '';
+    const tokens = await guardTokens(String(conversation.createdBy), meterInput, res);
     if (!tokens) return;
 
-    const message = await ChatMessage.create({
+    const messageDoc: Record<string, unknown> = {
       conversationId,
       senderId: null, // Always null for external guests
       senderName: identity.name,
-      messageType: messageType || 'text',
-      text: text.trim(),
-      isSystem: false,
-      ...(replyTo && {
-        replyTo: {
-          messageId: replyTo.messageId,
-          senderName: replyTo.senderName,
-          text: (replyTo.text || '').slice(0, 200),
-        },
-      }),
-    });
+      contentType: normalized.contentType,
+      text:        normalized.text,
+      attachments: normalized.attachments,
+      isSystem:    false,
+    };
+    if (normalized.emoji    !== undefined) messageDoc.emoji    = normalized.emoji;
+    if (normalized.contact  !== undefined) messageDoc.contact  = normalized.contact;
+    if (normalized.location !== undefined) messageDoc.location = normalized.location;
+    if (normalized.date     !== undefined) messageDoc.date     = normalized.date;
+    if (normalized.event    !== undefined) messageDoc.event    = normalized.event;
+    if (normalized.replyTo) {
+      messageDoc.replyTo = {
+        messageId:  normalized.replyTo.messageId,
+        senderName: normalized.replyTo.senderName,
+        text:       normalized.replyTo.text,
+      };
+    }
+    const message = await ChatMessage.create(messageDoc);
 
-    const previewText = text.trim().slice(0, 100);
+    const previewText = buildPreviewText(normalized);
     await Conversation.updateOne(
       { _id: conversationId },
       {
@@ -411,7 +420,7 @@ export const deleteGuestMessage = async (req: Request, res: Response) => {
 
     const message = await ChatMessage.findOneAndUpdate(
       { _id: messageId, conversationId, senderId: null, senderName: identity.name },
-      { text: 'This message was deleted', attachments: [], messageType: 'system' as const },
+      { text: 'This message was deleted', attachments: [], contentType: 'system' as const },
       { returnDocument: 'after' },
     );
 

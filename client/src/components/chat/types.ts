@@ -1,7 +1,42 @@
 // ─── Chat Types ──────────────────────────────────────────────────────────────
 
 export type ConversationType = 'direct' | 'group' | 'system' | 'api';
-export type ChatMessageType  = 'text' | 'image' | 'file' | 'system';
+export type ChatContentType =
+  | 'text'
+  | 'emoji'
+  | 'contact'
+  | 'location'
+  | 'image'
+  | 'file'
+  | 'system'
+  | 'date'
+  | 'event';
+
+export interface ChatContactPayload {
+  name?:       string;
+  phone:       string;
+  countryCode: string;
+}
+
+export interface ChatLocationPayload {
+  lat:    number;
+  lng:    number;
+  label?: string;
+}
+
+export interface ChatDatePayload {
+  iso:    string;
+  label?: string;
+}
+
+export interface ChatEventPayload {
+  title:        string;
+  startsAt:     string;
+  endsAt?:      string;
+  location?:    string;
+  description?: string;
+}
+
 export type DeliveryStatus   = 'sent' | 'read';
 
 export interface ChatParticipant {
@@ -50,9 +85,14 @@ export interface ChatMessage {
   conversationId: string;
   senderId?:      string | null;
   senderName:     string;
-  messageType:    ChatMessageType;
+  contentType:    ChatContentType;
   text:           string;
   attachments:    string[];
+  emoji?:         string;
+  contact?:       ChatContactPayload;
+  location?:      ChatLocationPayload;
+  date?:          ChatDatePayload;
+  event?:         ChatEventPayload;
   replyTo?: {
     messageId:  string;
     senderName: string;

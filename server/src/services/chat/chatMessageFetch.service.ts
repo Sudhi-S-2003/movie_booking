@@ -10,9 +10,6 @@ import {
   createMessageFetchService,
 } from '../shared/messageFetch.service.js';
 
-export type { FetchPageResult } from '../shared/messageFetch.service.js';
-export { buildCursor, parseCursor } from '../shared/messageFetch.service.js';
-
 const chatFetcher = createMessageFetchService(ChatMessage, 'conversationId');
 
 export const loadLatest     = chatFetcher.loadLatest;

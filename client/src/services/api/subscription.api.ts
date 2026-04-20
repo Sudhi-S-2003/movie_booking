@@ -3,7 +3,7 @@ import { http } from './http.js';
 export type SubscriptionPlan = 'free' | 'pro' | 'proMax' | 'enterprise';
 export type PaidPlan = 'pro' | 'proMax';
 export type BillingCycle = 'monthly' | 'quarterly';
-export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
+type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
 
 export interface SubscriptionInfo {
   plan:         SubscriptionPlan;
@@ -22,7 +22,7 @@ export interface SubscriptionInfo {
  * eligible for. 60 for first-ever purchase, 50 for the second, 0 after.
  * Surfaced on `GET /api/subscription` so cards can render the strike-through.
  */
-export interface PromoInfo {
+interface PromoInfo {
   purchasesCount: number;
   discountPct:    number;
 }
@@ -40,7 +40,7 @@ export interface TokenRemaining {
   };
 }
 
-export interface SubscriptionSummaryResponse {
+interface SubscriptionSummaryResponse {
   subscription: SubscriptionInfo;
   remaining:    TokenRemaining;
   promo?:       PromoInfo;
@@ -48,7 +48,7 @@ export interface SubscriptionSummaryResponse {
 
 export type OfferType = 'firstOrder' | 'secondOrder' | 'none';
 
-export interface PlanOffer {
+interface PlanOffer {
   offerType:          OfferType;
   discountPct:        number;
   /** Present on paid cycles — omitted for Free and Enterprise. */
@@ -110,7 +110,7 @@ export interface PlanCatalogResponse {
   viewer?: PlanCatalogViewer;
 }
 
-export interface SubscriptionCheckoutResponse {
+interface SubscriptionCheckoutResponse {
   paymentIntentId: string;
   clientSecret:    string;
   amount:          number;
@@ -124,7 +124,7 @@ export interface SubscriptionCheckoutResponse {
   originalPrice?:  number;
 }
 
-export interface EnterpriseCheckoutResponse {
+interface EnterpriseCheckoutResponse {
   paymentIntentId: string;
   clientSecret:    string;
   amount:          number;
@@ -139,19 +139,13 @@ export interface EnterpriseCheckoutResponse {
   discountPct:    number;
 }
 
-export interface EnterpriseQuoteResponse {
+interface EnterpriseQuoteResponse {
   monthlyLimit:   number;
   durationMonths: number;
   priceInPaise:   number;
   priceDisplay:   number;
   discountPct:    number;
   currency:       string;
-}
-
-export interface TokenResponse {
-  plan:      SubscriptionPlan;
-  cost:      number;
-  remaining: { daily?: number; weekly?: number; monthly?: number };
 }
 
 export const subscriptionApi = {

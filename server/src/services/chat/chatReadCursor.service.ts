@@ -6,17 +6,15 @@
 // own messages is computed by comparing it to each message's `createdAt`.
 //
 // Public surface:
-//   • markConversationRead  — upsert cursor with lastReadAt = now
 //   • markSentMessageRead   — sender's own cursor advancement on send
 //   • advanceCursorTo       — advance cursor to a specific time + message id
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { type HydratedDocument } from 'mongoose';
+import mongoose from 'mongoose';
 import { ChatReadCursor } from '../../models/chat.model.js';
-import type { ChatReadCursorDoc } from '../../models/chat.model.js';
 import { recordReads } from './messageRead.service.js';
 
-export interface ReadReceiptIdentity {
+interface ReadReceiptIdentity {
   userId?:           string;
   externalUserName?: string;
 }
@@ -38,42 +36,6 @@ const buildIdentityFilter = (
     return { conversationId: convObjId, externalUserName: identity.externalUserName };
   }
   return null;
-};
-
-/**
- * Upsert the reader's cursor for this conversation with `lastReadAt = now`.
- * Monotonic: never rewinds — if a newer timestamp is already stored we keep it.
- * Returns the live cursor (or null if neither identity was supplied).
- */
-export const markConversationRead = async (
-  conversationId: string,
-  identity:       ReadReceiptIdentity,
-): Promise<HydratedDocument<ChatReadCursorDoc> | null> => {
-  const convObjId = new mongoose.Types.ObjectId(conversationId);
-  const filter    = buildIdentityFilter(convObjId, identity);
-  if (!filter) return null;
-
-  const now = new Date();
-
-  try {
-    const cursor = await ChatReadCursor.findOneAndUpdate(
-      { ...filter, $or: [{ lastReadAt: { $lt: now } }, { lastReadAt: { $exists: false } }] },
-      {
-        $set:         { lastReadAt: now },
-        $setOnInsert: { ...filter },
-      },
-      { upsert: true, returnDocument: 'after' },
-    );
-    if (cursor) return cursor;
-    // No-op update (cursor already >= now) — fetch the existing doc.
-    return await ChatReadCursor.findOne(filter);
-  } catch (err: unknown) {
-    if (err && typeof err === 'object' && (err as { code?: number }).code === 11000) {
-      // Lost the upsert race; another writer created the row concurrently.
-      return ChatReadCursor.findOne(filter);
-    }
-    throw err;
-  }
 };
 
 /**

@@ -41,9 +41,12 @@ export const ConversationList: React.FC = memo(() => {
     visibleConversations.length === 0 && !conversationsLoading;
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full min-h-0 min-w-0">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 pb-3 space-y-3">
+      <div
+        className="flex-shrink-0 p-3 sm:p-4 pb-3 space-y-3"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+      >
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-black uppercase tracking-tight text-white">
             Messages

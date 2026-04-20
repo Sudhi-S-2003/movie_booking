@@ -54,14 +54,17 @@ export const registerChatMessagesHandlers = (namespace: Namespace) => {
 };
 
 /** Minimal shape required to emit a chat message over the wire. */
-export interface WireMessage {
+interface WireMessage {
   _id:            unknown;
   conversationId: unknown;
   senderId?:      unknown;
   senderName:     string;
-  messageType:    string;
+  contentType:    string;
   text:           string;
   attachments:    unknown[];
+  emoji?:         string;
+  contact?:       { name?: string; phone: string; countryCode: string };
+  location?:      { lat: number; lng: number; label?: string };
   isSystem:       boolean;
   createdAt:      unknown;
   [key: string]:  unknown;

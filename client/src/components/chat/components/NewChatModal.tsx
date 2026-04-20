@@ -119,7 +119,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex sm:items-center items-end justify-center bg-black/60 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -127,7 +127,13 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-[#0c0c0c] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
+            className="
+              w-full sm:max-w-md bg-[#0c0c0c] border border-white/[0.08]
+              shadow-2xl overflow-hidden flex flex-col
+              max-sm:rounded-t-3xl max-sm:max-h-[calc(100dvh-1rem)] max-sm:mt-4
+              sm:rounded-2xl sm:max-h-[85dvh]
+            "
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
@@ -223,7 +229,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
             </div>
 
             {/* Results */}
-            <div className="max-h-64 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 min-h-0 max-h-[60dvh] overflow-y-auto custom-scrollbar">
               {loading && (
                 <div className="flex justify-center py-6">
                   <div className="w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />

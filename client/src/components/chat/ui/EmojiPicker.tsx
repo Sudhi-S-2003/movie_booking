@@ -49,7 +49,14 @@ export const EmojiPicker = memo(({ onSelect, onClose }: EmojiPickerProps) => {
   return (
     <div
       ref={wrapperRef}
-      className="absolute bottom-full left-0 mb-2 z-50"
+      className="
+        z-50
+        max-[640px]:fixed max-[640px]:inset-x-0 max-[640px]:bottom-0
+        max-[640px]:bg-[#1a1a1e] max-[640px]:border-t max-[640px]:border-white/[0.08]
+        max-[640px]:rounded-t-3xl max-[640px]:shadow-2xl max-[640px]:p-2
+        sm:absolute sm:bottom-full sm:left-0 sm:mb-2
+      "
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <Picker
         data={data}

@@ -13,10 +13,9 @@ import {
   type TokenRemaining,
   type SubscriptionPlan,
 } from '../../../services/api/index.js';
-import { chatListSocket } from '../../../services/socket/chat/list.socket.js';
 import { useAuthStore } from '../../../store/authStore.js';
 
-export interface UseSubscription {
+interface UseSubscription {
   sub:        SubscriptionInfo | null;
   remaining:  TokenRemaining | null;
   plan:       SubscriptionPlan;
@@ -44,7 +43,7 @@ const SubscriptionContext = createContext<UseSubscription | null>(null);
  * the API-key owner's remaining tokens) instead of `/api/subscription`
  * (which requires a JWT the guest doesn't hold).
  */
-export interface SubscriptionGuestConfig {
+interface SubscriptionGuestConfig {
   signature:      string;
   expiresAt:      string;
   conversationId: string;
@@ -134,35 +133,6 @@ function useSubscriptionState(guest?: SubscriptionGuestConfig): UseSubscription 
     void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, guestKey, refresh]);
-
-  // Live updates via chat-list socket — covers server-initiated changes
-  // (activation, expiry, cancellation). Guests can't join the list namespace
-  // (it's JWT-gated), so this is authed-only.
-  useEffect(() => {
-    if (!token || guest) return;
-    chatListSocket.connect();
-    const off = chatListSocket.on<{
-      plan:      SubscriptionPlan;
-      remaining: { daily?: number; weekly?: number; monthly?: number };
-      expiresAt?: string | null;
-    }>('subscription_updated', (payload) => {
-      setRemaining((prev) => ({
-        plan:    payload.plan,
-        daily:   payload.remaining.daily   ?? prev?.daily,
-        weekly:  payload.remaining.weekly  ?? prev?.weekly,
-        monthly: payload.remaining.monthly ?? prev?.monthly,
-      }));
-      setSub((prev) => prev ? {
-        ...prev,
-        plan: payload.plan,
-        expiresAt: payload.expiresAt ?? prev.expiresAt,
-      } : prev);
-    });
-    return () => {
-      off();
-      chatListSocket.disconnect();
-    };
-  }, [token, guest]);
 
   const merge = useCallback(
     (payload: { plan: SubscriptionPlan; remaining: TokenRemaining }) => {

@@ -13,7 +13,7 @@
 import mongoose from 'mongoose';
 import { MessageRead } from '../../models/messageRead.model.js';
 
-export interface ReaderIdentity {
+interface ReaderIdentity {
   userId?:           string;
   externalUserName?: string;
 }

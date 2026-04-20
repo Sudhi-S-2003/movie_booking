@@ -37,7 +37,7 @@ export const ConversationRow = memo(({
   return (
     <button
       onClick={onSelect}
-      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-white/[0.04] ${
+      className={`w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 text-left transition-all hover:bg-white/[0.04] ${
         isSelected
           ? 'bg-white/[0.06] border-l-2 border-accent-blue'
           : 'border-l-2 border-transparent'
@@ -60,7 +60,7 @@ export const ConversationRow = memo(({
         </div>
 
         <div className="flex items-center justify-between gap-2 mt-0.5">
-          <p className={`text-[10px] truncate ${
+          <p className={`text-[10px] truncate line-clamp-1 ${
             unreadCount > 0 ? 'text-white/50 font-medium' : 'text-white/25'
           }`}>
             {conversation.lastMessageSender && conversation.type !== 'direct' && (

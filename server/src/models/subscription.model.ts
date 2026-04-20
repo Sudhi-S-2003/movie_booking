@@ -2,9 +2,9 @@ import mongoose, { Schema, type HydratedDocument } from 'mongoose';
 
 export type SubscriptionPlan = 'free' | 'pro' | 'proMax' | 'enterprise';
 export type BillingCycle = 'monthly' | 'quarterly';
-export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
+type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
 
-export interface SubscriptionAttrs {
+interface SubscriptionAttrs {
   userId:        mongoose.Types.ObjectId;
   plan:          SubscriptionPlan;
   billingCycle?: BillingCycle | undefined;

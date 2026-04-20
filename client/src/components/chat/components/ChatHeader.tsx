@@ -94,7 +94,10 @@ export const ChatHeader = memo(({
   };
 
   return (
-    <div className="relative z-30 flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-sm">
+    <div
+      className="relative z-30 flex-shrink-0 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-sm"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.625rem)' }}
+    >
       {/* Back button (mobile) */}
       <button
         onClick={onBack}
@@ -121,20 +124,21 @@ export const ChatHeader = memo(({
 
       {/* Action buttons */}
       {!isSystem && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
           {conversation.type === 'group' && (
             <button
               onClick={() => navigate(membersPath)}
               title="View members"
-              className="w-8 h-8 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-white/30 hover:text-white/60 transition-all"
+              className="hidden sm:flex w-8 h-8 rounded-lg hover:bg-white/[0.06] items-center justify-center text-white/30 hover:text-white/60 transition-all"
             >
               <Users size={15} />
             </button>
           )}
-          <button className="w-8 h-8 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-white/30 hover:text-white/60 transition-all">
+          {/* Phone/Video hidden on XS (≤380px) to leave room for the token pill */}
+          <button className="hidden min-[381px]:flex w-8 h-8 rounded-lg hover:bg-white/[0.06] items-center justify-center text-white/30 hover:text-white/60 transition-all">
             <Phone size={15} />
           </button>
-          <button className="w-8 h-8 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-white/30 hover:text-white/60 transition-all">
+          <button className="hidden min-[381px]:flex w-8 h-8 rounded-lg hover:bg-white/[0.06] items-center justify-center text-white/30 hover:text-white/60 transition-all">
             <Video size={15} />
           </button>
           <div ref={menuRef} className="relative">

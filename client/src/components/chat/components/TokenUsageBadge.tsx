@@ -230,7 +230,7 @@ export const TokenUsageBadge = memo(() => {
           role="dialog"
           aria-label={`${planLabel(plan)} plan usage details`}
           onClick={(e) => e.stopPropagation()}
-          className="absolute right-0 sm:right-0 mt-2 w-72 max-w-[calc(100vw-1rem)] z-[55] rounded-xl bg-[#0b0b0e] border border-white/[0.1] shadow-2xl shadow-black/60 p-4"
+          className="absolute -right-4 min-[381px]:-right-20 sm:right-0 mt-2 w-[280px] sm:w-72 max-w-[calc(100vw-1rem)] z-[55] rounded-xl bg-[#0b0b0e] border border-white/[0.1] shadow-2xl shadow-black/60 p-4"
         >
           <div className="flex items-center justify-between mb-3 gap-2">
             <span className={`flex items-center gap-1.5 min-w-0 ${accent}`}>

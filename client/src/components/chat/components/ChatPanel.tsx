@@ -49,7 +49,7 @@ export const ChatPanel = memo(() => {
   const isSystem = selectedConversation.type === 'system';
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full min-h-0 min-w-0">
       <ChatHeader
         conversation={selectedConversation}
         currentUserId={currentUserId}

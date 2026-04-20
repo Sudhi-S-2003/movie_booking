@@ -2,7 +2,7 @@ import mongoose, { Schema, type HydratedDocument } from 'mongoose';
 
 export type BucketWindow = 'daily' | 'weekly' | 'monthly';
 
-export interface TokenBucketAttrs {
+interface TokenBucketAttrs {
   userId:   mongoose.Types.ObjectId;
   window:   BucketWindow;
   limit:    number;

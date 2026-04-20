@@ -13,18 +13,18 @@ import { emitNewConversation } from '../../socket/channels/chat-list.channel.js'
 import { getReadStatusForMessages } from '../../services/chat/messageRead.service.js';
 
 /** Lean representation of a `ChatMessageDoc` after `.lean()`. */
-export type LeanChatMessage = mongoose.FlattenMaps<ChatMessageDoc> & {
+type LeanChatMessage = mongoose.FlattenMaps<ChatMessageDoc> & {
   _id: mongoose.Types.ObjectId;
 };
 
-export type DeliveryStatus = 'sent' | 'read';
+type DeliveryStatus = 'sent' | 'read';
 
-export interface DecoratedChatMessage extends LeanChatMessage {
+interface DecoratedChatMessage extends LeanChatMessage {
   isYou:          boolean;
   deliveryStatus?: DeliveryStatus;
 }
 
-export interface ViewerIdentity {
+interface ViewerIdentity {
   userId?:           string;
   externalUserName?: string;
 }
@@ -39,7 +39,6 @@ export interface ViewerIdentity {
  */
 export const decorateMessages = async (
   messages: LeanChatMessage[],
-  _conversationId: string,
   viewer: ViewerIdentity,
 ): Promise<DecoratedChatMessage[]> => {
   if (messages.length === 0) return [];
@@ -57,11 +56,10 @@ export const decorateMessages = async (
 
   return messages.map((m) => {
     const isYou = isOwnMessage(m);
-    if (isYou) {
-      const status = statusMap.get(m._id.toString()) ?? 'sent';
-      return { ...m, isYou, deliveryStatus: status };
-    }
-    return { ...m, isYou };
+    const base: DecoratedChatMessage = isYou
+      ? { ...m, isYou, deliveryStatus: statusMap.get(m._id.toString()) ?? 'sent' }
+      : { ...m, isYou };
+    return base;
   });
 };
 

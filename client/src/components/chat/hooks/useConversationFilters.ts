@@ -20,7 +20,7 @@ export interface ConversationFiltersState {
   sortOrder:  ConversationSortOrder;
 }
 
-export const DEFAULT_FILTERS: ConversationFiltersState = {
+const DEFAULT_FILTERS: ConversationFiltersState = {
   q:          '',
   type:       null,
   unreadOnly: false,
@@ -42,7 +42,7 @@ export const SORT_BY_LABELS: Record<ConversationSortBy, string> = {
   name:     'Name',
 };
 
-export const SORT_ORDER_LABELS: Record<ConversationSortOrder, string> = {
+const SORT_ORDER_LABELS: Record<ConversationSortOrder, string> = {
   desc: 'Newest first',
   asc:  'Oldest first',
 };

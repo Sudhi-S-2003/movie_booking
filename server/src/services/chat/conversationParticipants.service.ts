@@ -17,15 +17,14 @@
 //
 //   Reads:
 //     isParticipant(convId, userId)            — gate for authorization
-//     getParticipantIds(convId)                — fan-out targets for sockets
-//     countParticipants(convId)                — authoritative count
+//     forEachParticipant(convId, cb)           — stream fan-out targets
 //     listMembers({ ... })                     — paginated roster w/ user info
 //     populateMembers(conversation)            — attach `.participants` array
 //                                                to ONE conversation (detail)
-//     populateDirectPeersBulk(conversations)   — attach `.participants` ONLY to
-//                                                direct chats in a list, so
-//                                                large groups don't bloat the
-//                                                sidebar payload
+//     attachDirectPeer(rows, viewerId)         — fold opposite-user metadata
+//                                                into direct/api rows for the
+//                                                conversation list
+//     getUserConversationIds(userId)           — all conversations a user is in
 //
 // Direct / system conversation dedup is now performed by looking up the
 // ConversationParticipant collection — no auxiliary `directKey` field.
@@ -53,7 +52,7 @@ const refreshParticipantCount = async (conversationId: mongoose.Types.ObjectId):
 
 // ── Writes ──────────────────────────────────────────────────────────────────
 
-export interface SyncParticipantsOpts {
+interface SyncParticipantsOpts {
   /** Creator of the conversation — gets `role: 'owner'` on insert. */
   creatorId?: IdLike;
   /** User who added these members — stored on new rows only. */
@@ -121,14 +120,6 @@ export const removeParticipantRow = async (
   }
 };
 
-/**
- * Authoritative participant count — read directly from the
- * ConversationParticipant collection. Callers on hot paths should prefer
- * the denormalized `Conversation.participantCount`.
- */
-export const countParticipants = (conversationId: IdLike): Promise<number> =>
-  ConversationParticipant.countDocuments({ conversationId: toObjectId(conversationId) });
-
 /** Membership gate. Returns `true` if the user has a row for this conversation. */
 export const isParticipant = async (conversationId: IdLike, userId: IdLike): Promise<boolean> => {
   const exists = await ConversationParticipant.exists({
@@ -160,19 +151,6 @@ export const forEachParticipant = async (
 };
 
 /**
- * Materialize all participant userIds at once. Prefer `forEachParticipant`
- * for broadcasts; only use this when the caller genuinely needs an array
- * (e.g. small-group helpers, tests).
- */
-export const getParticipantIds = async (conversationId: IdLike): Promise<mongoose.Types.ObjectId[]> => {
-  const rows = await ConversationParticipant.find(
-    { conversationId: toObjectId(conversationId) },
-    { userId: 1, _id: 0 },
-  ).lean();
-  return rows.map((r) => r.userId as mongoose.Types.ObjectId);
-};
-
-/**
  * Member preview cap for the `participants` field on conversation payloads.
  *
  * Large groups could easily hold thousands of members; emitting the whole
@@ -180,16 +158,16 @@ export const getParticipantIds = async (conversationId: IdLike): Promise<mongoos
  * problem on the server AND the client. Clients paginate via
  * `GET /chat/conversations/:id/members` when they need the full list.
  */
-export const PARTICIPANT_PREVIEW_LIMIT = 50;
+const PARTICIPANT_PREVIEW_LIMIT = 50;
 
-export interface PopulatedParticipant {
+interface PopulatedParticipant {
   _id:      mongoose.Types.ObjectId;
   name:     string;
   username: string;
   avatar?:  string | undefined;
 }
 
-export interface PopulateOptions {
+interface PopulateOptions {
   /** Max participants to hydrate (default: PARTICIPANT_PREVIEW_LIMIT). */
   limit?: number;
 }
@@ -199,9 +177,6 @@ export interface PopulateOptions {
  * is compatible with clients that read `conversation.participants`. Used on
  * detail endpoints (getConversation / addParticipants / etc.) where the
  * caller is already operating on one doc.
- *
- * For the list endpoint use `populateDirectPeersBulk` — it avoids paying
- * for large-group rosters that the sidebar UI never displays.
  *
  * Capped at `limit` users to keep payloads bounded on large groups.
  */
@@ -239,7 +214,7 @@ export const populateMembers = async <T extends { _id: unknown }>(
   return { ...conversation, participants: ordered };
 };
 
-export interface DirectPeer {
+interface DirectPeer {
   _id:      mongoose.Types.ObjectId;
   name:     string;
   username: string;
@@ -334,65 +309,6 @@ export const attachDirectPeer = async <T extends { _id: any; type: string; title
 };
 
 /**
- * Populate `.participants` for the conversation-list endpoint — but ONLY for
- * direct (1:1) conversations, which the UI needs to resolve the "other
- * person" for avatar/name rendering. Group and system rows get an empty
- * `participants: []`, because the list UI reads their title/avatarUrl
- * instead — and hydrating thousands of group members just for a sidebar
- * row would be an obvious scalability trap.
- *
- * Cost: exactly two queries regardless of page size:
- *   1. membership rows for the direct conversations on this page
- *   2. user lookup for the union of those participant ids
- */
-export const populateDirectPeersBulk = async <T extends { _id: unknown; type: string }>(
-  conversations: T[],
-): Promise<Array<T & { participants: PopulatedParticipant[] }>> => {
-  if (conversations.length === 0) return [];
-
-  const directIds = conversations
-    .filter((c) => c.type === 'direct')
-    .map((c) => c._id as mongoose.Types.ObjectId | string);
-
-  if (directIds.length === 0) {
-    return conversations.map((c) => ({ ...c, participants: [] }));
-  }
-
-  const rows = await ConversationParticipant.find(
-    { conversationId: { $in: directIds } },
-    { conversationId: 1, userId: 1, _id: 0 },
-  ).lean();
-
-  const userIds = Array.from(new Set(rows.map((r) => String(r.userId))))
-    .map((id) => new mongoose.Types.ObjectId(id));
-
-  const UserModel = mongoose.model('User');
-  const users = userIds.length
-    ? await UserModel.find(
-        { _id: { $in: userIds } },
-        { name: 1, username: 1, avatar: 1 },
-      ).lean<PopulatedParticipant[]>()
-    : [];
-
-  const userById = new Map(users.map((u) => [String(u._id), u]));
-  const byConvId = new Map<string, PopulatedParticipant[]>();
-  for (const r of rows) {
-    const key = String(r.conversationId);
-    const user = userById.get(String(r.userId));
-    if (!user) continue;
-    const arr = byConvId.get(key) ?? [];
-    arr.push(user);
-    byConvId.set(key, arr);
-  }
-
-  return conversations.map((c) => ({
-    ...c,
-    participants: c.type === 'direct' ? (byConvId.get(String(c._id)) ?? []) : [],
-  }));
-};
-
-
-/**
  * Return the set of conversationIds that the given user is a member of.
  * Used by the conversation list and unread-count aggregations.
  */
@@ -406,7 +322,7 @@ export const getUserConversationIds = async (userId: IdLike): Promise<mongoose.T
 
 // ── Reads ───────────────────────────────────────────────────────────────────
 
-export interface ListedMember {
+interface ListedMember {
   _id:       string;
   name:      string;
   username:  string;
@@ -418,14 +334,14 @@ export interface ListedMember {
   isYou:     boolean;
 }
 
-export interface ListMembersArgs {
+interface ListMembersArgs {
   conversationId: IdLike;
   currentUserId:  IdLike;
   creatorId:      IdLike | null | undefined;
   page:           PageParams;
 }
 
-export interface ListMembersResult {
+interface ListMembersResult {
   members:    ListedMember[];
   pagination: PageEnvelope;
 }

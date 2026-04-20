@@ -57,7 +57,7 @@ export const createSystemMessage = async (
       conversationId: conversation._id,
       senderId:       systemUser._id,
       senderName:     systemUser.name,
-      messageType:    'system',
+      contentType:    'system',
       text,
       isSystem:       true,
     });

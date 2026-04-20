@@ -54,6 +54,7 @@ import { emitNewMessage, emitMessageDeleted, emitChatReceipts } from '../socket/
 import { emitChatUnreadChanged, emitConversationUpdated, emitNewConversation } from '../socket/channels/chat-list.channel.js';
 import { decorateMessages, broadcastNewConversation } from './chat/chat.helpers.js';
 import { guardTokens } from '../services/subscription/tokenGuard.js';
+import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -539,7 +540,7 @@ export const getMessages = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'Target message not found' });
     }
 
-    const decorated = await decorateMessages(result.messages, conversationId, { userId: String(userId) });
+    const decorated = await decorateMessages(result.messages, { userId: String(userId) });
 
     res.json({
       success: true,
@@ -557,7 +558,7 @@ export const getMessages = async (req: Request, res: Response) => {
 /**
  * POST /api/chat/conversations/:id/messages
  * Send a message. System conversations reject user replies.
- * Body: { text, replyTo?: { messageId, senderName, text }, messageType? }
+ * Body: { text, replyTo?: { messageId, senderName, text }, contentType? }
  */
 export const sendMessage = async (req: Request, res: Response) => {
   try {
@@ -579,34 +580,43 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(403).json({ success: false, message: 'Cannot reply to system conversations' });
     }
 
-    const { text, replyTo, messageType } = req.body;
-    if (!text || !text.trim()) {
-      return res.status(400).json({ success: false, message: 'Message text is required' });
+    const validation = validateIncomingMessage(req.body ?? {});
+    if (!validation.ok) {
+      return res.status(400).json({ success: false, reason: validation.reason });
     }
+    const normalized = validation.message;
 
     // Token metering — debit before persisting. On overflow the guard writes
-    // the 402 response itself; we just short-circuit.
-    const tokens = await guardTokens(String(userId), text.trim(), res);
+    // the 402 response itself; we just short-circuit. Use the rendered text
+    // so non-text messages still meter proportionally to their preview.
+    const meterInput = normalized.text || normalized.emoji || '';
+    const tokens = await guardTokens(String(userId), meterInput, res);
     if (!tokens) return;
 
     const message = await ChatMessage.create({
       conversationId,
       senderId: userId,
       senderName: user.name,
-      messageType: messageType || 'text',
-      text: text.trim(),
-      isSystem: false,
-      ...(replyTo && {
+      contentType: normalized.contentType,
+      text:        normalized.text,
+      attachments: normalized.attachments,
+      isSystem:    false,
+      ...(normalized.emoji    !== undefined && { emoji:    normalized.emoji }),
+      ...(normalized.contact  !== undefined && { contact:  normalized.contact }),
+      ...(normalized.location !== undefined && { location: normalized.location }),
+      ...(normalized.date     !== undefined && { date:     normalized.date }),
+      ...(normalized.event    !== undefined && { event:    normalized.event }),
+      ...(normalized.replyTo && {
         replyTo: {
-          messageId: replyTo.messageId,
-          senderName: replyTo.senderName,
-          text: (replyTo.text || '').slice(0, 200),
+          messageId:  normalized.replyTo.messageId,
+          senderName: normalized.replyTo.senderName,
+          text:       normalized.replyTo.text,
         },
       }),
     });
 
     // Update conversation denormalized fields
-    const previewText = text.trim().slice(0, 100);
+    const previewText = buildPreviewText(normalized);
     await Conversation.updateOne(
       { _id: conversationId },
       {
@@ -694,7 +704,7 @@ export const deleteMessage = async (req: Request, res: Response) => {
 
     const message = await ChatMessage.findOneAndUpdate(
       { _id: messageId, conversationId, senderId: userId },
-      { text: 'This message was deleted', attachments: [], messageType: 'system' as const },
+      { text: 'This message was deleted', attachments: [], contentType: 'system' as const },
       { returnDocument: 'after' },
     );
 

@@ -2,6 +2,11 @@ import { http } from './http.js';
 import type {
   Conversation,
   ChatMessage,
+  ChatContentType,
+  ChatContactPayload,
+  ChatLocationPayload,
+  ChatDatePayload,
+  ChatEventPayload,
   SearchedUser,
 } from '../../components/chat/types.js';
 import type { Pagination } from './hashtags.api.js';
@@ -28,7 +33,7 @@ interface MessagesResponse {
   lastReadMessageId?: string | null;
 }
 
-export interface TokenResponse {
+interface TokenResponse {
   plan:      'free' | 'pro';
   cost:      number;
   remaining: { daily?: number; weekly?: number; monthly?: number };
@@ -189,9 +194,15 @@ interface CreateConversationBody {
   publicName?:    string;
 }
 
-interface SendMessageBody {
-  text:         string;
-  messageType?: string;
+export interface SendMessageBody {
+  text?:        string;
+  contentType?: ChatContentType;
+  emoji?:       string;
+  contact?:     ChatContactPayload;
+  location?:    ChatLocationPayload;
+  date?:        ChatDatePayload;
+  event?:       ChatEventPayload;
+  attachments?: string[];
   replyTo?: {
     messageId:  string;
     senderName: string;

@@ -183,7 +183,7 @@ export const messagesReducer = (
         ...state,
         messages: state.messages.map((m) =>
           m._id === action.messageId
-            ? { ...m, text: 'This message was deleted', messageType: 'system' as const }
+            ? { ...m, text: 'This message was deleted', contentType: 'system' as const }
             : m,
         ),
       };

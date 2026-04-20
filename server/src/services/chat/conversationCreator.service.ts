@@ -27,7 +27,7 @@ import { syncParticipants } from './conversationParticipants.service.js';
  * `FlattenMaps` / `HydratedDocument` mismatch under `exactOptionalPropertyTypes`.
  * Callers that need fields pluck them off this shape.
  */
-export type LeanConversation = Record<string, unknown> & { _id: mongoose.Types.ObjectId };
+type LeanConversation = Record<string, unknown> & { _id: mongoose.Types.ObjectId };
 
 type IdLike = mongoose.Types.ObjectId | string;
 
@@ -61,7 +61,7 @@ const retryOnSlugCollision = async <T>(factory: () => Promise<T>, attempts = 3):
  * Direct chats always have exactly 2 participants, so a conversation that
  * both users belong to is the pair chat.
  */
-export const findDirectBetween = async (userA: IdLike, userB: IdLike) => {
+const findDirectBetween = async (userA: IdLike, userB: IdLike) => {
   const matches = await ConversationParticipant.aggregate<{ _id: mongoose.Types.ObjectId }>([
     { $match: { userId: { $in: [toObjectId(userA), toObjectId(userB)] } } },
     { $group: { _id: '$conversationId', count: { $sum: 1 } } },
@@ -76,7 +76,7 @@ export const findDirectBetween = async (userA: IdLike, userB: IdLike) => {
   }).lean();
 };
 
-export interface CreateDirectArgs {
+interface CreateDirectArgs {
   userA:     IdLike;
   userB:     IdLike;
   createdBy: IdLike;
@@ -121,7 +121,7 @@ export const createDirectConversation = async ({
 
 // ─── Group ──────────────────────────────────────────────────────────────────
 
-export interface CreateGroupArgs {
+interface CreateGroupArgs {
   title:          string;
   /** User-supplied slug. Pre-validated by the caller. */
   publicName:     string;
@@ -129,7 +129,7 @@ export interface CreateGroupArgs {
   createdBy:      IdLike;
 }
 
-export type CreateGroupResult =
+type CreateGroupResult =
   | { ok: true;  conversation: LeanConversation }
   | { ok: false; reason: 'slug-taken' };
 
@@ -175,7 +175,7 @@ export const createGroupConversation = async ({
  * Find the existing API-driven conversation between an owner and an
  * external email.
  */
-export const findApiBetween = async (createdBy: IdLike, email: string) => {
+const findApiBetween = async (createdBy: IdLike, email: string) => {
   return Conversation.findOne({
     type: 'api',
     createdBy: toObjectId(createdBy),
@@ -183,7 +183,7 @@ export const findApiBetween = async (createdBy: IdLike, email: string) => {
   }).lean();
 };
 
-export interface CreateApiArgs {
+interface CreateApiArgs {
   createdBy: IdLike;
   externalUser: {
     name:  string;

@@ -116,10 +116,10 @@ export const MessageThread = memo(({
   }
 
   return (
-    <div className="relative flex-1 min-h-0">
+    <div className="relative flex-1 min-h-0 min-w-0 overflow-x-hidden">
       <div
         ref={scroll.containerRef}
-        className="h-full overflow-y-auto custom-scrollbar px-4 py-2"
+        className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar px-2 sm:px-3 md:px-4 py-2"
       >
         {/* Top sentinel — drives older-messages pagination. Kept outside the
             virtualized block so its IntersectionObserver is never detached. */}

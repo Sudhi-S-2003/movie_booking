@@ -13,6 +13,7 @@ export const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', username: '', email: '', password: '' });
+  const [loginId, setLoginId]   = useState('');   // email OR username for /login
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
@@ -30,7 +31,7 @@ export const Auth = () => {
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const payload = isLogin
-        ? { email: formData.email, password: formData.password }
+        ? { identifier: loginId.trim(), password: formData.password }
         : formData;
 
       const { data } = await axios.post(`${API_URL}${endpoint}`, payload);
@@ -107,14 +108,29 @@ export const Auth = () => {
 
             <div className="relative group">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent-blue transition-colors" size={20} />
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                value={formData.email}
-                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-blue/50 transition-all font-bold"
-              />
+              {isLogin ? (
+                <input
+                  type="text"
+                  placeholder="Email or username"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={loginId}
+                  onChange={e => setLoginId(e.target.value)}
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-blue/50 transition-all font-bold"
+                />
+              ) : (
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  autoComplete="email"
+                  value={formData.email}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-blue/50 transition-all font-bold"
+                />
+              )}
             </div>
 
             <div className="relative group">

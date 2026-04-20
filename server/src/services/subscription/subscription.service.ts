@@ -39,7 +39,7 @@ export const getOrCreateForUser = async (userId: UserIdLike): Promise<Subscripti
 /**
  * If a paid sub has passed its expiresAt, flip it back to free.
  */
-export const expireIfNeeded = async (sub: SubscriptionDoc): Promise<SubscriptionDoc> => {
+const expireIfNeeded = async (sub: SubscriptionDoc): Promise<SubscriptionDoc> => {
   if (sub.plan === 'free') return sub;
   if (!sub.expiresAt || sub.expiresAt.getTime() > Date.now()) return sub;
 
@@ -55,30 +55,7 @@ export const expireIfNeeded = async (sub: SubscriptionDoc): Promise<Subscription
   return sub;
 };
 
-export const revertToFree = async (userId: UserIdLike): Promise<SubscriptionDoc> => {
-  const uid = toObjectId(userId);
-  const sub = await Subscription.findOneAndUpdate(
-    { userId: uid },
-    {
-      plan: 'free',
-      status: 'active',
-      startsAt: new Date(),
-      $unset: {
-        billingCycle: 1,
-        expiresAt: 1,
-        lastPaymentId: 1,
-        customMonthlyLimit: 1,
-        customDurationMonths: 1,
-      },
-    },
-    { upsert: true, new: true },
-  );
-  if (!sub) throw new Error('Failed to upsert subscription');
-  await ensureBuckets(uid, 'free');
-  return sub;
-};
-
-export interface ActivatePaidPlanOptions {
+interface ActivatePaidPlanOptions {
   plan:       PaidPlanKey | 'enterprise';
   cycle?:     BillingCycle;
   paymentId:  string;
@@ -159,7 +136,7 @@ export const cancelAtPeriodEnd = async (userId: UserIdLike): Promise<Subscriptio
   );
 };
 
-export interface SubscriptionSummary {
+interface SubscriptionSummary {
   sub:       SubscriptionDoc;
   remaining: RemainingSummary;
 }

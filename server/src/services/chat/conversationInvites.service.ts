@@ -36,7 +36,7 @@ const generateToken = (): string =>
 
 // ─── Creation ───────────────────────────────────────────────────────────────
 
-export interface CreateInviteArgs {
+interface CreateInviteArgs {
   conversationId: IdLike;
   createdBy:      IdLike;
   /** TTL from now in milliseconds. Omit for a non-expiring invite. */
@@ -63,7 +63,7 @@ export const createInvite = async (args: CreateInviteArgs): Promise<Conversation
 
 // ─── Listing ────────────────────────────────────────────────────────────────
 
-export interface ListInvitesResult {
+interface ListInvitesResult {
   invites:    ConversationInviteDoc[];
   pagination: PageEnvelope;
 }

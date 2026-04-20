@@ -42,13 +42,23 @@ export const QuickSuggestions = memo(({ onSelect, onClose }: QuickSuggestionsPro
   return (
     <div
       ref={containerRef}
-      className="absolute bottom-full left-0 mb-2 z-50 min-w-[200px]"
+      className="
+        z-50
+        max-[640px]:fixed max-[640px]:inset-x-0 max-[640px]:bottom-0
+        sm:absolute sm:bottom-full sm:left-0 sm:mb-2 sm:min-w-[200px]
+      "
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <motion.div
         initial={{ opacity: 0, y: 10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-        className="bg-[#1a1a1e]/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 p-2"
+        className="
+          bg-[#1a1a1e]/95 backdrop-blur-xl border border-white/[0.08]
+          overflow-hidden shadow-2xl shadow-black/50 p-2
+          max-[640px]:rounded-t-3xl max-[640px]:border-t-0 max-[640px]:max-h-[70dvh] max-[640px]:overflow-y-auto
+          sm:rounded-2xl
+        "
       >
         <div className="px-3 py-2 border-b border-white/[0.06] mb-1">
           <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">

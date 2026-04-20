@@ -194,8 +194,6 @@ export const PLAN_CATALOG = {
   },
 } as const;
 
-export const SUBSCRIPTION_PLANS = PLAN_CATALOG;
-
 export type PaidPlanKey = 'pro' | 'proMax';
 
 export const cycleToDurationDays = (
@@ -227,7 +225,7 @@ export const cycleToPriceInPaise = (
  * price (e.g. quarterly vs monthly Pro is already 10% cheaper; the first-time
  * promo then applies to that already-discounted base).
  */
-export const PROMO_DISCOUNTS = [60, 50, 0] as const;
+const PROMO_DISCOUNTS = [60, 50, 0] as const;
 
 export const promoDiscountFor = (purchasesCount: number): number => {
   if (purchasesCount <= 0) return PROMO_DISCOUNTS[0];

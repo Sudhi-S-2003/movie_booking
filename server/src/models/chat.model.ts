@@ -121,15 +121,54 @@ ConversationSchema.index(
 
 // ─── ChatMessage ─────────────────────────────────────────────────────────────
 
-export type ChatMessageType = 'text' | 'image' | 'file' | 'system';
+export type ChatContentType =
+  | 'text'
+  | 'emoji'
+  | 'contact'
+  | 'location'
+  | 'image'
+  | 'file'
+  | 'system'
+  | 'date'
+  | 'event';
+
+export interface ChatContactPayload {
+  name?:        string;
+  phone:        string;
+  countryCode:  string;
+}
+
+export interface ChatLocationPayload {
+  lat:    number;
+  lng:    number;
+  label?: string;
+}
+
+export interface ChatDatePayload {
+  iso:    string;
+  label?: string;
+}
+
+export interface ChatEventPayload {
+  title:        string;
+  startsAt:     string;
+  endsAt?:      string;
+  location?:    string;
+  description?: string;
+}
 
 export interface ChatMessageDoc extends Document {
   conversationId: mongoose.Types.ObjectId;
   senderId?:      mongoose.Types.ObjectId;  // null for system messages
   senderName:     string;
-  messageType:    ChatMessageType;
+  contentType:    ChatContentType;
   text:           string;
   attachments:    string[];
+  emoji?:         string;
+  contact?:       ChatContactPayload;
+  location?:      ChatLocationPayload;
+  date?:          ChatDatePayload;
+  event?:         ChatEventPayload;
   replyTo?: {
     messageId:  mongoose.Types.ObjectId;
     senderName: string;
@@ -145,9 +184,77 @@ const ChatMessageSchema = new Schema<ChatMessageDoc>(
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     senderId:       { type: Schema.Types.ObjectId, ref: 'User' },
     senderName:     { type: String, required: true },
-    messageType:    { type: String, enum: ['text', 'image', 'file', 'system'], default: 'text' },
+    contentType: {
+      type:    String,
+      enum:    ['text', 'emoji', 'contact', 'location', 'image', 'file', 'system', 'date', 'event'],
+      default: 'text',
+    },
+    // `text` stays required so any code path that reads `.text` for preview
+    // gets a sensible fallback. For non-text types we synthesize one server-side.
     text:           { type: String, required: true },
     attachments:    [{ type: String }],
+
+    emoji: {
+      type: String,
+      validate: {
+        validator(this: ChatMessageDoc, v: string | undefined) {
+          if (this.contentType !== 'emoji') return v === undefined || v === null || v === '';
+          if (typeof v !== 'string' || v.length === 0) return false;
+          // Count USER-PERCEIVED characters (graphemes), not UTF-16 code units.
+          // A family emoji like 👨‍👩‍👧‍👦 is 1 grapheme but 11 code units (4
+          // emoji × 2 surrogate pairs + 3 ZWJ joiners), so a plain `.length`
+          // check would wrongly reject it.
+          try {
+            const Seg = (Intl as unknown as {
+              Segmenter?: new (locale?: string, opts?: { granularity: string }) => {
+                segment: (s: string) => Iterable<{ segment: string }>;
+              };
+            }).Segmenter;
+            if (!Seg) return v.length <= 64; // fallback: byte-length sanity cap
+            const seg = new Seg('en', { granularity: 'grapheme' });
+            let graphemes = 0;
+            for (const _ of seg.segment(v)) {
+              graphemes += 1;
+              if (graphemes > 8) return false;
+            }
+            return graphemes >= 1 && graphemes <= 8;
+          } catch {
+            return v.length <= 64;
+          }
+        },
+        message: 'emoji must be 1–8 graphemes when contentType is emoji',
+      },
+    },
+
+    contact: {
+      _id:         false,
+      name:        { type: String, trim: true },
+      phone:       { type: String, trim: true },
+      countryCode: { type: String, trim: true },
+    },
+
+    location: {
+      _id:   false,
+      lat:   { type: Number },
+      lng:   { type: Number },
+      label: { type: String, trim: true },
+    },
+
+    date: {
+      _id:   false,
+      iso:   { type: String, trim: true },
+      label: { type: String, trim: true },
+    },
+
+    event: {
+      _id:         false,
+      title:       { type: String, trim: true },
+      startsAt:    { type: String, trim: true },
+      endsAt:      { type: String, trim: true },
+      location:    { type: String, trim: true },
+      description: { type: String, trim: true },
+    },
+
     replyTo: {
       messageId:  { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
       senderName: { type: String },
@@ -157,6 +264,89 @@ const ChatMessageSchema = new Schema<ChatMessageDoc>(
   },
   { timestamps: true },
 );
+
+// ── Conditional document-level validation ──────────────────────────────────
+// Centralizes the cross-field rules so the schema enforces the taxonomy and
+// the controllers can rely on it (defense-in-depth — they also validate
+// upfront to produce the precise `reason` codes documented in the API).
+//
+// Mongoose auto-materializes nested schema paths as empty objects (so a doc
+// with no contact still has `doc.contact = {}`). We therefore check for
+// MEANINGFUL content on the subdoc, not mere truthiness, and strip empty
+// subdocs before save so they don't linger in the database.
+//
+// Mongoose 9 removed the `next` callback from `pre('validate')` — hooks now
+// signal failure by throwing and success by returning normally.
+const hasContactPayload = (c: ChatMessageDoc['contact']): boolean =>
+  !!c && !!(c.phone || c.countryCode || c.name);
+
+const hasLocationPayload = (l: ChatMessageDoc['location']): boolean =>
+  !!l && (typeof l.lat === 'number' || typeof l.lng === 'number' || !!l.label);
+
+const hasDatePayload = (d: ChatMessageDoc['date']): boolean =>
+  !!d && (!!d.iso || !!d.label);
+
+const hasEventPayload = (e: ChatMessageDoc['event']): boolean =>
+  !!e && (!!e.title || !!e.startsAt || !!e.endsAt || !!e.location || !!e.description);
+
+ChatMessageSchema.pre('validate', function chatContentTypeValidator(this: ChatMessageDoc) {
+  const doc = this;
+
+  if (doc.contentType === 'contact') {
+    const c = doc.contact;
+    if (!c || typeof c.phone !== 'string' || c.phone.length < 3 || c.phone.length > 20) {
+      throw new Error('contact.phone must be a 3-20 char string');
+    }
+    if (typeof c.countryCode !== 'string' || !/^\+\d{1,4}$/.test(c.countryCode)) {
+      throw new Error('contact.countryCode must match +<1-4 digits>');
+    }
+  } else if (hasContactPayload(doc.contact)) {
+    throw new Error('contact payload not allowed for this contentType');
+  } else if (doc.contact) {
+    // Empty subdoc — drop it so we don't persist noise.
+    doc.set('contact', undefined);
+  }
+
+  if (doc.contentType === 'location') {
+    const l = doc.location;
+    if (!l || typeof l.lat !== 'number' || l.lat < -90 || l.lat > 90) {
+      throw new Error('location.lat must be a number in [-90, 90]');
+    }
+    if (typeof l.lng !== 'number' || l.lng < -180 || l.lng > 180) {
+      throw new Error('location.lng must be a number in [-180, 180]');
+    }
+  } else if (hasLocationPayload(doc.location)) {
+    throw new Error('location payload not allowed for this contentType');
+  } else if (doc.location) {
+    doc.set('location', undefined);
+  }
+
+  if (doc.contentType === 'date') {
+    const d = doc.date;
+    if (!d || typeof d.iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d.iso)) {
+      throw new Error('date.iso must match YYYY-MM-DD');
+    }
+  } else if (hasDatePayload(doc.date)) {
+    throw new Error('date payload not allowed for this contentType');
+  } else if (doc.date) {
+    doc.set('date', undefined);
+  }
+
+  if (doc.contentType === 'event') {
+    const e = doc.event;
+    if (!e || typeof e.title !== 'string' || !e.title.trim()) {
+      throw new Error('event.title is required');
+    }
+    if (typeof e.startsAt !== 'string' || Number.isNaN(Date.parse(e.startsAt))) {
+      throw new Error('event.startsAt must be an ISO datetime');
+    }
+  } else if (hasEventPayload(doc.event)) {
+    throw new Error('event payload not allowed for this contentType');
+  } else if (doc.event) {
+    doc.set('event', undefined);
+  }
+
+});
 
 // Composite cursor pagination — loadOlder (default)
 ChatMessageSchema.index({ conversationId: 1, createdAt: -1, _id: -1 });
@@ -174,7 +364,7 @@ ChatMessageSchema.index({ conversationId: 1, createdAt: 1, _id: 1 });
 // keep their single-document reads. Write-through keeps the two in sync; the
 // members endpoint treats this collection as the source of truth.
 
-export interface ConversationParticipantDoc extends Document {
+interface ConversationParticipantDoc extends Document {
   conversationId: mongoose.Types.ObjectId;
   userId:         mongoose.Types.ObjectId;
   role:           'owner' | 'member';

@@ -23,7 +23,7 @@ import { useEffect, useRef } from 'react';
  *
  * No-op when not inside an iframe (top-level page).
  */
-export interface ChatWidgetEvent {
+interface ChatWidgetEvent {
   type:    'chat:ready' | 'chat:unread' | 'chat:message' | 'chat:close';
   payload: Record<string, unknown>;
 }

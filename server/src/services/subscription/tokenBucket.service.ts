@@ -95,33 +95,16 @@ const specsFor = async (
   return freeSpecs();
 };
 
-/**
- * Test seam — lets test code override bucket limits without monkey-patching
- * the plan constants. Null values fall back to the plan catalog.
- */
-const limitOverrides: Partial<Record<BucketWindow, number | null>> = {
-  daily: null, weekly: null, monthly: null,
-};
-
-/** @internal exported for tests. */
-export const __setLimitOverride = (
-  window: BucketWindow,
-  limit: number | null,
-): void => { limitOverrides[window] = limit; };
-
-const effectiveLimit = (spec: WindowSpec): number =>
-  limitOverrides[spec.window] ?? spec.limit;
-
 const rollOverIfDue = async (bucket: TokenBucketDoc, spec: WindowSpec): Promise<TokenBucketDoc> => {
   const now = new Date();
   if (bucket.resetAt.getTime() <= now.getTime()) {
     bucket.used = 0;
     bucket.resetAt = computeResetAt(spec, now);
-    bucket.limit = effectiveLimit(spec);
+    bucket.limit = spec.limit;
     await bucket.save();
-  } else if (bucket.limit !== effectiveLimit(spec)) {
+  } else if (bucket.limit !== spec.limit) {
     // Plan change (e.g. upgrade/downgrade) — resync the stored limit.
-    bucket.limit = effectiveLimit(spec);
+    bucket.limit = spec.limit;
     await bucket.save();
   }
   return bucket;
@@ -149,14 +132,13 @@ export const ensureBuckets = async (
   const now = new Date();
   const buckets: TokenBucketDoc[] = [];
   for (const spec of specs) {
-    const limit = effectiveLimit(spec);
     const existing = await TokenBucket.findOne({ userId: uid, window: spec.window });
     const bucket = existing
       ? await rollOverIfDue(existing as unknown as TokenBucketDoc, spec)
       : (await TokenBucket.create({
           userId:  uid,
           window:  spec.window,
-          limit,
+          limit:   spec.limit,
           used:    0,
           resetAt: computeResetAt(spec, now),
         })) as unknown as TokenBucketDoc;
@@ -197,7 +179,7 @@ export const getRemaining = async (
   return summary;
 };
 
-export interface DebitResult {
+interface DebitResult {
   ok:        boolean;
   remaining: RemainingSummary;
   blockedBy?: BucketWindow;

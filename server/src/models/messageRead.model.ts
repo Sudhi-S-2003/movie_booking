@@ -16,7 +16,7 @@
 
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface MessageReadDoc extends Document {
+interface MessageReadDoc extends Document {
   conversationId:   mongoose.Types.ObjectId;
   messageId:        mongoose.Types.ObjectId;
   userId?:          mongoose.Types.ObjectId;

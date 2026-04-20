@@ -5,7 +5,7 @@ import { debit } from './tokenBucket.service.js';
 import { getOrCreateForUser } from './subscription.service.js';
 import type { SubscriptionPlan } from '../../models/subscription.model.js';
 
-export interface DebitOutcome {
+interface DebitOutcome {
   ok: true;
   cost: number;
   plan: SubscriptionPlan;

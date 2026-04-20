@@ -12,7 +12,6 @@ class ChatListSocketService extends EmitterSocket {
     this.forward('unread_changed');
     this.forward('conversation_updated');
     this.forward('new_conversation');
-    this.forward('subscription_updated');
   }
 }
 

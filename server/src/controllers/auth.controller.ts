@@ -59,9 +59,25 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    // Accept either `email`, `username`, or a generic `identifier`. Whichever
+    // one the client sends, we resolve to a single user lookup. Email is
+    // detected by the presence of `@`; everything else is treated as a
+    // username. Stored values are case-insensitive for both fields — match
+    // them against a case-insensitive anchored regex so "ADMIN" still finds
+    // the user whose username is stored as "admin".
+    const raw = (req.body?.identifier ?? req.body?.email ?? req.body?.username ?? '')
+      .toString()
+      .trim();
+    const password = req.body?.password;
+    if (!raw || !password) {
+      return res.status(400).json({ success: false, message: 'Credentials required' });
+    }
 
-    const user = await User.findOne({ email }).select('+password');
+    const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const anchored = new RegExp(`^${escape(raw)}$`, 'i');
+    const user = raw.includes('@')
+      ? await User.findOne({ email: anchored }).select('+password')
+      : await User.findOne({ username: anchored }).select('+password');
 
     if (!user || user.authProvider !== AuthProvider.LOCAL || !user.password) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });

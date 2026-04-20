@@ -22,13 +22,13 @@ const toObjectId = (v: IdLike) => new mongoose.Types.ObjectId(String(v));
 
 // ─── Submission ─────────────────────────────────────────────────────────────
 
-export interface SubmitJoinRequestArgs {
+interface SubmitJoinRequestArgs {
   conversationId: IdLike;
   userId:         IdLike;
   message?:       string;
 }
 
-export interface SubmitJoinRequestResult {
+interface SubmitJoinRequestResult {
   request:  ConversationJoinRequestDoc;
   created:  boolean; // false → there was already a pending request
 }
@@ -86,7 +86,7 @@ export const countPending = (conversationId: IdLike): Promise<number> =>
 
 // ─── Paginated listing for owner review ─────────────────────────────────────
 
-export interface ListedJoinRequest {
+interface ListedJoinRequest {
   _id:       string;
   user:      { _id: string; name: string; username: string; avatar?: string };
   status:    JoinRequestStatus;
@@ -94,12 +94,12 @@ export interface ListedJoinRequest {
   createdAt: Date;
 }
 
-export interface ListRequestsResult {
+interface ListRequestsResult {
   requests:   ListedJoinRequest[];
   pagination: PageEnvelope;
 }
 
-export interface ListRequestsArgs {
+interface ListRequestsArgs {
   conversationId: IdLike;
   status?:        JoinRequestStatus;
   page:           PageParams;
@@ -157,7 +157,7 @@ export const listRequests = async ({
 
 // ─── Resolution (approve / reject) ──────────────────────────────────────────
 
-export interface ResolveRequestArgs {
+interface ResolveRequestArgs {
   requestId:      IdLike;
   conversationId: IdLike;
   resolverId:     IdLike;

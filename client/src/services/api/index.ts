@@ -23,6 +23,6 @@ export type { ApiKeyRecord, ApiKeyCategory } from './apiKeys.api.js';
 export { subscriptionApi } from './subscription.api.js';
 export type {
   SubscriptionPlan, BillingCycle, SubscriptionInfo, TokenRemaining,
-  SubscriptionSummaryResponse, PlanCatalogItem, PlanCatalogResponse,
-  SubscriptionCheckoutResponse, TokenResponse,
+  PlanCatalogItem, PlanCatalogResponse,
 } from './subscription.api.js';
+export type { PaidPlan } from './subscription.api.js';

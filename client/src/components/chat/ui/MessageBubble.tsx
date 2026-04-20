@@ -2,8 +2,18 @@ import React, { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, RotateCw } from 'lucide-react';
 import { MessageStatus } from './MessageStatus.js';
-import { MessageText } from './MessageText.js';
 import { ReplyPreview } from './ReplyPreview.js';
+import {
+  TextBubble,
+  EmojiBubble,
+  ContactBubble,
+  LocationBubble,
+  ImageBubble,
+  FileBubble,
+  SystemBubble,
+  DateBubble,
+  EventBubble,
+} from './bubbles/index.js';
 import type { ChatMessage } from '../types.js';
 
 interface MessageBubbleProps {
@@ -20,6 +30,16 @@ interface MessageBubbleProps {
   onJumpToMessage?: (messageId: string) => void;
 }
 
+/**
+ * Dispatcher that routes to the per-type bubble renderer. Owns the shared
+ * wrapping concerns (avatar, sender name, timestamp, delivery status,
+ * own/other alignment, hover actions) so each bubble component only has to
+ * render its inner content.
+ *
+ * Backward-compat: legacy rows with no `contentType` (or with `'text'`)
+ * fall through to TextBubble; the emoji/contact/location branches only
+ * trigger when the payload is actually present.
+ */
 export const MessageBubble = memo(({
   msg,
   isOwn,
@@ -36,21 +56,49 @@ export const MessageBubble = memo(({
   const [copied, setCopied] = useState(false);
   const isSending = msg._status === 'sending';
   const isFailed  = msg._status === 'failed';
-  const isSystemMsg = msg.isSystem || msg.messageType === 'system';
+  const isSystemMsg = msg.isSystem || msg.contentType === 'system';
+  const isEmoji = msg.contentType === 'emoji';
 
-  // System messages render centered
+  // System messages render centered — no avatar, no alignment.
   if (isSystemMsg) {
     return (
       <>
         {showDateSeparator && <DateSeparator label={dateLabel} />}
-        <div className="flex justify-center my-2">
-          <span className="text-[10px] text-white/30 bg-white/[0.04] border border-white/[0.06] rounded-full px-3 py-1 font-medium">
-            {msg.text}
-          </span>
-        </div>
+        <SystemBubble msg={msg} />
       </>
     );
   }
+
+  const renderInner = () => {
+    switch (msg.contentType) {
+      case 'emoji':
+        return <EmojiBubble msg={msg} />;
+      case 'contact':
+        return <ContactBubble msg={msg} isOwn={isOwn} />;
+      case 'location':
+        return <LocationBubble msg={msg} isOwn={isOwn} />;
+      case 'image':
+        return <ImageBubble msg={msg} isOwn={isOwn} />;
+      case 'file':
+        return <FileBubble msg={msg} isOwn={isOwn} />;
+      case 'date':
+        return <DateBubble msg={msg} isOwn={isOwn} />;
+      case 'event':
+        return <EventBubble msg={msg} isOwn={isOwn} />;
+      case 'text':
+      default:
+        return (
+          <TextBubble
+            msg={msg}
+            isOwn={isOwn}
+            isSameGroupPrev={isSameGroupPrev}
+            showDateSeparator={showDateSeparator}
+            isFailed={isFailed}
+            {...(onJumpToMessage ? { onJumpToMessage } : {})}
+          />
+        );
+    }
+  };
 
   return (
     <>
@@ -65,13 +113,17 @@ export const MessageBubble = memo(({
           backgroundColor: isHighlighted ? 'rgba(139, 92, 246, 0.12)' : 'rgba(0, 0, 0, 0)',
         }}
         transition={{ duration: 0.2 }}
-        className={`flex items-end gap-2 rounded-xl px-1 -mx-1 ${isOwn ? 'flex-row-reverse' : 'flex-row'} ${
+        // `w-full min-w-0` is load-bearing: without an explicit width on this
+        // flex row, the percentage max-width on the inner bubble collapses
+        // (browsers can't resolve `78%` against a parent whose own width is
+        // determined by its content). That caused long messages to render
+        // wider than the viewport on mobile.
+        className={`flex w-full min-w-0 items-end gap-2 rounded-xl ${isOwn ? 'flex-row-reverse' : 'flex-row'} ${
           isSameGroupPrev && !showDateSeparator ? 'mt-0.5' : 'mt-3'
         } group`}
       >
-        {/* Avatar */}
         <div className="w-7 h-7 flex-shrink-0">
-          {!isSameGroupNext && (
+          {!isSameGroupNext && !isEmoji && (
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
                 isOwn
@@ -84,19 +136,15 @@ export const MessageBubble = memo(({
           )}
         </div>
 
-        {/* Bubble content */}
-        <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[550px] ${isOwn ? 'items-end' : 'items-start'}`}>
-          {/* Sender name */}
-          {!isSameGroupPrev && !isOwn && (
+        <div className={`flex flex-col min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[60%] xl:max-w-[520px] ${isOwn ? 'items-end' : 'items-start'}`}>
+          {!isSameGroupPrev && !isOwn && !isEmoji && (
             <span className="text-[8px] font-bold uppercase tracking-widest mb-1 px-1 text-white/30">
               {msg.senderName}
             </span>
           )}
 
-          {/* Bubble */}
           <div className="relative group/bubble">
-            {/* Hover actions */}
-            {!isSending && (onReply || onDelete || true) && (
+            {!isSending && (
               <div className={`absolute top-1/2 -translate-y-1/2 opacity-0 group-hover/bubble:opacity-100 transition-opacity flex gap-0.5 z-10 ${
                 isOwn ? '-left-24' : '-right-24'
               }`}>
@@ -111,21 +159,11 @@ export const MessageBubble = memo(({
                 >
                   <AnimatePresence mode="wait">
                     {copied ? (
-                      <motion.div
-                        key="check"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                      >
+                      <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
                         <Check size={12} className="text-emerald-400" />
                       </motion.div>
                     ) : (
-                      <motion.div
-                        key="copy"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                      >
+                      <motion.div key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
                         <Copy size={12} />
                       </motion.div>
                     )}
@@ -157,46 +195,30 @@ export const MessageBubble = memo(({
               </div>
             )}
 
-            <div
-              className={`relative px-3.5 py-2.5 text-[12px] leading-relaxed transition-all duration-300 ${
-                isOwn
-                  ? 'bg-gradient-to-br from-[#3730a3] via-[#4338ca] to-[#5b21b6] text-white rounded-2xl rounded-br-md shadow-2xl shadow-indigo-900/50 ring-1 ring-inset ring-white/[0.15]'
-                  : 'bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.05] text-gray-200 rounded-2xl rounded-bl-md backdrop-blur-2xl shadow-lg shadow-black/20'
-              } ${
-                isSameGroupPrev && !showDateSeparator
-                  ? isOwn ? 'rounded-tr-md' : 'rounded-tl-md'
-                  : ''
-              } ${isFailed ? 'ring-2 ring-red-500/50' : ''}`}
-            >
-              {/* Reply preview — clickable to jump to original message */}
-              {msg.replyTo && (
+            {/* Non-text bubbles render their own reply preview inline when they
+                need one; TextBubble already embeds ReplyPreview. For media /
+                card bubbles we render reply preview above as a small hint. */}
+            {msg.replyTo && msg.contentType !== 'text' && msg.contentType !== 'emoji' && (
+              <div className="mb-1">
                 <ReplyPreview
                   senderName={msg.replyTo.senderName}
                   text={msg.replyTo.text}
                   isOwn={isOwn}
-                  onClick={onJumpToMessage ? () => onJumpToMessage(msg.replyTo!.messageId) : undefined}
+                  {...(onJumpToMessage && { onClick: () => onJumpToMessage(msg.replyTo!.messageId) })}
                 />
-              )}
+              </div>
+            )}
 
-              <MessageText text={msg.text} isOwn={isOwn} />
-            </div>
+            {renderInner()}
           </div>
 
-          {/* Timestamp + status */}
           {!isSameGroupNext && (
             <div className={`flex items-center gap-1.5 mt-1 px-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
-              <span className="text-[9px] font-medium text-white/25 tabular-nums">
-                {new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour:   '2-digit',
-                  minute: '2-digit',
-                })}
+              <span className={`text-[9px] font-medium tabular-nums ${isEmoji ? 'text-white/40' : 'text-white/25'}`}>
+                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
               {isOwn && (
-                <MessageStatus
-                  status={msg.deliveryStatus}
-                  isSending={isSending}
-                  isFailed={isFailed}
-                />
+                <MessageStatus status={msg.deliveryStatus} isSending={isSending} isFailed={isFailed} />
               )}
               {isFailed && (
                 <>
@@ -224,8 +246,6 @@ export const MessageBubble = memo(({
 });
 
 MessageBubble.displayName = 'MessageBubble';
-
-// ── Date Separator ───────────────────────────────────────────────────────────
 
 const DateSeparator: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-3 my-4">

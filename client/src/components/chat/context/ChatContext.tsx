@@ -18,7 +18,28 @@ import type {
   ConversationSortBy,
   ConversationSortOrder,
 } from '../hooks/useConversationFilters.js';
-import type { Conversation, ChatMessage } from '../types.js';
+import type {
+  Conversation,
+  ChatMessage,
+  ChatContentType,
+  ChatContactPayload,
+  ChatLocationPayload,
+  ChatDatePayload,
+  ChatEventPayload,
+} from '../types.js';
+import type { SendMessageBody } from '../../../services/api/chat.api.js';
+
+// ── Composer → context send payload ──────────────────────────────────────────
+// A tagged union so the caller picks the message type explicitly. Keeps the
+// context signature compact while the composer can send any of the new types
+// without us having to teach it about optimistic reconciliation separately.
+export type SendMessagePayload =
+  | { kind: 'text'; text: string }
+  | { kind: 'emoji'; emoji: string }
+  | { kind: 'contact'; contact: ChatContactPayload; caption?: string }
+  | { kind: 'location'; location: ChatLocationPayload; caption?: string }
+  | { kind: 'date'; date: ChatDatePayload; caption?: string }
+  | { kind: 'event'; event: ChatEventPayload; caption?: string };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -60,7 +81,7 @@ interface ChatContextValue {
   afterCursor:       string | null;
   loadBeforeMessages: (cursor: string) => Promise<void>;
   loadAfterMessages: (cursor: string) => Promise<void>;
-  sendMessage:       (text: string, replyTo?: ChatMessage) => Promise<void>;
+  sendMessage:       (payload: SendMessagePayload | string, replyTo?: ChatMessage) => Promise<void>;
   retryMessage:      (messageId: string) => Promise<void>;
   deleteMessage:     (messageId: string) => Promise<void>;
 
@@ -376,16 +397,25 @@ export const ChatProvider: React.FC<{
   const { merge: mergeSubscription } = useSubscription();
 
   const dispatchSend = useCallback(async (optimistic: ChatMessage) => {
-    const body = {
-      text: optimistic.text,
-      ...(optimistic.replyTo && {
-        replyTo: {
-          messageId:  optimistic.replyTo.messageId,
-          senderName: optimistic.replyTo.senderName,
-          text:       optimistic.replyTo.text,
-        },
-      }),
+    // Build the request body from the optimistic message — this lets
+    // retryMessage resend non-text messages exactly as originally sent without
+    // needing to stash the composer payload anywhere.
+    const body: SendMessageBody = {
+      contentType: optimistic.contentType,
+      ...(optimistic.text ? { text: optimistic.text } : {}),
     };
+    if (optimistic.emoji)    body.emoji    = optimistic.emoji;
+    if (optimistic.contact)  body.contact  = optimistic.contact;
+    if (optimistic.location) body.location = optimistic.location;
+    if (optimistic.date)     body.date     = optimistic.date;
+    if (optimistic.event)    body.event    = optimistic.event;
+    if (optimistic.replyTo) {
+      body.replyTo = {
+        messageId:  optimistic.replyTo.messageId,
+        senderName: optimistic.replyTo.senderName,
+        text:       optimistic.replyTo.text,
+      };
+    }
 
     try {
       const res = guestSession
@@ -410,11 +440,69 @@ export const ChatProvider: React.FC<{
     }
   }, [confirmOptimistic, guestSession, mergeSubscription]);
 
-  const sendMessage = useCallback(async (text: string, replyTo?: ChatMessage) => {
+  const sendMessage = useCallback(async (
+    payload: SendMessagePayload | string,
+    replyTo?: ChatMessage,
+  ) => {
     if (!selectedConversation) return;
 
     // We need either a logged-in user OR a guest session
     if (!user && !guestSession) return;
+
+    // Normalize the string shorthand (kept for backward-compat with callers
+    // that still pass a plain text string, e.g. any legacy thread views).
+    const normalized: SendMessagePayload = typeof payload === 'string'
+      ? { kind: 'text', text: payload }
+      : payload;
+
+    let contentType: ChatContentType = 'text';
+    let text = '';
+    let emoji: string | undefined;
+    let contact: ChatContactPayload | undefined;
+    let location: ChatLocationPayload | undefined;
+    let date: ChatDatePayload | undefined;
+    let event: ChatEventPayload | undefined;
+    switch (normalized.kind) {
+      case 'text':
+        text = normalized.text;
+        break;
+      case 'emoji':
+        contentType = 'emoji';
+        emoji = normalized.emoji;
+        text  = normalized.emoji;
+        break;
+      case 'contact':
+        contentType = 'contact';
+        contact = normalized.contact;
+        text = normalized.caption
+          ?? `📇 Contact: ${normalized.contact.name || `${normalized.contact.countryCode} ${normalized.contact.phone}`}`;
+        break;
+      case 'location':
+        contentType = 'location';
+        location = normalized.location;
+        text = normalized.caption ?? '📍 Location shared';
+        break;
+      case 'date': {
+        contentType = 'date';
+        date = normalized.date;
+        const short = (() => {
+          try {
+            const d = new Date(`${normalized.date.iso}T00:00:00Z`);
+            return Number.isNaN(d.getTime())
+              ? normalized.date.iso
+              : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+          } catch { return normalized.date.iso; }
+        })();
+        text = normalized.caption ?? `📅 ${normalized.date.label || short}`;
+        break;
+      }
+      case 'event': {
+        contentType = 'event';
+        event = normalized.event;
+        text = normalized.caption ?? `🗓 ${normalized.event.title}`;
+        break;
+      }
+    }
 
     const tempId = `temp-${++tempIdRef.current}-${Date.now()}`;
     const optimistic: ChatMessage = {
@@ -422,7 +510,7 @@ export const ChatProvider: React.FC<{
       conversationId: selectedConversation._id,
       senderId:       user?.id ?? null,
       senderName:     user?.name ?? guestSession?.name ?? 'Guest',
-      messageType:    'text',
+      contentType,
       text,
       attachments:    [],
       isSystem:       false,
@@ -430,6 +518,11 @@ export const ChatProvider: React.FC<{
       deliveryStatus: 'sent',
       _status:        'sending',
       createdAt:      new Date().toISOString(),
+      ...(emoji    ? { emoji }    : {}),
+      ...(contact  ? { contact }  : {}),
+      ...(location ? { location } : {}),
+      ...(date     ? { date }     : {}),
+      ...(event    ? { event }    : {}),
       ...(replyTo && {
         replyTo: {
           messageId:  replyTo._id,

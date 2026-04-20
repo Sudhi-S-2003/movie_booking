@@ -57,7 +57,7 @@ export const emitConversationUpdated = (
  * Emitters populate `participants` via the ConversationParticipant collection
  * before broadcasting so clients continue to receive a ready-to-render roster.
  */
-export interface WireConversation {
+interface WireConversation {
   _id:                unknown;
   type:               string;
   participants:       unknown[];
@@ -65,19 +65,6 @@ export interface WireConversation {
   isActive:           boolean;
   [key: string]:      unknown;
 }
-
-/** Subscription or bucket state changed — chat header badge refresh hint. */
-export const emitSubscriptionUpdated = (
-  namespace: Namespace,
-  userId: string,
-  payload: {
-    plan:      'free' | 'pro' | 'proMax' | 'enterprise';
-    remaining: { daily?: number; weekly?: number; monthly?: number };
-    expiresAt?: string | null;
-  },
-) => {
-  namespace.to(`user:${userId}`).emit('subscription_updated', payload);
-};
 
 /** A new conversation was created that includes this user. */
 export const emitNewConversation = (
