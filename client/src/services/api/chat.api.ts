@@ -215,7 +215,7 @@ export interface SendMessageBody {
 export const chatApi = {
   // Conversations
   getConversations: (params?: ConversationsQuery) =>
-    http.get<ConversationsResponse>('/chat/conversations', { params }),
+    http.get<ConversationsResponse>('/chat/conversations', { params: params as any }),
 
   createConversation: (body: CreateConversationBody) =>
     http.post<SingleConversationResponse>('/chat/conversations', body),
@@ -237,7 +237,7 @@ export const chatApi = {
 
   // Messages
   getMessages: (conversationId: string, params?: MessagesQuery, signal?: AbortSignal) =>
-    http.get<MessagesResponse>(`/chat/conversations/${conversationId}/messages`, { params, signal }),
+    http.get<MessagesResponse>(`/chat/conversations/${conversationId}/messages`, { params: params as any, signal }),
 
   sendMessage: (conversationId: string, body: SendMessageBody) =>
     http.post<SendMessageResponse>(`/chat/conversations/${conversationId}/messages`, body),

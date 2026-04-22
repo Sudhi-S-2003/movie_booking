@@ -1,5 +1,6 @@
 import { http } from './http.js';
 import type { Pagination } from '../../types/api.js';
+export type { Pagination };
 
 export interface Hashtag {
   _id:           string;

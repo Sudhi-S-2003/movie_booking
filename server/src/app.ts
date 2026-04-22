@@ -21,6 +21,7 @@ import chatRoutes from './routes/chat.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
 import apiKeyPublicRoutes from './routes/apiKey.public.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
+import webhookRoutes from './routes/webhook.routes.js';
 
 const app = express();
 
@@ -31,6 +32,12 @@ app.use(cors({
   credentials: true
 }));
 app.use(morgan('dev'));
+
+// Webhook routes register BEFORE the global json parser so their per-route
+// `express.raw` body capture (needed for HMAC over the exact bytes) isn't
+// clobbered by a preceding `express.json` that already drained the stream.
+app.use('/api/webhooks', webhookRoutes);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));

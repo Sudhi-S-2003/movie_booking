@@ -15,6 +15,7 @@ export interface UseChatScrollReturn {
   nearBottomRef: React.MutableRefObject<boolean>;
   scrollToBottom: (smooth?: boolean) => void;
   restoreAnchor: () => void;
+  saveAnchor: () => void;
   scrollToMessageEl: (messageId: string, smooth?: boolean) => boolean;
 }
 
@@ -80,6 +81,12 @@ export function useChatScroll(issueId: string | null): UseChatScrollReturn {
     });
   }, []);
 
+  const saveAnchor = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    anchorRef.current = el.scrollHeight;
+  }, []);
+
   const flashHighlight = useCallback((messageId: string) => {
     setHighlightedId(messageId);
     if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
@@ -114,6 +121,7 @@ export function useChatScroll(issueId: string | null): UseChatScrollReturn {
     nearBottomRef,
     scrollToBottom,
     restoreAnchor,
+    saveAnchor,
     scrollToMessageEl,
-  }), [showScrollBtn, highlightedId, scrollToBottom, restoreAnchor, scrollToMessageEl]);
+  }), [showScrollBtn, highlightedId, scrollToBottom, restoreAnchor, saveAnchor, scrollToMessageEl]);
 }

@@ -11,6 +11,11 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('1d'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
+  /**
+   * Pre-shared secret for the `/webhooks/telinfy/signature` endpoint. If
+   * unset, the signature route rejects every request with `secret_unset`.
+   */
+  TELINFY_WEBHOOK_SECRET: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
