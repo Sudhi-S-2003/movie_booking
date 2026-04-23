@@ -1,5 +1,6 @@
 import React from 'react';
-import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound } from 'lucide-react';
+import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle } from 'lucide-react';
+
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { useAuthStore } from '../store/authStore.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
@@ -34,7 +35,9 @@ const useUserSidebarConfig = (): SidebarConfig => {
         label: 'Developer',
         items: [
           { icon: KeyRound, label: 'API Keys', to: '/user/api-keys', colorClass: 'text-emerald-400' },
+          { icon: Puzzle, label: 'Integrations', to: '/user/integrations', colorClass: 'text-accent-purple' },
         ],
+
       },
       {
         label: 'Help',

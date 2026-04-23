@@ -42,13 +42,24 @@ import { ChatInvite } from './pages/ChatInvite.js';
 import { ApiKeys } from './pages/ApiKeys.js';
 import { ApiKeyChat } from './pages/ApiKeyChat.js';
 import { Subscription } from './pages/Subscription.js';
+import { Integrations } from './pages/Integrations.js';
+import { useRoleRedirect } from './hooks/useRoleRedirect.js';
+
+const RoleRedirectHandler = () => {
+  useRoleRedirect();
+  return null;
+};
+
+
 
 
 const App = () => {
   return (
     <BrowserRouter>
+      <RoleRedirectHandler />
       <SubscriptionProvider>
       <BookingSessionProvider>
+
       <Routes>
         {}
         <Route path="/chat/:conversationId" element={<ApiKeyChat />} />
@@ -99,7 +110,9 @@ const App = () => {
           <Route path="chat/:conversationId/members" element={<ChatMembers />} />
           <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
           <Route path="api-keys" element={<ApiKeys />} />
+          <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Settings Module Coming Soon</div>} />
+
         </Route>
 
         {}
@@ -123,7 +136,9 @@ const App = () => {
           <Route path="chat/:conversationId/members" element={<ChatMembers />} />
           <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
           <Route path="api-keys" element={<ApiKeys />} />
+          <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">System Settings Hub Coming Soon</div>} />
+
         </Route>
 
         {}
@@ -145,7 +160,9 @@ const App = () => {
           <Route path="chat/:conversationId/members" element={<ChatMembers />} />
           <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
           <Route path="api-keys" element={<ApiKeys />} />
+          <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Account Settings Coming Soon</div>} />
+
         </Route>
 
         {}

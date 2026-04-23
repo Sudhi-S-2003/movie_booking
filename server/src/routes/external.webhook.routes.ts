@@ -20,17 +20,28 @@ import {
   telinfy,
   telinfySignature,
 } from '../controllers/webhooks/telinfy.controller.js';
+import { validateWebhookSignature } from '../middleware/webhook.middleware.js';
+
+
 
 const router = Router();
 
 // Plain probe — default JSON body parser is fine.
-router.use('/telinfy', json({ limit: '256kb' }), telinfy);
+router.use('/telinfy/:id/:signature', json({ limit: '256kb' }), validateWebhookSignature, telinfy);
+
 
 // Signed — raw body capture so the handler can HMAC over the original bytes.
 router.use(
-  '/telinfy/signature',
+  '/telinfy/:id/:signature/signature',
   raw({ type: 'application/json', limit: '256kb' }),
+  validateWebhookSignature,
   telinfySignature,
 );
 
+
+// Signed URL fallback — verifies the ID signature in the URL itself.
+router.post('/:type/:id/:signature', json({ limit: '256kb' }), validateWebhookSignature, telinfy);
+
+
 export default router;
+

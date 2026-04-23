@@ -65,6 +65,12 @@ export const PricingTier = {
 } as const;
 export type PricingTier = (typeof PricingTier)[keyof typeof PricingTier];
 
+export const IntegrationType = {
+  TELINFY: 'telinfy',
+} as const;
+export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType];
+
+
 // ── System Account ──────────────────────────────────────────────────────────
 // Internal server-side account used for system messages, notifications, etc.
 // This is NOT a real user — it's auto-created on first use (ensureSystemUser).

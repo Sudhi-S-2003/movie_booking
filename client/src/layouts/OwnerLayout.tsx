@@ -1,5 +1,6 @@
 import React from 'react';
-import { BarChart3, Layout as LayoutIcon, Clock, Settings, LifeBuoy, MessageCircle, KeyRound } from 'lucide-react';
+import { BarChart3, Layout as LayoutIcon, Clock, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle } from 'lucide-react';
+
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { OwnerProvider } from '../pages/dashboards/owner/context/OwnerContext.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
@@ -31,8 +32,10 @@ const config: SidebarConfig = {
       label: 'Developer',
       items: [
         { icon: KeyRound, label: 'API Keys', to: '/owner/api-keys', colorClass: 'text-emerald-400' },
+        { icon: Puzzle, label: 'Integrations', to: '/owner/integrations', colorClass: 'text-accent-purple' },
       ],
     },
+
   ],
   bottomItems: [
     { icon: Settings, label: 'Preferences', to: '/owner/settings', colorClass: 'text-gray-400' },

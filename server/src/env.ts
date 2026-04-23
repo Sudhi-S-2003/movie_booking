@@ -10,6 +10,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1).default('secret'),
   JWT_EXPIRES_IN: z.string().default('1d'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  API_URL: z.string().url().default('http://localhost:5000'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
   /**
    * Pre-shared secret for the `/webhooks/telinfy/signature` endpoint. If

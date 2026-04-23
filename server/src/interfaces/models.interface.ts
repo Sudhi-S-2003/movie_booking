@@ -8,7 +8,9 @@ import {
   PricingTier,
   MovieCertification,
   Language,
+  IntegrationType,
 } from '../constants/enums.js';
+
 
 /**
  * RefId — the shape a Mongoose foreign-key field can take in application code.
@@ -44,6 +46,7 @@ export interface ILayoutRow {
 /* ---------------- MODELS ---------------- */
 
 export interface IUser {
+  _id: RefId;
   name: string;
   username: string;
   email: string;
@@ -73,6 +76,7 @@ export interface IUser {
 }
 
 export interface IMovie {
+  _id: RefId;
   title: string;
   description: string;
   trailerUrl: string;
@@ -95,6 +99,7 @@ export interface IMovie {
 }
 
 export interface ITheatre {
+  _id: RefId;
   name: string;
   city: string;
   address: string;
@@ -113,6 +118,7 @@ export interface ITheatre {
 }
 
 export interface IScreen {
+  _id: RefId;
   theatreId: RefId;
   name: string;
   /** Dynamic layout defined on the admin screen editor. */
@@ -121,6 +127,7 @@ export interface IScreen {
 }
 
 export interface IShowtime {
+  _id: RefId;
   movieId: RefId;
   /** Denormalized for faster city-based queries. */
   theatreId: RefId;
@@ -135,6 +142,7 @@ export interface IShowtime {
 }
 
 export interface ISeatReservation {
+  _id: RefId;
   showtimeId: RefId;
   userId: RefId;
   /** Composite "RowName-SeatName" (e.g. "A-10"). */
@@ -147,6 +155,7 @@ export interface ISeatReservation {
 }
 
 export interface IWatchlist {
+  _id: RefId;
   userId: RefId;
   movieId: RefId;
   createdAt: Date;
@@ -156,6 +165,7 @@ export interface IWatchlist {
 export type ReviewTargetType = 'Movie' | 'Theatre';
 
 export interface IReview {
+  _id: RefId;
   userId:     RefId;
   targetId:   RefId;
   targetType: ReviewTargetType;
@@ -164,3 +174,13 @@ export interface IReview {
   createdAt:  Date;
   updatedAt:  Date;
 }
+
+export interface IIntegration {
+  _id: RefId;
+  userId: RefId;
+  type: IntegrationType;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
