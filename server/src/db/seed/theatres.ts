@@ -1,7 +1,7 @@
 import type { HydratedDocument, Types } from 'mongoose';
 import { Theatre } from '../../models/theatre.model.js';
 import { Screen } from '../../models/screen.model.js';
-import type { ITheatre, IScreen } from '../../interfaces/models.interface.js';
+import type { ITheatre, IScreen, RefId } from '../../interfaces/models.interface.js';
 import { theatresData, generateLayout } from '../seedData/theatres.data.js';
 import { log, toTag } from './helpers.js';
 
@@ -9,7 +9,7 @@ export type TheatreDoc = HydratedDocument<ITheatre>;
 export type ScreenDoc  = HydratedDocument<IScreen>;
 
 export const seedTheatresAndScreens = async (
-  ownerId: Types.ObjectId,
+  ownerId: RefId,
 ): Promise<{ theatres: TheatreDoc[]; screens: ScreenDoc[] }> => {
   log('🏛️', 'Seeding theatres and screens...');
   const theatres: TheatreDoc[] = [];

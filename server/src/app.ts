@@ -21,7 +21,7 @@ import chatRoutes from './routes/chat.routes.js';
 import apiKeyRoutes from './routes/apiKey.routes.js';
 import apiKeyPublicRoutes from './routes/apiKey.public.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
-import externalWebhookRoutes from './routes/external.webhook.routes.ts';
+import externalWebhookRoutes from './routes/external.webhook.routes.js';
 import integrationRoutes from './routes/integration.routes.js';
 
 

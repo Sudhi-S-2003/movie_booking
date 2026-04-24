@@ -184,7 +184,7 @@ export const updateShowtime = async (req: AuthRequest, res: Response) => {
       
       // Collision check (excluding current show)
       const collision = await Showtime.findOne({
-        _id: { $ne: id },
+        _id: { $ne: id } as any,
         screenId: existingShow.screenId,
         $or: [
           { startTime: { $lt: end }, endTime: { $gt: start } }
