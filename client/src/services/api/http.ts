@@ -20,7 +20,8 @@ import axios, {
 } from 'axios';
 import { useAuthStore } from '../../store/authStore.js';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 
 /** Structured error thrown whenever a request fails (network or server-side). */
 export class ApiError extends Error {

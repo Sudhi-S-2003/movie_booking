@@ -8,6 +8,20 @@ const ROLE_PREFIXES: Record<string, string> = {
   user: '/user',
 };
 
+/**
+ * Paths that exist under all role prefixes. 
+ * If a user accesses these at the root (e.g. /integrations), 
+ * we redirect them to their role-specific version (e.g. /admin/integrations).
+ */
+const SHORTHAND_PATHS = [
+  '/integrations',
+  '/api-docs',
+  '/api-keys',
+  '/chat',
+  '/settings',
+  '/overview',
+];
+
 export const useRoleRedirect = () => {
   const { user, isAuthenticated } = useAuthStore();
   const location = useLocation();
@@ -20,23 +34,30 @@ export const useRoleRedirect = () => {
     const userRole = user.role;
     const correctPrefix = ROLE_PREFIXES[userRole];
 
-    // Find if the current path starts with any of the OTHER role prefixes
+    if (!correctPrefix) return;
+
+    // 1. Handle Shorthand Redirects (e.g. /integrations -> /admin/integrations)
+    const isShorthand = SHORTHAND_PATHS.some(path => currentPath === path || currentPath.startsWith(`${path}/`));
+    
+    if (isShorthand) {
+      const newPath = `${correctPrefix}${currentPath}`;
+      console.log(`[RoleRedirect] Shorthand redirect for ${userRole}: ${currentPath} -> ${newPath}`);
+      navigate(newPath, { replace: true });
+      return;
+    }
+
+    // 2. Handle Cross-Role Prefix Redirects (e.g. /owner/chat -> /admin/chat for an admin)
     const prefixes = Object.values(ROLE_PREFIXES);
     const matchedPrefix = prefixes.find(
       (prefix) => currentPath.startsWith(prefix) && prefix !== correctPrefix
     );
 
     if (matchedPrefix) {
-      // Extract the part of the path after the matched prefix
-      // e.g., if path is /admin/chat and matchedPrefix is /admin, subPath is /chat
       const subPath = currentPath.substring(matchedPrefix.length);
-      
-      // Construct the new path
-      // e.g., /owner + /chat = /owner/chat
       const newPath = `${correctPrefix}${subPath}`;
-      
-      console.log(`[RoleRedirect] Redirecting ${userRole} from ${currentPath} to ${newPath}`);
+      console.log(`[RoleRedirect] Role mismatch redirect for ${userRole}: ${currentPath} -> ${newPath}`);
       navigate(newPath, { replace: true });
     }
   }, [user, isAuthenticated, location.pathname, navigate]);
 };
+

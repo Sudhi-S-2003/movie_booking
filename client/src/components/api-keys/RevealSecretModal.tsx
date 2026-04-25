@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Check, Copy, X } from 'lucide-react';
+import { AlertTriangle, Check, Copy, Download, X } from 'lucide-react';
 import type { ApiKeyRecord } from '../../services/api/apiKeys.api.js';
 
 interface RevealSecretModalProps {
@@ -25,6 +25,20 @@ export const RevealSecretModal = memo(({ created, onClose }: RevealSecretModalPr
     } catch {
       /* clipboard blocked */
     }
+  };
+
+  const download = () => {
+    if (!created) return;
+    const content = `# API Credentials for ${created.key.name}\nAPI_KEY_ID=${created.key.keyId}\nAPI_KEY_SECRET=${created.secret}\n`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `api_key_${created.key.name.toLowerCase().replace(/\s+/g, '_')}.env`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -82,10 +96,16 @@ export const RevealSecretModal = memo(({ created, onClose }: RevealSecretModalPr
               />
             </div>
 
-            <div className="p-4 pt-0">
+            <div className="p-4 pt-0 flex gap-3">
+              <button
+                onClick={download}
+                className="flex-1 py-2.5 bg-white/[0.04] border border-white/10 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
+              >
+                <Download size={14} /> Download .env
+              </button>
               <button
                 onClick={onClose}
-                className="w-full py-2.5 bg-accent-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20"
+                className="flex-[1.5] py-2.5 bg-accent-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20"
               >
                 I've saved the secret
               </button>

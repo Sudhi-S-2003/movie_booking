@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Check, Copy, ShieldOff, Trash2 } from 'lucide-react';
+import { Check, Copy, Download, ShieldOff, Trash2 } from 'lucide-react';
 import type { ApiKeyRecord } from '../../services/api/apiKeys.api.js';
 import { CATEGORY_LABELS, formatLastUsed, maskKeyId } from './utils/maskKeyId.js';
 
@@ -23,6 +23,19 @@ export const ApiKeyRow = memo(({ apiKey, onRevoke }: ApiKeyRowProps) => {
     } catch {
       /* clipboard blocked */
     }
+  };
+
+  const handleDownload = () => {
+    const content = `# API Key: ${apiKey.name}\n# Category: ${apiKey.category}\n# Created: ${apiKey.createdAt}\nAPI_KEY_ID=${apiKey.keyId}\n`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `api_key_${apiKey.name.toLowerCase().replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleRevoke = async () => {
@@ -59,13 +72,23 @@ export const ApiKeyRow = memo(({ apiKey, onRevoke }: ApiKeyRowProps) => {
         </div>
       </div>
 
-      <button
-        onClick={() => void handleCopy()}
-        className="p-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-gray-300 hover:text-white hover:bg-white/[0.08] transition-all"
-        title="Copy key ID"
-      >
-        {copied ? <Check size={13} /> : <Copy size={13} />}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => void handleCopy()}
+          className="p-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-gray-300 hover:text-white hover:bg-white/[0.08] transition-all"
+          title="Copy key ID"
+        >
+          {copied ? <Check size={13} /> : <Copy size={13} />}
+        </button>
+
+        <button
+          onClick={handleDownload}
+          className="p-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-gray-300 hover:text-white hover:bg-white/[0.08] transition-all"
+          title="Download key info"
+        >
+          <Download size={13} />
+        </button>
+      </div>
 
       {!isRevoked && (
         <button

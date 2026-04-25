@@ -19,6 +19,8 @@ import { MarketingLayoutWrapper } from './layouts/MarketingLayout.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 import { BookingSessionProvider } from './providers/BookingSessionProvider.js';
 import { SubscriptionProvider } from './components/chat/hooks/useSubscription.js';
+import { PublicRoute } from './components/auth/PublicRoute.js';
+
 
 import { AdminOverview } from './pages/dashboards/admin/AdminOverview.js';
 import { AdminMovies } from './pages/dashboards/admin/AdminMovies.js';
@@ -43,6 +45,7 @@ import { ApiKeys } from './pages/ApiKeys.js';
 import { ApiKeyChat } from './pages/ApiKeyChat.js';
 import { Subscription } from './pages/Subscription.js';
 import { Integrations } from './pages/Integrations.js';
+import { ApiDocs } from './pages/ApiDocs.js';
 import { useRoleRedirect } from './hooks/useRoleRedirect.js';
 
 const RoleRedirectHandler = () => {
@@ -66,7 +69,8 @@ const App = () => {
 
         <Route element={<MarketingLayoutWrapper />}>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Auth />} />
+          <Route path="/login" element={<PublicRoute><Auth /></PublicRoute>} />
+
           <Route path="/movie/:id" element={<MovieDetails />} />
           <Route path="/theatre/:id" element={<TheatreDetails />} />
           <Route path="/movies" element={<Movies />} />
@@ -110,6 +114,7 @@ const App = () => {
           <Route path="chat/:conversationId/members" element={<ChatMembers />} />
           <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
           <Route path="api-keys" element={<ApiKeys />} />
+          <Route path="api-docs" element={<ApiDocs />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Settings Module Coming Soon</div>} />
 
@@ -136,6 +141,7 @@ const App = () => {
           <Route path="chat/:conversationId/members" element={<ChatMembers />} />
           <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
           <Route path="api-keys" element={<ApiKeys />} />
+          <Route path="api-docs" element={<ApiDocs />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">System Settings Hub Coming Soon</div>} />
 
@@ -160,13 +166,22 @@ const App = () => {
           <Route path="chat/:conversationId/members" element={<ChatMembers />} />
           <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
           <Route path="api-keys" element={<ApiKeys />} />
+          <Route path="api-docs" element={<ApiDocs />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Account Settings Coming Soon</div>} />
 
         </Route>
 
-        {}
+        {/* Shorthand Redirect Hub */}
+        <Route path="/integrations" element={<ProtectedRoute><div /></ProtectedRoute>} />
+        <Route path="/api-docs"     element={<ProtectedRoute><div /></ProtectedRoute>} />
+        <Route path="/api-keys"     element={<ProtectedRoute><div /></ProtectedRoute>} />
+        <Route path="/chat"         element={<ProtectedRoute><div /></ProtectedRoute>} />
+        <Route path="/settings"     element={<ProtectedRoute><div /></ProtectedRoute>} />
+        <Route path="/overview"     element={<ProtectedRoute><div /></ProtectedRoute>} />
+
         <Route path="/my-bookings" element={<Navigate to="/user/bookings" replace />} />
+
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
