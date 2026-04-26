@@ -8,6 +8,7 @@ import { getBookingNamespace } from '../socket/index.js';
 import type { AuthRequest } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { parsePage, buildPageEnvelope } from '../utils/pagination.js';
+import { notificationService } from '../services/notification.service.js';
 
 export const getShowtimeDetails = async (req: Request, res: Response) => {
   try {
@@ -197,6 +198,12 @@ export const confirmBooking = async (req: AuthRequest, res: Response) => {
     seatIds.forEach(seatId => {
       getBookingNamespace().to(showtimeId).emit('seat_booked', { seatId, status: SeatStatus.BOOKED });
     });
+
+    // Notify admins about the new booking
+    notificationService.notifyAdmins(
+      'New Movie Booking!',
+      `User ${req.user!.name} just booked ${seatIds.length} seat(s).`
+    );
 
     res.status(200).json({ success: true, message: 'Booking confirmed successfully' });
   } catch (error: unknown) {

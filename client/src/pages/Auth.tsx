@@ -46,7 +46,15 @@ export const Auth = () => {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center p-4">
+    <div 
+      className="min-h-[90vh] flex items-center justify-center p-4 relative overflow-hidden bg-black"
+      style={{
+        backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url("/auth-hero.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

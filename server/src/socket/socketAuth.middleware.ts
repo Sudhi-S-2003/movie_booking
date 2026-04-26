@@ -38,6 +38,7 @@ export const socketAuthMiddleware = async (
 
       socket.data.userId   = String(user._id);
       socket.data.userName = user.name;
+      socket.data.role     = user.role;
       socket.data.isGuest  = false;
       return next();
     }

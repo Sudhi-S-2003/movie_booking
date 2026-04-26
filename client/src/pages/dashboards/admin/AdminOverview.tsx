@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { formatCountCompact } from "../../../utils/format.js";
+import { useNotification } from "../../../providers/NotificationProvider.js";
+import { Bell, BellOff } from "lucide-react";
 
 interface StatCardProps {
   label:        string;
@@ -57,6 +59,13 @@ export const AdminOverview = () => {
   }, []);
 
   const loading = platformLoading || adminLoading;
+  const { requestPermission } = useNotification();
+  const [notificationStatus, setNotificationStatus] = useState<string>(Notification.permission);
+
+  const handleEnableNotifications = async () => {
+    const granted = await requestPermission();
+    setNotificationStatus(granted ? 'granted' : 'denied');
+  };
 
   const fmt = (n: number | undefined) =>
     n === undefined ? "—" : formatCountCompact(n);
@@ -66,6 +75,28 @@ export const AdminOverview = () => {
       title="Operational"
       accent="Overview"
       subtitle="Global ecosystem health & performance metrics"
+      headerActions={
+        <button
+          onClick={handleEnableNotifications}
+          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+            notificationStatus === 'granted'
+              ? 'bg-green-500/10 text-green-500 border border-green-500/20 cursor-default'
+              : 'bg-accent-blue/10 text-accent-blue border border-accent-blue/20 hover:bg-accent-blue/20'
+          }`}
+        >
+          {notificationStatus === 'granted' ? (
+            <>
+              <Bell size={14} />
+              Notifications Active
+            </>
+          ) : (
+            <>
+              <BellOff size={14} />
+              Enable Push Alerts
+            </>
+          )}
+        </button>
+      }
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <StatCard

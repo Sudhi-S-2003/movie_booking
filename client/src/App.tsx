@@ -20,6 +20,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 import { BookingSessionProvider } from './providers/BookingSessionProvider.js';
 import { SubscriptionProvider } from './components/chat/hooks/useSubscription.js';
 import { PublicRoute } from './components/auth/PublicRoute.js';
+import { NotificationProvider } from './providers/NotificationProvider.js';
 
 
 import { AdminOverview } from './pages/dashboards/admin/AdminOverview.js';
@@ -46,6 +47,7 @@ import { ApiKeyChat } from './pages/ApiKeyChat.js';
 import { Subscription } from './pages/Subscription.js';
 import { Integrations } from './pages/Integrations.js';
 import { ApiDocs } from './pages/ApiDocs.js';
+import { ApiDocsTest } from './pages/ApiDocsTest.js';
 import { useRoleRedirect } from './hooks/useRoleRedirect.js';
 
 const RoleRedirectHandler = () => {
@@ -60,6 +62,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <RoleRedirectHandler />
+      <NotificationProvider>
       <SubscriptionProvider>
       <BookingSessionProvider>
 
@@ -92,6 +95,7 @@ const App = () => {
           {/* Public chat onboarding — no auth required to view */}
           <Route path="/chat/g/:publicName"   element={<PublicChat />} />
           <Route path="/chat/invite/:token"   element={<ChatInvite />} />
+          <Route path="/docs-test"            element={<ApiDocsTest />} />
         </Route>
 
         {}
@@ -187,6 +191,7 @@ const App = () => {
       </Routes>
       </BookingSessionProvider>
       </SubscriptionProvider>
+      </NotificationProvider>
     </BrowserRouter>
   );
 };

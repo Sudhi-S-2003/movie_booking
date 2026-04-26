@@ -8,6 +8,7 @@ import { getErrorMessage } from '../utils/error.utils.js';
 import { activatePaidPlan } from '../services/subscription/subscription.service.js';
 import type { BillingCycle } from '../models/subscription.model.js';
 import type { PaidPlanKey } from '../services/subscription/subscriptionPlans.js';
+import { notificationService } from '../services/notification.service.js';
 
 export type PaymentKind = 'seat' | 'subscription';
 
@@ -152,6 +153,22 @@ export const confirmPayment = async (req: AuthRequest, res: Response) => {
       intent.status = 'succeeded';
       intent.transactionId = transactionId;
       getIO().emit('seats_booked', { reservationIds, transactionId });
+
+      // Notify authenticated user
+      notificationService.sendNotification({
+        userIds: [intent.userId],
+        title: 'Booking Confirmed! 🎫',
+        message: `Your booking for ${reservationIds.length} seat(s) was successful. Transaction: ${transactionId}`,
+        url: '/profile/bookings' // Link to user's bookings
+      });
+
+      // Notify admins
+      notificationService.sendNotification({
+        targets: ['admins'],
+        title: 'New Movie Booking!',
+        message: `User ${req.user!.name} just confirmed a booking for ${reservationIds.length} seat(s).`,
+        url: '/admin/overview' // Link to admin dashboard
+      });
     } else {
       // Subscription path — metadata.plan + cycle/custom fields drive activation.
       const meta = intent.metadata ?? {};
@@ -189,6 +206,22 @@ export const confirmPayment = async (req: AuthRequest, res: Response) => {
 
       intent.status = 'succeeded';
       intent.transactionId = transactionId;
+
+      // Notify user about subscription
+      notificationService.sendNotification({
+        userIds: [intent.userId],
+        title: 'Subscription Activated! 🚀',
+        message: `You have successfully upgraded to the ${planKey.toUpperCase()} plan. Enjoy your premium benefits!`,
+        url: '/profile/subscription'
+      });
+
+      // Platform notification for new subscription
+      notificationService.sendNotification({
+        targets: ['admins'],
+        title: 'New Subscription!',
+        message: `User ${req.user!.name} upgraded to ${planKey.toUpperCase()} plan.`,
+        url: '/admin/users' // Link to user management
+      });
     }
 
     res.status(200).json({
