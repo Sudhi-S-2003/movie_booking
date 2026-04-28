@@ -68,7 +68,7 @@ export const Auth = () => {
               {isLogin ? 'Welcome Back' : 'Create Account'}
             </h1>
             <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">
-              {isLogin ? 'Enter the cinematic multiverse' : 'Join the ultimate movie community'}
+              {isLogin ? 'Welcome' : 'Join us'}
             </p>
           </div>
 
@@ -169,7 +169,7 @@ export const Auth = () => {
                 loading ? 'bg-gray-800 text-gray-500 scale-95' : 'bg-accent-pink text-white hover:scale-105 active:scale-95 shadow-accent-pink/40'
               }`}
             >
-              {loading ? 'Authenticating...' : <>{isLogin ? 'Sign In' : 'Register Now'} <ArrowRight size={18} /></>}
+              {loading ? 'Loading...' : <>{isLogin ? 'Sign In' : 'Join Now'} <ArrowRight size={18} /></>}
             </button>
           </form>
 

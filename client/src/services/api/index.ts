@@ -1,4 +1,3 @@
-
 export { http, ApiError } from './http.js';
 export type { RequestOptions } from './http.js';
 
@@ -26,3 +25,5 @@ export type {
   PlanCatalogItem, PlanCatalogResponse,
 } from './subscription.api.js';
 export type { PaidPlan } from './subscription.api.js';
+export { authApi } from './auth.api.js';
+export type { UserSession } from './auth.api.js';

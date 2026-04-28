@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import { getPlatformStats, getAdminStats } from '../controllers/stats.controller.js';
-import { isAuthenticated, isAdmin } from '../middleware/auth.middleware.js';
+import { getPlatformStats, getAdminStats, getOwnerStats } from '../controllers/stats.controller.js';
+import { isAuthenticated, isAdmin, isTheatreOwner } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -14,6 +14,14 @@ router.get(
   isAuthenticated as RequestHandler,
   isAdmin as RequestHandler,
   getAdminStats as RequestHandler,
+);
+
+// Owner dashboard rollup
+router.get(
+  '/owner',
+  isAuthenticated as RequestHandler,
+  isTheatreOwner as RequestHandler,
+  getOwnerStats as RequestHandler,
 );
 
 export default router;

@@ -60,7 +60,7 @@ export const usePaginatedList = <T,>(
         inflight.current = false;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [fetcher, limit],
   );
 

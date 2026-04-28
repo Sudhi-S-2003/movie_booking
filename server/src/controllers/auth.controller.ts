@@ -4,12 +4,17 @@ import jwt, { type SignOptions } from 'jsonwebtoken';
 import { env } from '../env.js';
 import { User } from '../models/user.model.js';
 import { UserRole, AuthProvider } from '../constants/enums.js';
-import type { AuthRequest } from '../interfaces/auth.interface.js';
+import type { AuthRequest, JwtPayload } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { getOrCreateForUser as ensureSubscription } from '../services/subscription/subscription.service.js';
+import { Session } from '../models/session.model.js';
 
-const generateToken = (id: string) =>
-  jwt.sign({ id }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] } as SignOptions);
+const generateToken = (id: string, role: string, sessionId: string) =>
+  jwt.sign(
+    { id, role, sessionId } as JwtPayload,
+    env.JWT_SECRET,
+    { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] } as SignOptions
+  );
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -39,7 +44,14 @@ export const register = async (req: Request, res: Response) => {
 
     await ensureSubscription(user._id.toString()).catch(() => { /* non-fatal */ });
 
-    const token = generateToken(user._id.toString());
+    // Create session
+    const session = await Session.create({
+      userId: user._id,
+      userAgent: req.headers['user-agent'] || 'unknown',
+      ip: req.ip || 'unknown',
+    });
+
+    const token = generateToken(user._id.toString(), user.role, session._id.toString());
 
     res.status(201).json({
       success: true,
@@ -59,12 +71,6 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    // Accept either `email`, `username`, or a generic `identifier`. Whichever
-    // one the client sends, we resolve to a single user lookup. Email is
-    // detected by the presence of `@`; everything else is treated as a
-    // username. Stored values are case-insensitive for both fields — match
-    // them against a case-insensitive anchored regex so "ADMIN" still finds
-    // the user whose username is stored as "admin".
     const raw = (req.body?.identifier ?? req.body?.email ?? req.body?.username ?? '')
       .toString()
       .trim();
@@ -88,7 +94,14 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const token = generateToken(user._id.toString());
+    // Create session
+    const session = await Session.create({
+      userId: user._id,
+      userAgent: req.headers['user-agent'] || 'unknown',
+      ip: req.ip || 'unknown',
+    });
+
+    const token = generateToken(user._id.toString(), user.role, session._id.toString());
 
     res.status(200).json({
       success: true,
@@ -106,8 +119,56 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = (req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: 'Logged out successfully' });
+export const logout = async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.sessionId) {
+      await Session.findByIdAndUpdate(req.sessionId, { isValid: false });
+    }
+    res.status(200).json({ success: true, message: 'Logged out successfully' });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+export const listSessions = async (req: AuthRequest, res: Response) => {
+  try {
+    const sessions = await Session.find({ 
+      userId: req.user!._id,
+      isValid: true 
+    }).sort({ lastActive: -1 });
+    
+    const sessionsWithCurrent = sessions.map(s => ({
+      ...s.toObject(),
+      isCurrent: s._id.toString() === req.sessionId
+    }));
+
+    res.status(200).json({ success: true, sessions: sessionsWithCurrent });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+export const revokeSession = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    // Users can only revoke their own sessions
+    const session = await Session.findOne({ 
+      _id: id, 
+      userId: req.user!._id 
+    });
+
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'Session not found' });
+    }
+
+    session.isValid = false;
+    await session.save();
+
+    res.status(200).json({ success: true, message: 'Session revoked' });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
 };
 
 export const getMe = async (req: AuthRequest, res: Response) => {

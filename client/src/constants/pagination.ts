@@ -18,6 +18,7 @@ export const PAGE_SIZE = {
   BOOKMARKS:  10,
   ACTIVITY:   15,
   NOTIFICATIONS: 20,
+  USERS: 10,
 } as const;
 
 /** Hard ceiling; matches the server. Never request more than this. */

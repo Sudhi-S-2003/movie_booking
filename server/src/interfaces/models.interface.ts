@@ -96,6 +96,8 @@ export interface IMovie {
   cast: { name: string; role: string; profileUrl?: string }[];
   crew: { name: string; job: string; profileUrl?: string }[];
   tags: string[];
+  technicalSpecs?: string[];
+  isTrending?: boolean;
 }
 
 export interface ITheatre {
@@ -114,6 +116,8 @@ export interface ITheatre {
   amenities: string[];
   contactEmail?: string;
   contactPhone?: string;
+  imageUrl?: string;
+  backdropUrl?: string;
   tags: string[];
 }
 
@@ -135,6 +139,7 @@ export interface IShowtime {
   startTime: Date;
   endTime: Date;
   format: ShowFormat;
+  isActive: boolean;
   pricingOverrides?: {
     tier: PricingTier;
     price: number;

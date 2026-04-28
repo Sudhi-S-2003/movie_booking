@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { moviesApi, bookingsApi, reviewsApi } from '../services/api/index.js';
 import { groupShowtimesByTheatre } from '../utils/groupShowtimes.js';
 import type { GroupedTheatre } from '../utils/groupShowtimes.js';
@@ -10,71 +9,48 @@ export type MovieWithViewerFlags = Movie & {
   isWatchlisted?: boolean;
 };
 
-export interface UseMovieDetailsResult {
-  movie: MovieWithViewerFlags | null;
-  reviews: Review[];
-  groupedShowtimes: Record<ID, GroupedTheatre>;
-  loading: boolean;
-  isInterested: boolean;
-  isWatchlisted: boolean;
-  setMovie: React.Dispatch<React.SetStateAction<MovieWithViewerFlags | null>>;
-  setReviews: React.Dispatch<React.SetStateAction<Review[]>>;
-  setIsInterested: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsWatchlisted: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 export function useMovieDetails(
   movieId: string | undefined,
   city: string | null | undefined,
-): UseMovieDetailsResult {
-  const [movie, setMovie] = useState<MovieWithViewerFlags | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [groupedShowtimes, setGroupedShowtimes] = useState<Record<ID, GroupedTheatre>>({});
-  const [loading, setLoading] = useState(true);
-  const [isInterested, setIsInterested] = useState(false);
-  const [isWatchlisted, setIsWatchlisted] = useState(false);
+  selectedDate?: string,
+) {
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!movieId) return;
-    let cancelled = false;
+  const { data: movieRes, isLoading: movieLoading } = useQuery({
+    queryKey: ['movie', movieId],
+    queryFn: () => moviesApi.getById(movieId!),
+    enabled: !!movieId,
+  });
 
-    (async () => {
-      try {
-        setLoading(true);
-        const [movieRes, showtimesRes, reviewsRes] = await Promise.all([
-          moviesApi.getById(movieId),
-          bookingsApi.getShowtimesByMovie(movieId, city ?? undefined),
-          reviewsApi.listByTarget(movieId),
-        ]);
-        if (cancelled) return;
+  const { data: showtimesRes, isLoading: showtimesLoading } = useQuery({
+    queryKey: ['movie', 'showtimes', movieId, city, selectedDate],
+    queryFn: () => bookingsApi.getShowtimesByMovie(movieId!, city ?? undefined, selectedDate),
+    enabled: !!movieId,
+  });
 
-        setMovie(movieRes.movie);
-        setReviews(reviewsRes.reviews);
-        setIsInterested(movieRes.movie.isInterested ?? false);
-        setIsWatchlisted(movieRes.movie.isWatchlisted ?? false);
-        setGroupedShowtimes(groupShowtimesByTheatre(showtimesRes.showtimes));
-      } catch (err) {
-        if (!cancelled) console.error('[useMovieDetails] fetch failed', err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+  const { data: reviewsRes, isLoading: reviewsLoading } = useQuery({
+    queryKey: ['movie', 'reviews', movieId],
+    queryFn: () => reviewsApi.listByTarget(movieId!),
+    enabled: !!movieId,
+  });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [movieId, city]);
+  const movie = movieRes?.movie || null;
+  const reviews = reviewsRes?.reviews || [];
+  const groupedShowtimes = showtimesRes ? groupShowtimesByTheatre(showtimesRes.showtimes) : {};
+  const loading = movieLoading || showtimesLoading || reviewsLoading;
 
   return {
     movie,
     reviews,
     groupedShowtimes,
     loading,
-    isInterested,
-    isWatchlisted,
-    setMovie,
-    setReviews,
-    setIsInterested,
-    setIsWatchlisted,
+    isInterested: movie?.isInterested ?? false,
+    isWatchlisted: movie?.isWatchlisted ?? false,
+    // We'll handle updates via mutations in useMovieInteractions or directly here if needed
+    // But for now, we'll expose a way to invalidate queries
+    refresh: () => {
+      queryClient.invalidateQueries({ queryKey: ['movie', movieId] });
+      queryClient.invalidateQueries({ queryKey: ['movie', 'reviews', movieId] });
+    }
   };
 }

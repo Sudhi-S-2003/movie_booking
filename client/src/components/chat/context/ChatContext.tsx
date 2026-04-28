@@ -487,7 +487,7 @@ export const ChatProvider: React.FC<{
 
       for (let i = 0; i < chunks.length; i += 1) {
         setSendProgress({ current: i + 1, total: chunks.length });
-        // eslint-disable-next-line no-await-in-loop
+         
         if (guestSession) {
           await chatApi.longtextChunkGuest(
             optimistic.conversationId,

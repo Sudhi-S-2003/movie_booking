@@ -2,7 +2,8 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Search, Bell, HelpCircle } from 'lucide-react';
 import { DashboardLayout } from './DashboardLayout.js';
-import { SidebarBrand } from '../components/sidebar/index.js';
+
+import { NotificationRequest } from '../components/notifications/NotificationRequest.js';
 
 interface AppDashboardLayoutProps {
   sidebar: React.ReactNode;
@@ -30,9 +31,7 @@ export const AppDashboardLayout: React.FC<AppDashboardLayoutProps> = ({
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white transition-all hover:bg-white/10">
-            <Bell size={16} />
-          </button>
+          <NotificationRequest variant="icon" />
           <button className="hidden sm:flex w-9 h-9 items-center justify-center bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-white transition-all hover:bg-white/10">
             <HelpCircle size={16} />
           </button>

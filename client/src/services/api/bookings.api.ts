@@ -12,9 +12,12 @@ export const bookingsApi = {
   getShowtimeDetails: (id: string) =>
     http.get<ShowtimeDetailsResponse>(`/booking/showtime/${id}`),
 
-  getShowtimesByMovie: (movieId: string, city?: string) =>
+  getShowtimesByMovie: (movieId: string, city?: string, date?: string) =>
     http.get<ShowtimesListResponse>(`/booking/movie/${movieId}`, {
-      params: city ? { city } : {},
+      params: { 
+        ...(city ? { city } : {}),
+        ...(date ? { date } : {})
+      },
     }),
 
   lockSeats: (showtimeId: string, seatIds: string[], prices: number[]) =>
@@ -30,4 +33,10 @@ export const bookingsApi = {
     http.get<MyBookingsResponse>('/booking/my-bookings', {
       params: (params ?? {}) as Record<string, unknown>,
     }),
+
+  getPublicTicket: (id: string, sig: string) =>
+    http.get<any>(`/booking/public/${id}`, {
+      params: { sig },
+    }),
 };
+

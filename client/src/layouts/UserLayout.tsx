@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle } from 'lucide-react';
+import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { useAuthStore } from '../store/authStore.js';
@@ -10,8 +10,8 @@ const useUserSidebarConfig = (): SidebarConfig => {
 
   return {
     brand: {
-      title: 'MY',
-      accent: 'SPACE',
+      title: 'USER',
+      accent: 'HUB',
       accentColor: 'text-accent-pink',
       subtitle: 'Premium Member',
       iconName: 'User',
@@ -19,10 +19,11 @@ const useUserSidebarConfig = (): SidebarConfig => {
     },
     groups: [
       {
-        label: 'Experience',
+        label: 'Activities',
         items: [
           { icon: Ticket, label: 'My Tickets', to: '/user/bookings', colorClass: 'text-accent-blue' },
-          { icon: BarChart3, label: 'Activity Stats', to: '/user/stats', colorClass: 'text-accent-pink' },
+          { icon: BarChart3, label: 'Stats', to: '/user/stats', colorClass: 'text-accent-pink' },
+          { icon: ShieldCheck, label: 'Sessions', to: '/user/sessions', colorClass: 'text-emerald-400' },
         ],
       },
       {
@@ -42,12 +43,12 @@ const useUserSidebarConfig = (): SidebarConfig => {
       {
         label: 'Help',
         items: [
-          { icon: LifeBuoy, label: 'Support Hub', to: '/user/support', colorClass: 'text-accent-purple' },
+          { icon: LifeBuoy, label: 'Support', to: '/user/support', colorClass: 'text-accent-purple' },
         ],
       },
     ],
     bottomItems: [
-      { icon: Settings, label: 'Account Settings', to: '/user/settings', colorClass: 'text-gray-400' },
+      { icon: Settings, label: 'Settings', to: '/user/settings', colorClass: 'text-gray-400' },
     ],
     showLogout: true,
     onLogout: logout,

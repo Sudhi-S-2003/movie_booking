@@ -122,7 +122,7 @@ export const usersApi = {
   getWatchlistStatus: (movieId: string) =>
     http.get<WatchlistStatusResponse>(`/users/watchlist/${movieId}/status`),
 
-  listAll: (params?: { page?: number; limit?: number }) =>
+  listAll: (params?: { page?: number; limit?: number; q?: string; role?: string }) =>
     http.get<UsersListResponse>('/users/all', {
       params: (params ?? {}) as Record<string, unknown>,
     }),

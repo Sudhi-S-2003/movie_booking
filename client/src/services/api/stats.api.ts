@@ -43,7 +43,15 @@ export interface AdminStats {
   topMovies:      TopMovieRow[];
 }
 
+export interface OwnerStats {
+  totalTheatres:  number;
+  totalScreens:   number;
+  totalShowtimes: number;
+  systemHealth:   number;
+}
+
 export const statsApi = {
   platform: () => http.get<{ stats: PlatformStats }>('/stats/platform'),
   admin:    () => http.get<{ stats: AdminStats }>('/stats/admin'),
+  owner:    () => http.get<{ stats: OwnerStats }>('/stats/owner'),
 };

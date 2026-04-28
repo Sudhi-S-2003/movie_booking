@@ -14,6 +14,7 @@ const ShowtimeSchema = new Schema<IShowtime>(
       enum: Object.values(ShowFormat), 
       required: true 
     },
+    isActive: { type: Boolean, default: true },
     pricingOverrides: [
       {
         tier: { type: String, enum: Object.values(PricingTier) },

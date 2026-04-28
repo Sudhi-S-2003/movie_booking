@@ -82,6 +82,8 @@ export interface Movie {
   cast: MovieCastMember[];
   crew: MovieCrewMember[];
   tags: string[];
+  technicalSpecs?: string[];
+  isTrending?: boolean;
   createdAt?: ISODateString;
   updatedAt?: ISODateString;
 }
@@ -92,7 +94,8 @@ export interface Theatre {
   name: string;
   city: string;
   address: string;
-  ownerId: ID;
+  ownerId: ID | { _id: ID; name: string; email: string };
+  screenCount?: number;
   location: {
     type: 'Point';
     coordinates: [number, number];
@@ -100,6 +103,8 @@ export interface Theatre {
   amenities: string[];
   contactEmail?: string;
   contactPhone?: string;
+  imageUrl?: string;
+  backdropUrl?: string;
   tags: string[];
   createdAt?: ISODateString;
   updatedAt?: ISODateString;
@@ -128,6 +133,7 @@ export interface Showtime {
   startTime: ISODateString;
   endTime: ISODateString;
   format: ShowFormat;
+  isActive: boolean;
   pricingOverrides?: PricingOverride[];
 }
 

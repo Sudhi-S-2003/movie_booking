@@ -71,8 +71,8 @@
     "noPropertyAccessFromIndexSignature": false,
     // Style checks — leave to ESLint so tsc failures only reflect genuine
     // type problems. Dead imports are a lint concern, not a type concern.
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "erasableSyntaxOnly": true,

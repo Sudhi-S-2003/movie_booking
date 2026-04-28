@@ -56,4 +56,9 @@ export const theatresApi = {
     http.get<ShowtimesListResponse>(`/theatres/${id}/showtimes`, {
       params: cleanParams(params as Record<string, unknown> | undefined),
     }),
+
+  getCities: (params?: { q?: string; page?: number; limit?: number }) =>
+    http.get<{ cities: string[]; pagination: any }>('/theatres/cities', {
+      params: cleanParams(params as Record<string, unknown> | undefined),
+    }),
 };

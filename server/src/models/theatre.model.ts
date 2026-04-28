@@ -14,6 +14,8 @@ const TheatreSchema = new Schema<ITheatre>(
     amenities: [{ type: String }],
     contactEmail: { type: String, lowercase: true, trim: true },
     contactPhone: { type: String },
+    imageUrl: { type: String },
+    backdropUrl: { type: String },
     tags: [{ type: String }],
   },
   { timestamps: true }

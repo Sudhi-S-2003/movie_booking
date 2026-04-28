@@ -6,8 +6,7 @@ import { motion } from "framer-motion";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { formatCountCompact } from "../../../utils/format.js";
-import { useNotification } from "../../../providers/NotificationProvider.js";
-import { Bell, BellOff } from "lucide-react";
+import { NotificationRequest } from "../../../components/notifications/NotificationRequest.js";
 
 interface StatCardProps {
   label:        string;
@@ -33,7 +32,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, colorClas
 );
 
 export const AdminOverview = () => {
-  useDocumentTitle("Overview — OpsCenter");
+  useDocumentTitle("Admin Overview");
 
   const { stats: platform, loading: platformLoading } = usePlatformStats();
   const [admin, setAdmin] = useState<AdminStats | null>(null);
@@ -59,43 +58,17 @@ export const AdminOverview = () => {
   }, []);
 
   const loading = platformLoading || adminLoading;
-  const { requestPermission } = useNotification();
-  const [notificationStatus, setNotificationStatus] = useState<string>(Notification.permission);
-
-  const handleEnableNotifications = async () => {
-    const granted = await requestPermission();
-    setNotificationStatus(granted ? 'granted' : 'denied');
-  };
 
   const fmt = (n: number | undefined) =>
     n === undefined ? "—" : formatCountCompact(n);
 
   return (
     <DashboardPage
-      title="Operational"
+      title="Stats"
       accent="Overview"
-      subtitle="Global ecosystem health & performance metrics"
+      subtitle="Track users, movies, and bookings."
       headerActions={
-        <button
-          onClick={handleEnableNotifications}
-          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            notificationStatus === 'granted'
-              ? 'bg-green-500/10 text-green-500 border border-green-500/20 cursor-default'
-              : 'bg-accent-blue/10 text-accent-blue border border-accent-blue/20 hover:bg-accent-blue/20'
-          }`}
-        >
-          {notificationStatus === 'granted' ? (
-            <>
-              <Bell size={14} />
-              Notifications Active
-            </>
-          ) : (
-            <>
-              <BellOff size={14} />
-              Enable Push Alerts
-            </>
-          )}
-        </button>
+        <NotificationRequest variant="button" />
       }
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -250,7 +223,7 @@ export const AdminOverview = () => {
 
       {loading && (
         <p className="text-center text-[10px] font-black text-gray-700 uppercase tracking-[0.5em] pt-4">
-          Synchronizing global ops node…
+          Loading...
         </p>
       )}
     </DashboardPage>

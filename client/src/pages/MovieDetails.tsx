@@ -1,68 +1,55 @@
 import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Share2, Play, Clock, Calendar, ShieldCheck } from 'lucide-react';
+import { Star, Share2, Play, Clock, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useBookingStore } from '../store/bookingStore.js';
-import { useAuthStore } from '../store/authStore.js';
-import { ThumbsUp, Bookmark, BookmarkCheck, MessageSquare, Send, Hash } from 'lucide-react';
+import { ThumbsUp, Bookmark, BookmarkCheck, Hash } from 'lucide-react';
 import { TagCloud } from '../components/ui/TagCloud.js';
+import { DateSelector } from '../components/ui/DateSelector.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useMovieDetails } from '../hooks/useMovieDetails.js';
 import { useMovieInteractions } from '../hooks/useMovieInteractions.js';
 import { formatCountCompact } from '../utils/format.js';
+import { ReviewSection } from '../components/ReviewSection.js';
 
 export const MovieDetails = () => {
   const { id } = useParams();
   const { selectedCity } = useBookingStore();
-  const { user, isAuthenticated } = useAuthStore();
+
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0] || '');
 
   const {
     movie,
-    reviews,
     groupedShowtimes: showtimesByTheatre,
     loading,
     isInterested,
     isWatchlisted,
-    setMovie,
-    setReviews,
-    setIsInterested,
-    setIsWatchlisted,
-  } = useMovieDetails(id, selectedCity);
+  } = useMovieDetails(id, selectedCity, selectedDate);
 
-  const { toggleInterest, toggleWatchlist, submitReview } = useMovieInteractions(id);
+  const { toggleInterest, toggleWatchlist, isTogglingInterest, isTogglingWatchlist } = useMovieInteractions(id);
 
-  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
   const [activeTab, setActiveTab] = useState<'SHOWTIMES' | 'REVIEWS'>('SHOWTIMES');
 
-  useDocumentTitle(movie?.title);
+  useDocumentTitle(movie?.title || 'Loading Movie...');
 
   const handleToggleInterest = async () => {
-    const result = await toggleInterest();
-    if (!result || !movie) return;
-    setIsInterested(result.isInterested);
-    setMovie({ ...movie, interestedUsers: result.interestedUsers });
+    try {
+      await toggleInterest();
+    } catch (err) {
+      console.error('Failed to toggle interest', err);
+    }
   };
 
   const handleToggleWatchlist = async () => {
-    const added = await toggleWatchlist();
-    if (added !== null) setIsWatchlisted(added);
-  };
-
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const review = await submitReview(newReview);
-    if (!review) {
-      alert('Failed to submit review');
-      return;
+    try {
+      await toggleWatchlist();
+    } catch (err) {
+      console.error('Failed to toggle watchlist', err);
     }
-    const authoredUserId = user
-      ? { _id: user.id, name: user.name }
-      : review.userId;
-    setReviews([{ ...review, userId: authoredUserId }, ...reviews]);
-    setNewReview({ rating: 5, comment: '' });
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse">LOADING CINEMATIC DATA...</div>;
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse">Loading movie details...</div>;
   if (!movie) return <div className="min-h-screen flex items-center justify-center font-black">MOVIE NOT FOUND</div>;
 
   return (
@@ -114,7 +101,6 @@ export const MovieDetails = () => {
               >
                 {movie.title}
               </motion.h1>
-              
               <div className="flex flex-wrap items-center gap-4 text-xs font-black">
                 {movie.showStatus === 'upcoming' ? (
                   <span className="flex items-center gap-1.5 text-accent-blue bg-accent-blue/10 px-4 py-2 rounded-2xl border border-accent-blue/20">
@@ -139,27 +125,34 @@ export const MovieDetails = () => {
               {movie.showStatus === 'upcoming' ? (
                 <button 
                   onClick={handleToggleInterest}
+                  disabled={isTogglingInterest}
                   className={`flex-1 sm:flex-none px-12 py-5 rounded-[24px] font-black transition-all shadow-2xl flex items-center gap-3 ${isInterested ? 'bg-white/20 text-white' : 'bg-accent-blue text-white shadow-accent-blue/30'}`}
                 >
-                  <ThumbsUp size={20} fill={isInterested ? 'currentColor' : 'none'} /> 
+                  <ThumbsUp size={20} fill={isInterested ? 'currentColor' : 'none'} className={isTogglingInterest ? 'animate-bounce' : ''} /> 
                   {isInterested ? 'Interested' : 'I\'m Interested'}
                 </button>
               ) : (
-                <button className="flex-1 sm:flex-none px-12 py-5 bg-accent-pink text-white rounded-[24px] font-black hover:scale-105 transition-all shadow-[0_20px_50px_rgba(255,51,102,0.3)]">Book Tickets Now</button>
+                <button 
+                  onClick={() => document.getElementById('showtimes-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex-1 sm:flex-none px-12 py-5 bg-accent-pink text-white rounded-[24px] font-black hover:scale-105 transition-all shadow-[0_20px_50px_rgba(255,51,102,0.3)]"
+                >
+                  Book Tickets Now
+                </button>
               )}
               
               <button 
                 onClick={handleToggleWatchlist}
+                disabled={isTogglingWatchlist}
                 className="p-5 bg-white/5 border border-white/10 rounded-[24px] hover:bg-white/10 transition-all text-white"
               >
-                {isWatchlisted ? <BookmarkCheck size={24} className="text-accent-pink" /> : <Bookmark size={24} />}
+                {isWatchlisted ? <BookmarkCheck size={24} className="text-accent-pink" /> : <Bookmark size={24} className={isTogglingWatchlist ? 'animate-pulse' : ''} />}
               </button>
               <button className="p-5 bg-white/5 border border-white/10 rounded-[24px] hover:bg-white/10 transition-all text-white"><Share2 size={24} /></button>
             </div>
 
             {}
             <div className="pt-8 border-t border-white/5">
-                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Top Billing Cast</h3>
+                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Cast</h3>
                 <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
                     {movie.cast?.map((member: any, i: number) => (
                         <div key={i} className="flex-shrink-0 flex items-center gap-3 bg-white/[0.02] border border-white/5 px-4 py-2.5 rounded-2xl">
@@ -187,8 +180,12 @@ export const MovieDetails = () => {
           {}
           <div className="lg:col-span-8 space-y-8">
               <div className="flex items-center justify-between">
-                <h3 className="text-3xl font-black uppercase tracking-tighter">Cinematic <span className="text-accent-pink">Transmission</span></h3>
-                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest bg-white/5 px-4 py-1.5 rounded-full">4K ULTRA HD</span>
+                <h3 className="text-3xl font-black uppercase tracking-tighter">Official <span className="text-accent-pink">Trailer</span></h3>
+                <div className="flex gap-2">
+                    {(movie.technicalSpecs?.length ? movie.technicalSpecs : ['4K ULTRA HD', 'IMAX']).map((spec, i) => (
+                        <span key={i} className="text-[10px] font-black text-gray-500 uppercase tracking-widest bg-white/5 px-4 py-1.5 rounded-full border border-white/5">{spec}</span>
+                    ))}
+                </div>
               </div>
               <div className="aspect-video rounded-[50px] overflow-hidden bg-black/40 border border-white/10 shadow-2xl relative group">
                 {movie.trailerUrl ? (
@@ -210,7 +207,7 @@ export const MovieDetails = () => {
           <div className="lg:col-span-4 space-y-10">
               <div className="bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-[50px] p-10 space-y-8">
                   <div>
-                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">The Creative Node</h4>
+                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Crew</h4>
                     <div className="space-y-6">
                         {movie.crew?.map((member: any, i: number) => (
                             <div key={i} className="flex items-center justify-between group">
@@ -231,11 +228,11 @@ export const MovieDetails = () => {
                       <div className="grid grid-cols-2 gap-4">
                           <div className="bg-black/30 p-4 rounded-3xl border border-white/5">
                               <p className="text-[8px] font-bold text-gray-500 uppercase mb-1">Visuals</p>
-                              <p className="text-xs font-black text-white">IMAX LASER</p>
+                              <p className="text-xs font-black text-white">{movie.technicalSpecs?.[0] || 'IMAX LASER'}</p>
                           </div>
                           <div className="bg-black/30 p-4 rounded-3xl border border-white/5">
                               <p className="text-[8px] font-bold text-gray-500 uppercase mb-1">Audio</p>
-                              <p className="text-xs font-black text-white">DOLBY ATMOS</p>
+                              <p className="text-xs font-black text-white">{movie.technicalSpecs?.[1] || 'DOLBY ATMOS'}</p>
                           </div>
                       </div>
                   </div>
@@ -244,7 +241,7 @@ export const MovieDetails = () => {
               {}
               <div className="bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-[50px] p-10 space-y-8">
                   <div className="flex items-center justify-between">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Archive Identities</h4>
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Tags</h4>
                       <Hash size={18} className="text-accent-pink" />
                   </div>
                   <TagCloud tags={movie.tags || []} variant="pink" />
@@ -253,7 +250,7 @@ export const MovieDetails = () => {
       </section>
 
       {}
-      <section className="mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="showtimes-section" className="mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-white/5 pb-8">
           <div className="flex items-center gap-10">
             <button 
@@ -266,17 +263,24 @@ export const MovieDetails = () => {
               onClick={() => setActiveTab('REVIEWS')}
               className={`text-2xl font-black pb-3 transition-colors ${activeTab === 'REVIEWS' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
             >
-              Reviews ({reviews.length})
+              Reviews
             </button>
           </div>
           
+          {activeTab === 'REVIEWS' && (
+            <Link 
+              to={`/movie/${id}/reviews`}
+              className="text-[10px] font-black text-accent-pink uppercase tracking-widest bg-accent-pink/10 px-6 py-2.5 rounded-xl border border-accent-pink/20 hover:bg-accent-pink/20 transition-all"
+            >
+              View All Reviews
+            </Link>
+          )}
+          
           {activeTab === 'SHOWTIMES' && (
-            <div className="flex items-center gap-3 bg-white/5 rounded-3xl p-2 border border-white/10">
-              <div className="px-6 py-2.5 bg-accent-blue/20 text-accent-blue rounded-2xl text-xs font-black flex items-center gap-2">
-                <Calendar size={14} /> SUN, 12 APR
-              </div>
-              <div className="px-6 py-2.5 hover:bg-white/5 rounded-2xl text-xs font-bold text-gray-400">MON, 13 APR</div>
-            </div>
+            <DateSelector 
+              selectedDate={selectedDate} 
+              onDateChange={setSelectedDate} 
+            />
           )}
         </div>
 
@@ -346,81 +350,12 @@ export const MovieDetails = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-12"
             >
-              {}
-              {isAuthenticated && (
-                <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-pink to-accent-purple flex items-center justify-center text-sm font-bold text-white">
-                      {user?.name[0]}
-                    </div>
-                    <div>
-                      <h4 className="font-black text-white">Share your experience</h4>
-                      <div className="flex gap-2 mt-1">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <button 
-                            key={star} 
-                            onClick={() => setNewReview({ ...newReview, rating: star })}
-                            className={`transition-all ${newReview.rating >= star ? 'text-yellow-500 scale-110' : 'text-gray-600'}`}
-                          >
-                            <Star size={18} fill={newReview.rating >= star ? 'currentColor' : 'none'} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <form onSubmit={handleSubmitReview} className="relative">
-                    <textarea 
-                      value={newReview.comment}
-                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                      placeholder="Was it worth the wait? Tell us what you thought..." 
-                      className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-white text-sm outline-none focus:border-accent-pink transition-all h-32 resize-none"
-                    />
-                    <button 
-                      type="submit"
-                      className="absolute bottom-4 right-4 bg-accent-pink text-white p-3 rounded-xl hover:scale-110 active:scale-95 transition-all"
-                    >
-                      <Send size={20} />
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {reviews.length > 0 ? reviews.map((review) => {
-                  const author = typeof review.userId === 'object' && review.userId !== null
-                    ? review.userId
-                    : null;
-                  const authorName = author?.name ?? 'Anonymous';
-                  return (
-                  <div key={review._id} className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4 group hover:bg-white/10 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-xs font-black text-gray-400">
-                          {authorName[0]}
-                        </div>
-                        <div>
-                          <p className="font-black text-white text-sm">{authorName}</p>
-                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 bg-yellow-500/10 px-3 py-1 rounded-lg border border-yellow-500/20">
-                        <Star size={12} className="text-yellow-500" fill="currentColor" />
-                        <span className="text-xs font-black text-yellow-500">{review.rating}</span>
-                      </div>
-                    </div>
-                    <p className="text-gray-300 text-sm italic italic leading-relaxed">"{review.comment}"</p>
-                  </div>
-                  );
-                }) : (
-                  <div className="col-span-full text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10">
-                    <MessageSquare size={48} className="text-gray-700 mx-auto mb-4" />
-                    <p className="text-gray-500 font-black text-xl italic opacity-50">No reviews yet. Be the first to share!</p>
-                  </div>
-                )}
-              </div>
+              <ReviewSection 
+                targetId={id!} 
+                targetType="Movie" 
+                targetName={movie.title}
+              />
             </motion.div>
           )}
         </AnimatePresence>

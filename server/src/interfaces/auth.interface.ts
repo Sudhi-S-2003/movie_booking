@@ -40,6 +40,7 @@ declare global {
     interface Request {
       user?:         AuthUser;
       externalUser?: ExternalUserIdentity;
+      sessionId?:    string;
     }
   }
 }
@@ -71,4 +72,5 @@ export const requireAuthUser = (req: Request): AuthUser => {
 export interface JwtPayload {
   id: string;
   role: string;
+  sessionId: string;
 }

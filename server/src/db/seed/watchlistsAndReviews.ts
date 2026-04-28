@@ -29,7 +29,7 @@ export const seedReviews = async (users: UserDoc[], movies: MovieDoc[]) => {
       userId: user._id,
       targetId: movie._id,
       targetType: 'Movie',
-      rating: randomInt(4, 5),
+      rating: randomInt(7, 10),
       comment: pick(reviewComments),
     }));
   });

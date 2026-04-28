@@ -1,15 +1,17 @@
 import React from 'react';
-import { BarChart3, Film, MapPin, Users, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle } from 'lucide-react';
+import { BarChart3, Film, MapPin, Users, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle, ShieldCheck } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
 
+import { useAuthStore } from '../store/authStore.js';
+
 const config: SidebarConfig = {
   brand: {
-    title: 'OPS',
-    accent: 'CENTER',
+    title: 'ADMIN',
+    accent: 'HUB',
     accentColor: 'text-accent-blue/80',
-    subtitle: 'Global Management v3.1',
+    subtitle: 'Management Console',
     iconName: 'ShieldCheck',
     iconColor: 'text-accent-blue',
   },
@@ -18,21 +20,22 @@ const config: SidebarConfig = {
       label: 'Analytics',
       items: [
         { icon: BarChart3, label: 'Dashboard', to: '/admin/overview', colorClass: 'text-accent-blue' },
+        { icon: ShieldCheck, label: 'Sessions', to: '/admin/sessions', colorClass: 'text-emerald-400' },
       ],
     },
     {
-      label: 'Inventory',
+      label: 'Content',
       items: [
-        { icon: Film, label: 'Movie Catalogue', to: '/admin/movies', colorClass: 'text-accent-pink' },
-        { icon: MapPin, label: 'Theatre Network', to: '/admin/theatres', colorClass: 'text-accent-purple' },
+        { icon: Film, label: 'Movies', to: '/admin/movies', colorClass: 'text-accent-pink' },
+        { icon: MapPin, label: 'Theatres', to: '/admin/theatres', colorClass: 'text-accent-purple' },
       ],
     },
     {
       label: 'Operations',
       items: [
-        { icon: Users, label: 'User Directory', to: '/admin/users', colorClass: 'text-accent-blue' },
+        { icon: Users, label: 'Users', to: '/admin/users', colorClass: 'text-accent-blue' },
         { icon: MessageCircle, label: 'Messages', to: '/admin/chat', colorClass: 'text-emerald-400' },
-        { icon: LifeBuoy, label: 'Support Node', to: '/admin/issues', colorClass: 'text-accent-pink' },
+        { icon: LifeBuoy, label: 'Support', to: '/admin/issues', colorClass: 'text-accent-pink' },
       ],
     },
     {
@@ -45,14 +48,18 @@ const config: SidebarConfig = {
 
   ],
   bottomItems: [
-    { icon: Settings, label: 'System Config', to: '/admin/settings', colorClass: 'text-gray-400' },
+    { icon: Settings, label: 'Settings', to: '/admin/settings', colorClass: 'text-gray-400' },
   ],
   pillId: 'admin-pill',
 };
 
-export const AdminLayout: React.FC = () => (
-  <AppDashboardLayout
-    sidebar={<DashboardSidebar config={config} />}
-    searchPlaceholder="Search global network (Movies, Theatres, IDs)..."
-  />
-);
+export const AdminLayout: React.FC = () => {
+  const { logout } = useAuthStore();
+  
+  return (
+    <AppDashboardLayout
+      sidebar={<DashboardSidebar config={{ ...config, showLogout: true, onLogout: logout }} />}
+      searchPlaceholder="Search global network (Movies, Theatres, IDs)..."
+    />
+  );
+};

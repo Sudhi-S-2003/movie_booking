@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getShowtimeDetails, getShowtimesByMovie, lockSeat, unlockSeat, unlockSeatBeacon, confirmBooking, getMyBookings } from '../controllers/booking.controller.js';
+import { getShowtimeDetails, getShowtimesByMovie, lockSeat, unlockSeat, unlockSeatBeacon, confirmBooking, getMyBookings, getPublicTicket } from '../controllers/booking.controller.js';
 import { isAuthenticated } from '../middleware/auth.middleware.js';
 
 const router = Router();
@@ -7,6 +7,7 @@ const router = Router();
 // Public: Get layout and current occupancy
 router.get('/showtime/:id', getShowtimeDetails);
 router.get('/movie/:movieId', getShowtimesByMovie);
+router.get('/public/:id', getPublicTicket);
 
 // Protected: Lock, Unlock, and Book seats
 router.post('/lock', isAuthenticated, lockSeat);

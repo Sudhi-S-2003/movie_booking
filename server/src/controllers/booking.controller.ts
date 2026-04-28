@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../env.js';
 import { Showtime } from '../models/showtime.model.js';
+import { Types } from 'mongoose';
 import { SeatReservation } from '../models/seatReservation.model.js';
 import { SeatStatus } from '../constants/enums.js';
 import { getBookingNamespace } from '../socket/index.js';
@@ -9,6 +10,7 @@ import type { AuthRequest } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { parsePage, buildPageEnvelope } from '../utils/pagination.js';
 import { notificationService } from '../services/notification.service.js';
+import { getParam, getQueryParam } from '../utils/params.utils.js';
 
 export const getShowtimeDetails = async (req: Request, res: Response) => {
   try {
@@ -47,34 +49,71 @@ export const getShowtimeDetails = async (req: Request, res: Response) => {
 export const getShowtimesByMovie = async (req: Request, res: Response) => {
   try {
     const { movieId } = req.params;
+    const { city, date } = req.query;
 
     if (!movieId || typeof movieId !== 'string') {
       return res.status(400).json({ success: false, message: 'Invalid movie ID' });
     }
-    
-    const { city } = req.query;
-    
-    const filter: any = { movieId };
-    
-    // We need to find theatres in that city first if city is provided
-    // Alternatively, we can use a more complex join if theatreId is populated
-    // but Mongoose find() with filter on populated field is tricky.
-    // However, Showtime model HAS theatreId.
-    
-    const showtimes = await Showtime.find(filter)
-      .populate({
-        path: 'theatreId',
-        match: city ? { city: (city as string).toLowerCase() } : {}
-      })
-      .populate('screenId')
-      .sort({ startTime: 1 });
 
-    // Filter out showtimes where theatreId is null (meaning it didn't match the city)
-    const filteredShowtimes = city ? showtimes.filter(st => st.theatreId !== null) : showtimes;
+    const match: any = { movieId: new Types.ObjectId(movieId) };
+
+    if (date && typeof date === 'string') {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      match.startTime = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    const pipeline: any[] = [
+      { $match: match },
+      {
+        $lookup: {
+          from: 'theatres',
+          localField: 'theatreId',
+          foreignField: '_id',
+          as: 'theatre'
+        }
+      },
+      { $unwind: '$theatre' },
+      {
+        $lookup: {
+          from: 'screens',
+          localField: 'screenId',
+          foreignField: '_id',
+          as: 'screen'
+        }
+      },
+      { $unwind: '$screen' }
+    ];
+
+    if (city && typeof city === 'string') {
+      pipeline.push({
+        $match: { 'theatre.city': { $regex: new RegExp(`^${city}$`, 'i') } }
+      });
+    }
+
+    pipeline.push({ $sort: { startTime: 1 } });
+
+    // Project back to a format similar to populate() for frontend compatibility
+    pipeline.push({
+      $project: {
+        _id: 1,
+        movieId: 1,
+        theatreId: '$theatre',
+        screenId: '$screen',
+        startTime: 1,
+        endTime: 1,
+        format: 1,
+        pricingOverrides: 1
+      }
+    });
+
+    const showtimes = await Showtime.aggregate(pipeline);
 
     res.status(200).json({
       success: true,
-      showtimes: filteredShowtimes
+      showtimes
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
@@ -246,31 +285,72 @@ export const unlockSeatBeacon = async (req: Request, res: Response) => {
   }
 };
 
+export const getPublicTicket = async (req: Request, res: Response) => {
+  try {
+    const id = getParam(req, 'id');
+    const sig = getQueryParam(req, 'sig');
+
+    if (!id || !sig) {
+      return res.status(400).json({ success: false, message: 'Missing parameters' });
+    }
+
+    // Simple signature check: hash(id + secret)
+    const crypto = await import('crypto');
+    const expectedSig = crypto
+      .createHmac('sha256', env.JWT_SECRET)
+      .update(id)
+      .digest('hex');
+
+    if (sig !== expectedSig) {
+      return res.status(403).json({ success: false, message: 'Invalid signature' });
+    }
+
+    const booking = await SeatReservation.findById(id)
+      .populate({
+        path: 'showtimeId',
+        populate: [
+          { path: 'movieId' },
+          { path: 'theatreId' },
+          { path: 'screenId' }
+        ]
+      });
+
+    if (!booking || booking.status !== SeatStatus.BOOKED) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      booking
+    });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
 export const getMyBookings = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const filter = { userId, status: SeatStatus.BOOKED };
     const page = parsePage(req);
-
     const [bookings, total] = await Promise.all([
-      SeatReservation.find(filter)
-        .populate({
-          path: 'showtimeId',
-          populate: [
-            { path: 'movieId' },
-            { path: 'theatreId' },
-            { path: 'screenId' }
-          ]
-        })
-        .sort({ createdAt: -1 })
-        .skip(page.skip)
-        .limit(page.limit),
+      SeatReservation.find(filter).populate({
+        path: 'showtimeId',
+        populate: [{ path: 'movieId' }, { path: 'theatreId' }, { path: 'screenId' }]
+      }).sort({ createdAt: -1 }).skip(page.skip).limit(page.limit),
       SeatReservation.countDocuments(filter),
     ]);
 
+    const crypto = await import('crypto');
+    const bookingsWithSigs = bookings.map(b => {
+      const bId = b._id.toString();
+      const sig = crypto.createHmac('sha256', env.JWT_SECRET).update(bId).digest('hex');
+      return { ...b.toObject(), signature: sig };
+    });
+
     res.status(200).json({
       success: true,
-      bookings,
+      bookings: bookingsWithSigs,
       pagination: buildPageEnvelope(total, page),
     });
   } catch (error: unknown) {

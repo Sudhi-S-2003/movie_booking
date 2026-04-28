@@ -6,6 +6,8 @@ import { UserRole } from '../constants/enums.js';
 import type { JwtPayload } from '../interfaces/auth.interface.js';
 import { getOrCreateForUser as ensureSubscription } from '../services/subscription/subscription.service.js';
 
+import { Session } from '../models/session.model.js';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth middleware
 //
@@ -47,12 +49,29 @@ export const isAuthenticated = async (
     }
 
     const decoded = verifyToken(token);
+    
+    // Verify session
+    const session = await Session.findOne({ 
+      _id: decoded.sessionId, 
+      userId: decoded.id, 
+      isValid: true 
+    });
+    
+    if (!session) {
+      return res.status(401).json({ success: false, message: 'Session expired or revoked' });
+    }
+
     const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(401).json({ success: false, message: 'User not found' });
     }
 
+    // Update last active asynchronously to not block request
+    Session.findByIdAndUpdate(session._id, { lastActive: new Date() }).catch(console.error);
+
     req.user = user;
+    req.sessionId = session._id.toString();
+
     // Defensive: seed a free subscription + buckets for legacy users that
     // pre-date the subscription system. Short-circuited via an in-process
     // Set so we only do the DB work once per user per server lifetime.
@@ -62,7 +81,7 @@ export const isAuthenticated = async (
       ensureSubscription(uid).catch(() => { /* non-fatal */ });
     }
     next();
-  } catch {
+  } catch (error) {
     return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
 };
@@ -82,8 +101,23 @@ export const optionalAuthenticate = async (
 
   try {
     const decoded = verifyToken(token);
-    const user = await User.findById(decoded.id);
-    if (user) req.user = user;
+    
+    // Verify session
+    const session = await Session.findOne({ 
+      _id: decoded.sessionId, 
+      userId: decoded.id, 
+      isValid: true 
+    });
+    
+    if (session) {
+      const user = await User.findById(decoded.id);
+      if (user) {
+        req.user = user;
+        req.sessionId = session._id.toString();
+        // Update last active
+        Session.findByIdAndUpdate(session._id, { lastActive: new Date() }).catch(console.error);
+      }
+    }
   } catch {
     // invalid token — leave req.user undefined and continue anonymously
   }

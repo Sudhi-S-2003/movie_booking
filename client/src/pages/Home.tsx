@@ -1,47 +1,60 @@
 import { motion } from 'framer-motion';
 import { Play, Info, ChevronRight, Star, Heart, BookmarkCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-import { useState, useEffect } from 'react';
 import { moviesApi } from '../services/api/index.js';
 import { useBookingStore } from '../store/bookingStore.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 
+import { useQuery } from '@tanstack/react-query';
+
 export const Home = () => {
   useDocumentTitle("Home");
-  const [movies, setMovies] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { searchQuery } = useBookingStore();
 
-  useEffect(() => {
-    moviesApi.list({ search: searchQuery })
-      .then(res => setMovies(res.movies))
-      .catch(err => console.error('Failed to fetch movies:', err))
-      .finally(() => setLoading(false));
-  }, [searchQuery]);
+  const { data: trendingRes, isLoading: trendingLoading } = useQuery({
+    queryKey: ['movies', 'trending', searchQuery],
+    queryFn: () => searchQuery
+      ? moviesApi.list({ search: searchQuery })
+      : moviesApi.list({ status: 'now-showing', limit: 12 }),
+  });
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse">CINEMACONNECT LOADING...</div>;
-  if (movies.length === 0) return <div className="min-h-screen flex items-center justify-center font-black">NO MOVIES CURRENTLY SHOWING</div>;
+  const { data: upcomingRes, isLoading: upcomingLoading } = useQuery({
+    queryKey: ['movies', 'upcoming'],
+    queryFn: () => moviesApi.list({ status: 'upcoming', limit: 12 }),
+    enabled: !searchQuery,
+  });
 
-  const heroMovie = movies[0];
+  const loading = trendingLoading || upcomingLoading;
+  const trending = trendingRes?.movies || [];
+  const upcoming = upcomingRes?.movies || [];
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[1em] text-accent-pink/50">Loading movies...</div>;
+
+  const heroMovie = trending[0] || upcoming[0];
+  if (!heroMovie) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6">
+      <Info size={48} className="text-gray-800" />
+      <p className="font-black uppercase tracking-[0.2em] text-gray-700">No movies found in your area</p>
+    </div>
+  );
 
   return (
     <div className="pb-20 space-y-16">
-      
-      {}
+
+      { }
       <section className="relative h-[85vh] -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden rounded-b-[40px] shadow-2xl">
-        {}
+        { }
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent z-10" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
-          <img 
-            src={heroMovie.backdropUrl} 
-            className="w-full h-full object-cover scale-105 animate-slow-zoom" 
+          <img
+            src={heroMovie.backdropUrl}
+            className="w-full h-full object-cover scale-105 animate-slow-zoom"
             alt="Hero Backdrop"
           />
         </div>
 
-        {}
+        { }
         <div className="relative z-20 h-full flex flex-col justify-center px-10 sm:px-20 max-w-4xl space-y-6">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -56,7 +69,7 @@ export const Home = () => {
             </h1>
           </motion.div>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 1 }}
@@ -65,7 +78,7 @@ export const Home = () => {
             {heroMovie.description}
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
@@ -81,10 +94,18 @@ export const Home = () => {
         </div>
       </section>
 
-      {}
-      <Carousel title="Recommended for You" movies={movies} />
-      <Carousel title="Premium Experience" movies={movies.slice().reverse()} />
-      <Carousel title="Upcoming Blockbusters" movies={movies} />
+      { }
+      {searchQuery ? (
+        <Carousel title={`Search Results for "${searchQuery}"`} movies={trending} />
+      ) : (
+        <>
+          <Carousel title="Trending Now" movies={trending} />
+          <Carousel title="Upcoming Blockbusters" movies={upcoming} />
+          {trending.length > 4 && (
+            <Carousel title="Must Watch" movies={trending.slice().reverse()} />
+          )}
+        </>
+      )}
 
     </div>
   );
@@ -102,9 +123,14 @@ const Carousel = ({ title, movies }: { title: string; movies: any[] }) => {
         <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
           {title} <ChevronRight className="text-accent-pink" />
         </h2>
-        <button className="text-sm font-bold text-accent-blue hover:underline">View All</button>
+        <Link 
+          to={`/movies?status=${title.toLowerCase().includes('upcoming') ? 'upcoming' : 'now-showing'}`} 
+          className="text-sm font-bold text-accent-blue hover:underline"
+        >
+          View All
+        </Link>
       </div>
-      
+
       <div className="flex gap-6 overflow-x-auto pb-8 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
         {movies.map((movie) => (
           <motion.div
@@ -114,13 +140,13 @@ const Carousel = ({ title, movies }: { title: string; movies: any[] }) => {
           >
             <Link to={`/movie/${movie._id}`}>
               <div className="relative aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl border border-white/5">
-                <img 
-                  src={movie.posterUrl} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                <img
+                  src={movie.posterUrl}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   alt={movie.title}
                 />
-                
-                {}
+
+                { }
                 <div className="absolute top-4 left-4 flex gap-2 z-20">
                   {movie.isInterested && (
                     <div className="bg-accent-pink/90 backdrop-blur-md p-1.5 rounded-lg shadow-lg">
@@ -135,7 +161,7 @@ const Carousel = ({ title, movies }: { title: string; movies: any[] }) => {
                 </div>
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
+
                 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md border border-white/10 px-2 py-1 rounded-lg flex items-center gap-1.5 z-10">
                   {movie.showStatus === 'upcoming' ? (
                     <>
@@ -150,7 +176,7 @@ const Carousel = ({ title, movies }: { title: string; movies: any[] }) => {
                   )}
                 </div>
               </div>
-              
+
               <div className="mt-4 space-y-1">
                 <h3 className="font-black text-white group-hover:text-accent-pink transition-colors truncate">
                   {movie.title}

@@ -1,98 +1,30 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Info, Star, Calendar, Clock, Share2, Send, MessageSquare, ParkingCircle, Utensils, Accessibility, Music, Tv, ShieldCheck, ExternalLink, Hash } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { MapPin, Info, Star, Clock, ExternalLink, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 import { TagCloud } from '../components/ui/TagCloud.js';
-import { theatresApi, reviewsApi } from '../services/api/index.js';
-import { useAuthStore } from '../store/authStore.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { PAGE_SIZE } from '../constants/pagination.js';
+
+import { useTheatreDetails } from '../hooks/useTheatreDetails.js';
+import { DateSelector } from '../components/ui/DateSelector.js';
+import { ReviewSection } from '../components/ReviewSection.js';
 
 export const TheatreDetails = () => {
   const { id } = useParams();
-  const [theatre, setTheatre] = useState<any>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [moviesWithShowtimes, setMoviesWithShowtimes] = useState<any>({});
-  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0] || '');
+  
+  const { 
+    theatre, 
+    moviesWithShowtimes, 
+    loading 
+  } = useTheatreDetails(id, selectedDate);
+
   const [activeTab, setActiveTab] = useState<'SHOWTIMES' | 'REVIEWS'>('SHOWTIMES');
-  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
-  const { user, isAuthenticated } = useAuthStore();
-  useDocumentTitle(theatre?.name);
+  
+  useDocumentTitle(theatre?.name || 'Loading Theatre...');
 
-  useEffect(() => {
-    if (!id) return;
 
-    const fetchData = async () => {
-      try {
-        const [theatreRes, showtimesRes, reviewsRes] = await Promise.all([
-          theatresApi.getById(id),
-          theatresApi.getShowtimes(id, { limit: PAGE_SIZE.DEFAULT }),
-          theatresApi.reviews(id, { page: 1, limit: PAGE_SIZE.REVIEWS }),
-        ]);
-
-        setTheatre(theatreRes.theatre);
-        setReviews(reviewsRes.reviews);
-
-        const grouped = showtimesRes.showtimes.reduce((acc: any, st: any) => {
-          const movieId = st.movieId._id;
-          const screenId = st.screenId._id;
-
-          if (!acc[movieId]) {
-            acc[movieId] = {
-              id: movieId,
-              title: st.movieId.title,
-              posterUrl: st.movieId.posterUrl,
-              backdropUrl: st.movieId.backdropUrl,
-              certification: st.movieId.certification,
-              genres: st.movieId.genres,
-              screens: {}
-            };
-          }
-
-          if (!acc[movieId].screens[screenId]) {
-            acc[movieId].screens[screenId] = {
-              name: st.screenId.name,
-              format: st.format,
-              times: []
-            };
-          }
-
-          acc[movieId].screens[screenId].times.push({
-            id: st._id,
-            time: new Date(st.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          });
-
-          return acc;
-        }, {});
-
-        setMoviesWithShowtimes(grouped);
-      } catch (error) {
-        console.error('Error fetching theatre details:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isAuthenticated) return;
-    try {
-      const res = await reviewsApi.create({
-        targetId: id!,
-        targetType: 'Theatre',
-        ...newReview
-      });
-      setReviews([{ ...res.review, userId: user }, ...reviews]);
-      setNewReview({ rating: 5, comment: '' });
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to submit review');
-    }
-  };
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse">LOADING THEATRE DATA...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse">Loading theatre details...</div>;
   if (!theatre) return <div className="min-h-screen flex items-center justify-center font-black">THEATRE NOT FOUND</div>;
 
   return (
@@ -113,9 +45,9 @@ export const TheatreDetails = () => {
             className="space-y-4"
           >
             <div className="flex items-center gap-3">
-              <span className="px-4 py-1.5 bg-accent-blue/20 text-accent-blue rounded-xl text-[10px] font-black uppercase tracking-[0.2em]">Premium Partner</span>
+              <span className="px-4 py-1.5 bg-accent-blue/20 text-accent-blue rounded-xl text-[10px] font-black uppercase tracking-[0.2em]">Verified Theatre</span>
               <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map(star => <Star key={star} size={12} className="text-yellow-500 fill-yellow-500" />)}
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => <Star key={star} size={10} className="text-yellow-500 fill-yellow-500" />)}
               </div>
             </div>
             <h1 className="text-5xl sm:text-7xl font-black text-white tracking-tighter">{theatre.name}</h1>
@@ -131,7 +63,7 @@ export const TheatreDetails = () => {
           {}
           <div className="lg:col-span-8 bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-[50px] p-10 space-y-8">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black uppercase tracking-tight">Facility <span className="text-accent-blue">Transmission</span></h3>
+                    <h3 className="text-xl font-black uppercase tracking-tight">Theatre <span className="text-accent-blue">Amenities</span></h3>
                     <Info size={20} className="text-gray-600" />
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -142,7 +74,7 @@ export const TheatreDetails = () => {
           {}
           <div className="lg:col-span-4 bg-white/[0.02] border border-white/5 rounded-[50px] p-10 flex flex-col justify-between">
                 <div className="space-y-6">
-                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Contact Node</h3>
+                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Contact Information</h3>
                     <div className="space-y-4">
                         <div className="flex gap-4">
                              <div className="w-10 h-10 rounded-2xl bg-accent-pink/10 flex items-center justify-center text-accent-pink border border-accent-pink/20">
@@ -185,16 +117,23 @@ export const TheatreDetails = () => {
               onClick={() => setActiveTab('REVIEWS')}
               className={`text-2xl font-black pb-3 transition-colors ${activeTab === 'REVIEWS' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
             >
-              Reviews ({reviews.length})
+              Reviews
             </button>
           </div>
           
-          <div className="flex items-center gap-3 bg-white/5 rounded-3xl p-2 border border-white/10">
-            <div className="px-6 py-2.5 bg-accent-blue/20 text-accent-blue rounded-2xl text-xs font-black flex items-center gap-2">
-              <Calendar size={14} /> SUN, 12 APR
-            </div>
-            <div className="px-6 py-2.5 hover:bg-white/5 rounded-2xl text-xs font-bold text-gray-400 transition-colors">MON, 13 APR</div>
-          </div>
+          {activeTab === 'REVIEWS' ? (
+            <Link 
+              to={`/theatre/${id}/reviews`}
+              className="text-[10px] font-black text-accent-pink uppercase tracking-widest bg-accent-pink/10 px-6 py-2.5 rounded-xl border border-accent-pink/20 hover:bg-accent-pink/20 transition-all"
+            >
+              View All Reviews
+            </Link>
+          ) : (
+            <DateSelector 
+              selectedDate={selectedDate} 
+              onDateChange={setSelectedDate} 
+            />
+          )}
         </div>
 
         <AnimatePresence mode="wait">
@@ -278,75 +217,12 @@ export const TheatreDetails = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-12"
             >
-              {}
-              {isAuthenticated && (
-                <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-blue to-accent-purple flex items-center justify-center text-sm font-bold text-white">
-                      {user?.name[0]}
-                    </div>
-                    <div>
-                      <h4 className="font-black text-white">How was your visit?</h4>
-                      <div className="flex gap-2 mt-1">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <button 
-                            key={star} 
-                            onClick={() => setNewReview({ ...newReview, rating: star })}
-                            className={`transition-all ${newReview.rating >= star ? 'text-yellow-500 scale-110' : 'text-gray-600'}`}
-                          >
-                            <Star size={18} fill={newReview.rating >= star ? 'currentColor' : 'none'} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <form onSubmit={handleSubmitReview} className="relative">
-                    <textarea 
-                      value={newReview.comment}
-                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                      placeholder="Comment on seating, sound, or service..." 
-                      className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-white text-sm outline-none focus:border-accent-blue transition-all h-32 resize-none"
-                    />
-                    <button 
-                      type="submit"
-                      className="absolute bottom-4 right-4 bg-accent-blue text-white p-3 rounded-xl hover:scale-110 active:scale-95 transition-all"
-                    >
-                      <Send size={20} />
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {reviews.length > 0 ? reviews.map((review) => (
-                  <div key={review._id} className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-4 hover:bg-white/10 transition-all group">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-xs font-black text-gray-400 group-hover:bg-accent-blue/10 group-hover:border-accent-blue/20 transition-colors">
-                          {review.userId?.name[0]}
-                        </div>
-                        <div>
-                          <p className="font-black text-white text-sm">{review.userId?.name}</p>
-                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 bg-yellow-500/10 px-3 py-1 rounded-lg border border-yellow-500/20">
-                        <Star size={12} className="text-yellow-500" fill="currentColor" />
-                        <span className="text-xs font-black text-yellow-500">{review.rating}</span>
-                      </div>
-                    </div>
-                    <p className="text-gray-300 text-sm italic leading-relaxed">"{review.comment}"</p>
-                  </div>
-                )) : (
-                  <div className="col-span-full text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10">
-                    <MessageSquare size={48} className="text-gray-700 mx-auto mb-4" />
-                    <p className="text-gray-500 font-black text-xl italic opacity-50">No one has reviewed this theatre yet.</p>
-                  </div>
-                )}
-              </div>
+              <ReviewSection 
+                targetId={id!} 
+                targetType="Theatre" 
+                targetName={theatre.name}
+              />
             </motion.div>
           )}
         </AnimatePresence>

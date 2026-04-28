@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Zap, Crown, Building2, Lock, Loader2, CheckCircle2,
-  AlertCircle, X, Star, ArrowRight, Gift, Tag,
+  AlertCircle, X, ArrowRight, Gift, Tag,
 } from 'lucide-react';
 import {
   subscriptionApi,
@@ -194,9 +194,9 @@ export const Subscription = () => {
           <div className="relative flex flex-col lg:flex-row lg:flex-wrap lg:items-start lg:justify-between gap-6">
             <div className="min-w-0">
               <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Billing</span>
-              <h1 className="mt-1 text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Plans &amp; usage</h1>
+              <h1 className="mt-1 text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">Plans</h1>
               <p className="mt-2 text-[12px] font-bold text-white/50 max-w-md">
-                Token-based billing — pay for what you actually use. Upgrade or downgrade any time.
+                Pay for what you use. Change plans any time.
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-[0.25em] ${statusChip(plan, sub?.status)}`}>
@@ -348,9 +348,9 @@ export const Subscription = () => {
         <section className="mt-12">
           <div className="mb-4 flex items-end justify-between gap-3 flex-wrap">
             <div>
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Live usage</span>
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Usage</span>
               <h2 className="mt-1 text-2xl md:text-3xl font-black text-white tracking-tight">
-                Your usage at a glance
+                Usage
               </h2>
             </div>
             <AnimatePresence mode="wait">
@@ -362,7 +362,7 @@ export const Subscription = () => {
                 transition={{ duration: 0.3 }}
                 className="text-[10px] font-black text-white/35 uppercase tracking-[0.25em]"
               >
-                Updated just now
+                Updated
               </motion.span>
             </AnimatePresence>
           </div>
@@ -807,10 +807,10 @@ const EnterpriseForm = ({ onClose, onSubmit }: {
   };
 
   return (
-    <ModalShell onClose={onClose} heading="Enterprise plan" subheading="Custom contract terms" accent="emerald">
+    <ModalShell onClose={onClose} heading="Enterprise" subheading="Custom terms" accent="emerald">
       <div className="mt-5 space-y-3">
         <label className="block">
-          <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Monthly token limit</span>
+          <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Monthly limit</span>
           <input
             type="number" min={100_000} value={monthlyLimit}
             onChange={(e) => setMonthlyLimit(e.target.value)}
@@ -826,7 +826,7 @@ const EnterpriseForm = ({ onClose, onSubmit }: {
           />
         </label>
         <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
-          <div className="text-[10px] font-black text-white/50 uppercase tracking-widest">Calculated total</div>
+          <div className="text-[10px] font-black text-white/50 uppercase tracking-widest">Total</div>
           {quote ? (
             <>
               <div className="mt-1 flex items-baseline gap-2">
@@ -986,7 +986,7 @@ const EnterpriseCheckoutModal = ({ target, onClose, onSuccess }: {
 
   return (
     <PaymentShell
-      heading="Enterprise activation"
+      heading="Enterprise"
       subheading={`${target.monthlyLimit.toLocaleString()} tokens / month · ${target.durationMonths} month${target.durationMonths === 1 ? '' : 's'}`}
       priceDisplay={target.priceDisplay}
       accent="emerald"
@@ -1043,7 +1043,7 @@ const PaymentShell = ({
         <div className="mt-3 flex items-center gap-2 text-[11px] font-bold text-emerald-300 bg-emerald-400/10 border border-emerald-400/25 rounded-xl px-3 py-2">
           <CheckCircle2 size={13} className="shrink-0" />
           <span>
-            Welcome offer applied
+            Offer applied
             {discountPct ? ` (${discountPct}% off)` : ''}
             {' '}— you save ₹{savings.toLocaleString('en-IN')}
           </span>
@@ -1098,7 +1098,7 @@ const PaymentShell = ({
       {paymentStep === 'processing' && (
         <div className="mt-6 flex flex-col items-center py-6">
           <Loader2 size={24} className="animate-spin text-accent-blue mb-3" />
-          <p className="text-[11px] font-black text-white/60 uppercase tracking-widest">Processing…</p>
+          <p className="text-[11px] font-black text-white/60 uppercase tracking-widest">Loading…</p>
         </div>
       )}
 

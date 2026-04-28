@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Search, Star, ExternalLink, Info, Tv, Navigation, ChevronRight } from 'lucide-react';
+import { MapPin, Search, Star, Info, Tv, ChevronRight, Navigation as NavIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { theatresApi } from '../services/api/index.js';
 import { useBookingStore } from '../store/bookingStore.js';
@@ -37,15 +37,15 @@ export const Theatres = () => {
                     animate={{ opacity: 1, x: 0 }}
                   >
                         <h1 className="text-6xl sm:text-8xl font-black uppercase tracking-tighter text-white leading-[0.85]">
-                            Find Your <br />
-                            <span className="text-accent-blue">Sanctuary</span>
+                            Find <br />
+                            <span className="text-accent-blue">Cinemas</span>
                         </h1>
                   </motion.div>
-                  <p className="text-gray-400 font-medium max-w-sm italic">Discover premium cinema halls and boutique theaters across the urban landscape.</p>
+                  <p className="text-gray-400 font-medium max-w-sm italic">Find premium cinemas and boutique theaters near you.</p>
               </div>
 
               <div className="bg-surface/40 backdrop-blur-3xl border border-white/10 rounded-[48px] p-10 space-y-6 shadow-2xl">
-                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Transmission Hub</h3>
+                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Cities</h3>
                   <div className="flex flex-wrap gap-2">
                       {popularCities.map(city => (
                           <button
@@ -79,8 +79,8 @@ export const Theatres = () => {
                   />
               </div>
               <div className="flex items-center gap-4 bg-white/5 px-8 py-5 rounded-[30px] border border-white/5">
-                  <Navigation size={20} className="text-accent-pink" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white">{selectedCity} Network</span>
+                  <NavIcon size={20} className="text-accent-pink" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white">{selectedCity} Cinemas</span>
               </div>
           </div>
       </section>
@@ -130,7 +130,7 @@ export const Theatres = () => {
                                 <h3 className="text-4xl font-black text-white leading-tight group-hover:text-accent-blue transition-colors">{theatre.name}</h3>
                                 <div className="flex items-center gap-2 text-gray-500">
                                     <MapPin size={14} className="text-accent-pink" />
-                                    <span className="text-xs font-bold uppercase tracking-widest">{theatre.city} HUB</span>
+                                    <span className="text-xs font-bold uppercase tracking-widest">{theatre.city}</span>
                                 </div>
                             </div>
 
@@ -152,7 +152,7 @@ export const Theatres = () => {
                             to={`/theatre/${theatre._id}`}
                             className="mt-10 flex items-center justify-center gap-2 py-5 bg-white/5 border border-white/10 rounded-[30px] font-black uppercase tracking-widest text-[10px] hover:bg-accent-blue hover:text-white transition-all shadow-xl group/btn"
                         >
-                            Establish Link <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                            View <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                         </Link>
                     </motion.div>
                 ))}
@@ -167,12 +167,12 @@ export const Theatres = () => {
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-gray-700 mb-6">
                 <Info size={36} />
               </div>
-              <p className="text-gray-500 font-black text-2xl italic opacity-50">No cinemas detected in {selectedCity} sector.</p>
+              <p className="text-gray-500 font-black text-2xl italic opacity-50">No cinemas found in {selectedCity}.</p>
               <button 
                 onClick={() => setSearchQuery('')}
                 className="mt-8 text-accent-pink font-black uppercase text-[10px] tracking-widest hover:underline"
               >
-                Reset Sensors
+                Reset
               </button>
             </motion.div>
           )}

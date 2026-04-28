@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { User } from '../models/user.model.js';
 import { Movie } from '../models/movie.model.js';
 import { Theatre } from '../models/theatre.model.js';
+import { Screen } from '../models/screen.model.js';
 import { Showtime } from '../models/showtime.model.js';
 import { SeatReservation } from '../models/seatReservation.model.js';
 import { Review } from '../models/review.model.js';
@@ -9,6 +10,7 @@ import { Post } from '../models/post.model.js';
 import { Hashtag } from '../models/hashtag.model.js';
 import { MovieStatus, SeatStatus } from '../constants/enums.js';
 import { getErrorMessage } from '../utils/error.utils.js';
+import type { AuthRequest } from '../interfaces/auth.interface.js';
 
 /**
  * GET /api/stats/platform
@@ -144,6 +146,52 @@ export const getAdminStats = async (_req: Request, res: Response) => {
         recentBookings, // [{ _id: 'YYYY-MM-DD', count, revenue }]
         topMovies,
       },
+    });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+/**
+ * GET /api/stats/owner
+ *
+ * Operational stats for a theatre owner. Aggregates data across all
+ * theatres they manage.
+ */
+export const getOwnerStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    
+    // 1. Identify all managed infrastructure
+    const theatres = await Theatre.find({ ownerId: userId });
+    const theatreIds = theatres.map(t => t._id);
+
+    if (theatreIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        stats: {
+          totalTheatres: 0,
+          totalScreens: 0,
+          totalShowtimes: 0,
+          systemHealth: 100,
+        }
+      });
+    }
+
+    // 2. Rollup stats
+    const [screenCount, showtimeCount] = await Promise.all([
+      Screen.countDocuments({ theatreId: { $in: theatreIds } }),
+      Showtime.countDocuments({ theatreId: { $in: theatreIds } }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalTheatres: theatreIds.length,
+        totalScreens: screenCount,
+        totalShowtimes: showtimeCount,
+        systemHealth: 100, // Placeholder
+      }
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });

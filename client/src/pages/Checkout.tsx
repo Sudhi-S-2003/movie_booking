@@ -75,7 +75,7 @@ export const Checkout = () => {
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="flex items-center gap-3">
         <Loader2 size={20} className="animate-spin text-accent-pink" />
-        <span className="font-black text-white uppercase tracking-widest text-sm">Preparing Checkout...</span>
+        <span className="font-black text-white uppercase tracking-widest text-sm">Loading...</span>
       </div>
     </div>
   );
@@ -91,11 +91,11 @@ export const Checkout = () => {
           </button>
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight">Checkout</h1>
-            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Secure Payment Gateway</p>
+            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Payment</p>
           </div>
           <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
             <Lock size={12} className="text-emerald-500" />
-            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-wider">SSL Encrypted</span>
+            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-wider">Secure</span>
           </div>
         </div>
 
@@ -163,7 +163,7 @@ export const Checkout = () => {
 
             <div className="flex items-center gap-3 p-4 bg-accent-blue/5 border border-accent-blue/10 rounded-xl">
               <ShieldCheck size={18} className="text-accent-blue flex-shrink-0" />
-              <p className="text-[10px] font-bold text-accent-blue/80 leading-relaxed">Your payment is secured with 256-bit SSL encryption. We never store your card details.</p>
+              <p className="text-[10px] font-bold text-accent-blue/80 leading-relaxed">Your payment is secure. We don't store your card details.</p>
             </div>
           </div>
 
@@ -181,7 +181,7 @@ export const Checkout = () => {
                   {}
                   <div className="flex gap-2 bg-white/[0.02] border border-white/[0.06] rounded-xl p-1.5">
                     {([
-                      { key: 'card' as const, icon: CreditCard, label: 'Credit/Debit Card' },
+                      { key: 'card' as const, icon: CreditCard, label: 'Card' },
                       { key: 'upi' as const, icon: Smartphone, label: 'UPI' },
                       { key: 'netbanking' as const, icon: Banknote, label: 'Net Banking' },
                     ]).map(({ key, icon: Icon, label }) => (
@@ -335,8 +335,8 @@ export const Checkout = () => {
                   <div className="w-16 h-16 rounded-2xl bg-accent-blue/10 flex items-center justify-center mb-6">
                     <Loader2 size={28} className="animate-spin text-accent-blue" />
                   </div>
-                  <h3 className="text-xl font-black text-white mb-2">Processing Payment</h3>
-                  <p className="text-sm text-gray-500 font-bold">Please do not close this page...</p>
+                  <h3 className="text-xl font-black text-white mb-2">Processing</h3>
+                  <p className="text-sm text-gray-500 font-bold">Don't close this page.</p>
                   <div className="mt-6 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-accent-blue animate-bounce" style={{ animationDelay: '0ms' }} />
                     <div className="w-2 h-2 rounded-full bg-accent-blue animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -361,8 +361,8 @@ export const Checkout = () => {
                   >
                     <CheckCircle2 size={28} className="text-white" />
                   </motion.div>
-                  <h3 className="text-xl font-black text-white mb-2">Payment Successful!</h3>
-                  <p className="text-sm text-emerald-400 font-bold">Redirecting to your ticket...</p>
+                  <h3 className="text-xl font-black text-white mb-2">Paid!</h3>
+                  <p className="text-sm text-emerald-400 font-bold">Loading ticket...</p>
                 </motion.div>
               )}
 
@@ -377,7 +377,7 @@ export const Checkout = () => {
                   <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-6">
                     <AlertCircle size={28} className="text-red-500" />
                   </div>
-                  <h3 className="text-xl font-black text-white mb-2">Payment Failed</h3>
+                  <h3 className="text-xl font-black text-white mb-2">Failed</h3>
                   <p className="text-sm text-red-400 font-bold mb-6">{errorMessage}</p>
                   <button
                     onClick={reset}

@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { Types } from 'mongoose';
 import { Theatre } from '../models/theatre.model.js';
 import { Showtime } from '../models/showtime.model.js';
 import { Review } from '../models/review.model.js';
@@ -27,6 +28,35 @@ export const getAllTheatres = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       theatres,
+      pagination: buildPageEnvelope(total, page),
+    });
+  } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+// GET /api/theatres/cities?q=&page=&limit=
+export const getCities = async (req: Request, res: Response) => {
+  try {
+    const { q } = req.query as { q?: string };
+    const page = parsePage(req);
+    
+    // Find all unique cities
+    let allCities = await Theatre.distinct('city');
+    
+    // Filter by search query if provided
+    if (q) {
+      allCities = allCities.filter(c => c.toLowerCase().includes(q.toLowerCase()));
+    }
+    
+    allCities.sort();
+    
+    const total = allCities.length;
+    const paginatedCities = allCities.slice(page.skip, page.skip + page.limit);
+
+    res.status(200).json({
+      success: true,
+      cities: paginatedCities,
       pagination: buildPageEnvelope(total, page),
     });
   } catch (error: unknown) {
@@ -81,32 +111,67 @@ export const getTheatreReviews = async (req: Request, res: Response) => {
 export const getShowtimesByTheatre = async (req: Request, res: Response) => {
   try {
     const id = req.params.id!;
-    const { from, to } = req.query as { from?: string; to?: string };
-    const page = parsePage(req, 30);
+    const { date, isActive } = req.query as { date?: string; isActive?: string };
 
-    const filter: Record<string, unknown> = { theatreId: id };
-    if (from || to) {
-      const range: Record<string, Date> = {};
-      if (from) range.$gte = new Date(from);
-      if (to)   range.$lte = new Date(to);
-      filter.startTime = range;
+    const match: any = { theatreId: new Types.ObjectId(id) };
+
+    if (date) {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      match.startTime = { $gte: startOfDay, $lte: endOfDay };
     }
 
-    const [showtimes, total] = await Promise.all([
-      Showtime.find(filter)
-        .populate('movieId')
-        .populate('screenId')
-        .sort({ startTime: 1 })
-        .skip(page.skip)
-        .limit(page.limit)
-        .lean(),
-      Showtime.countDocuments(filter),
-    ]);
+    if (isActive !== undefined) {
+      match.isActive = isActive === 'true';
+    } else {
+      // By default for public view, only show active ones
+      // If we are in an admin context, we might want all, but this is a public API
+      match.isActive = true;
+    }
+
+    const pipeline = [
+      { $match: match },
+      {
+        $lookup: {
+          from: 'movies',
+          localField: 'movieId',
+          foreignField: '_id',
+          as: 'movie'
+        }
+      },
+      { $unwind: '$movie' },
+      {
+        $lookup: {
+          from: 'screens',
+          localField: 'screenId',
+          foreignField: '_id',
+          as: 'screen'
+        }
+      },
+      { $unwind: '$screen' },
+      { $sort: { startTime: 1 } as const },
+      {
+        $project: {
+          _id: 1,
+          movieId: '$movie',
+          theatreId: 1,
+          screenId: '$screen',
+          startTime: 1,
+          endTime: 1,
+          format: 1,
+          isActive: 1,
+          pricingOverrides: 1
+        }
+      }
+    ];
+
+    const showtimes = await Showtime.aggregate(pipeline);
 
     res.status(200).json({
       success: true,
-      showtimes,
-      pagination: buildPageEnvelope(total, page),
+      showtimes
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });

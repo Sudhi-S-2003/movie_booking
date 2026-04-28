@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import type { Request, Response } from 'express';
 import { Review } from '../models/review.model.js';
 import { SeatReservation } from '../models/seatReservation.model.js';
@@ -57,36 +58,57 @@ export const createReview = async (req: AuthRequest, res: Response) => {
 export const getReviewsByTarget = async (req: Request, res: Response) => {
   try {
     const targetId = req.params.targetId!;
-    const page = parsePage(req);
     const filter = { targetId } as const;
+    const page = parsePage(req);
+    const sortParam = req.query.sort === 'highest' ? { rating: -1 } : req.query.sort === 'lowest' ? { rating: 1 } : { createdAt: -1 };
 
     const [reviews, total, agg] = await Promise.all([
       Review.find(filter)
         .populate('userId', 'name username avatar')
-        .sort({ createdAt: -1 })
+        .sort(sortParam as any)
         .skip(page.skip)
         .limit(page.limit)
         .lean(),
       Review.countDocuments(filter),
       Review.aggregate([
-        { $match: { targetId: filter.targetId } },
+        { $match: { targetId: new mongoose.Types.ObjectId(targetId as string) } },
         {
-          $group: {
-            _id: null,
-            avg:   { $avg: '$rating' },
-            count: { $sum: 1 },
+          $facet: {
+            stats: [
+              {
+                $group: {
+                  _id: null,
+                  avg:   { $avg: '$rating' },
+                  count: { $sum: 1 },
+                },
+              },
+            ],
+            breakdown: [
+              {
+                $group: {
+                  _id: '$rating',
+                  count: { $sum: 1 },
+                },
+              },
+              { $sort: { _id: -1 } },
+            ],
           },
         },
       ]),
     ]);
 
-    const stats = agg[0] ?? { avg: 0, count: 0 };
+    const statsData = agg[0].stats[0] ?? { avg: 0, count: 0 };
+    const breakdown = agg[0].breakdown ?? [];
 
     res.status(200).json({
       success:    true,
       reviews,
       pagination: buildPageEnvelope(total, page),
-      stats:      { averageRating: stats.avg, totalReviews: stats.count },
+      stats:      { 
+        averageRating: statsData.avg, 
+        totalReviews: statsData.count,
+        breakdown
+      },
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });

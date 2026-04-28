@@ -29,14 +29,34 @@ export const getMyTheatres = async (req: AuthRequest, res: Response) => {
     }
 
     const page = parsePage(req);
-    const [theatres, total] = await Promise.all([
-      Theatre.find(filter)
-        .select('name city _id')
-        .sort({ name: 1 })
-        .skip(page.skip)
-        .limit(page.limit),
+    
+    // Use aggregation to count screens for each theatre
+    const [results, total] = await Promise.all([
+      Theatre.aggregate([
+        { $match: filter },
+        {
+          $lookup: {
+            from: 'screens',
+            localField: '_id',
+            foreignField: 'theatreId',
+            as: 'screens'
+          }
+        },
+        {
+          $addFields: {
+            screenCount: { $size: '$screens' }
+          }
+        },
+        { $project: { screens: 0 } }, // Remove full screen docs
+        { $sort: { name: 1 } },
+        { $skip: page.skip },
+        { $limit: page.limit }
+      ]),
       Theatre.countDocuments(filter),
     ]);
+
+    // Manually populate ownerId names since aggregation lookup is heavier
+    const theatres = await Theatre.populate(results, { path: 'ownerId', select: 'name email' });
 
     res.status(200).json({ success: true, theatres, pagination: buildPageEnvelope(total, page) });
   } catch (error: unknown) {

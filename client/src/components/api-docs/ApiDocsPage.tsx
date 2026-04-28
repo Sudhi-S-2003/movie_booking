@@ -1,67 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
-import { DashboardPage } from '../dashboard/DashboardPage.js';
-import { GettingStarted } from './GettingStarted.js';
-import { ManagementApi } from './ManagementApi.js';
-import { GuestApi } from './GuestApi.js';
-import { ImplementationGuide } from './ImplementationGuide.js';
-import { Book, Key, MessageSquare, Code, ChevronRight, Menu, X } from 'lucide-react';
+import { Book, Key, User, Terminal, Mail, MessageSquare, Code as CodeIcon } from 'lucide-react';
+import { GettingStarted } from './GettingStarted';
+import { ManagementApi } from './ManagementApi';
+import { GuestApi } from './GuestApi';
+import { ImplementationGuide } from './ImplementationGuide';
+import { config } from '../../config.js';
 
 const SECTIONS = [
-  { id: 'getting-started', label: 'Getting Started', icon: Book, component: GettingStarted },
-  { id: 'management-api', label: 'Management API', icon: Key, component: ManagementApi },
-  { id: 'guest-api', label: 'Guest API', icon: MessageSquare, component: GuestApi },
-  { id: 'implementation', label: 'Implementation', icon: Code, component: ImplementationGuide },
+  { id: 'getting-started', label: 'Start Here', icon: Book },
+  { id: 'management-api', label: 'Admin API', icon: Key },
+  { id: 'guest-api', label: 'Guest API', icon: User },
+  { id: 'implementation-guide', label: 'Guide', icon: Terminal }
 ];
 
-const DocSidebar = ({ activeSection, onSelect }: { activeSection: string; onSelect: (id: string) => void }) => (
-  <nav className="flex-shrink-0 w-full lg:w-64 space-y-2">
-    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 px-4 mb-4">Documentation</p>
-    {SECTIONS.map((s) => (
-      <button
-        key={s.id}
-        onClick={() => onSelect(s.id)}
-        className={`w-full group flex items-center justify-between px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 ${
-          activeSection === s.id
-            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
-            : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.03] border border-transparent'
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <s.icon size={16} className={activeSection === s.id ? 'text-blue-400' : 'group-hover:text-blue-400/50'} />
-          <span className="text-xs font-bold">{s.label}</span>
-        </div>
-        {activeSection === s.id && <ChevronRight size={12} className="opacity-50" />}
-      </button>
-    ))}
-    
-    <div className="mt-8 pt-8 border-t border-white/5 px-4">
-      <div className="group relative p-5 rounded-[2rem] bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-white/5 overflow-hidden">
-        <div className="absolute top-0 right-0 -m-4 w-24 h-24 bg-blue-500/10 blur-2xl group-hover:bg-blue-500/20 transition-all" />
-        <p className="relative text-[10px] font-black text-white uppercase tracking-wider mb-2">Need Help?</p>
-        <p className="relative text-[10px] text-gray-500 leading-relaxed font-medium">
-          Join our developer Discord or contact support for implementation assistance.
-        </p>
-      </div>
-    </div>
-  </nav>
-);
-
 export const ApiDocsPage = () => {
-  useDocumentTitle('API Documentation — CinemaConnect');
-  const [activeSection, setActiveSection] = useState('getting-started');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(() => {
+    // Determine initial active section from hash on first render
+    const hash = window.location.hash.replace('#', '');
+    return SECTIONS.some(s => s.id === hash) ? hash : 'getting-started';
+  });
 
   useEffect(() => {
+    let isInitialMount = true;
+
+    // Check for initial hash on mount to trigger scroll
+    const initialHash = window.location.hash.replace('#', '');
+    if (initialHash && SECTIONS.some(s => s.id === initialHash)) {
+      setTimeout(() => {
+        const el = document.getElementById(initialHash);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // Allow hash updates after the initial scroll has had time to start
+        setTimeout(() => { isInitialMount = false; }, 1000);
+      }, 300);
+    } else {
+      isInitialMount = false;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
+        // Find the section that is most "prominent" or just the one currently intersecting
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
+            // ONLY update state if we are not in the initial "forced" scroll phase
+            if (!isInitialMount) {
+              setActiveSection(entry.target.id);
+              window.history.replaceState(null, '', `#${entry.target.id}`);
+            }
           }
         });
       },
-      { threshold: 0.2, rootMargin: '-10% 0px -70% 0px' }
+      { 
+        threshold: 0.1,
+        rootMargin: '-20% 0px -70% 0px' 
+      }
     );
 
     SECTIONS.forEach(({ id }) => {
@@ -72,71 +65,91 @@ export const ApiDocsPage = () => {
     return () => observer.disconnect();
   }, []);
 
-  const scrollTo = (id: string) => {
+  const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      const offset = 120;
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = el.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
+      // Set active section immediately for better UI feedback
+      setActiveSection(id);
+      
+      // Update hash in URL without jumping
+      window.history.replaceState(null, '', `#${id}`);
+      
+      el.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
       });
     }
-    setIsMobileMenuOpen(false);
   };
 
   return (
-    <DashboardPage
-      title="API"
-      accent="Docs"
-      subtitle="The cinematic developer console for programmatic excellence."
-      accentColor="text-blue-400"
-    >
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
-          
-          {/* Mobile Navigation Trigger */}
-          <div className="lg:hidden sticky top-24 z-40 mb-8">
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="flex items-center justify-between w-full p-4 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl text-white shadow-xl"
-            >
-              <div className="flex items-center gap-3">
-                {(() => {
-                  const Icon = SECTIONS.find(s => s.id === activeSection)?.icon;
-                  return Icon ? <Icon size={18} /> : null;
-                })()}
-                <span className="font-bold text-sm">{SECTIONS.find(s => s.id === activeSection)?.label}</span>
-              </div>
-              {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
-            
-            {isMobileMenuOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
-                <DocSidebar activeSection={activeSection} onSelect={scrollTo} />
-              </div>
-            )}
+    <div className="lg:grid lg:grid-cols-[280px_1fr] gap-16 relative min-h-full">
+      {/* Sidebar - Side Navigation */}
+      <aside className="w-full shrink-0 lg:h-full">
+        <div className="lg:sticky lg:top-8 space-y-8 bg-[#050505]/80 backdrop-blur-xl lg:bg-transparent py-4 lg:py-0 border-b border-white/5 lg:border-none sticky top-0 z-30">
+          <div className="hidden lg:block">
+            <h2 className="text-xl font-black text-white tracking-tighter flex items-center gap-3">
+              <CodeIcon className="text-blue-500" size={24} />
+              API Docs
+            </h2>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-2">Help & Guides</p>
           </div>
 
-          {/* Desktop Sticky Sidebar */}
-          <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-32 h-[calc(100vh-160px)] overflow-y-auto scrollbar-none pb-12">
-            <DocSidebar activeSection={activeSection} onSelect={scrollTo} />
-          </aside>
-
-          {/* Content Area */}
-          <div className="flex-1 space-y-32 pb-32">
-            {SECTIONS.map(({ id, component: Component }) => (
-              <div key={id} id={id} className="scroll-mt-32">
-                <Component />
-              </div>
+          <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible no-scrollbar px-4 lg:px-0">
+            {SECTIONS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => scrollToSection(id)}
+                className={`flex items-center gap-3 px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all duration-300 text-xs lg:text-sm font-medium whitespace-nowrap shrink-0 ${
+                  activeSection === id 
+                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
+                    : 'text-gray-500 hover:text-white hover:bg-white/[0.02] border border-transparent'
+                }`}
+              >
+                <Icon size={18} />
+                {label}
+              </button>
             ))}
+          </nav>
+
+          <div className="hidden lg:block p-6 bg-white/[0.02] border border-white/5 rounded-[32px] space-y-4">
+            <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <MessageSquare size={12} />
+              Support
+            </h4>
+            <p className="text-[11px] text-gray-500 leading-relaxed">
+              Need help with integration?
+            </p>
+            <button 
+              onClick={() => window.location.href = `mailto:${config.supportEmail}`}
+              className="w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-2 group"
+            >
+              <Mail size={12} className="text-gray-400 group-hover:text-white transition-colors" />
+              Email Us
+            </button>
           </div>
         </div>
-      </div>
-    </DashboardPage>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="min-w-0">
+        <div className="max-w-4xl space-y-32 pb-20">
+          <header className="space-y-4">
+            <h1 className="text-4xl lg:text-6xl font-black text-white tracking-tightest">
+              API Guide
+            </h1>
+            <p className="text-lg text-gray-400 max-w-2xl font-medium">
+              Everything you need to integrate our movie booking system.
+            </p>
+          </header>
+
+          <div className="space-y-32">
+            <GettingStarted />
+            <ManagementApi />
+            <GuestApi />
+            <ImplementationGuide />
+          </div>
+        </div>
+      </main>
+    </div>
   );
 };

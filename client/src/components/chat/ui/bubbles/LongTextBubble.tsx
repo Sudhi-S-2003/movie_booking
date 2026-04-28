@@ -73,7 +73,7 @@ const useLongtextChunks = (msg: ChatMessage) => {
       while (cursorId) {
         // Sequential — keeps memory + order deterministic. N is small (a 1MB
         // message is 100 chunks max, well under the socket/http budget).
-        // eslint-disable-next-line no-await-in-loop
+         
         const { content, nextChunkId }: { content: string; nextChunkId: string | null } =
           await fetchChunk(cursorId);
         acc.push({ id: cursorId, content, nextChunkId });

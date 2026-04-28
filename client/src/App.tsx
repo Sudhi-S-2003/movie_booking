@@ -12,6 +12,7 @@ import { OwnerArchitecture } from './pages/dashboards/owner/OwnerArchitecture.js
 import { OwnerTimeline } from './pages/dashboards/owner/OwnerTimeline.js';
 import { OwnerSupport } from './pages/dashboards/owner/OwnerSupport.js';
 import { TheatreDetails } from './pages/TheatreDetails.js';
+import { ReviewsPage } from './pages/ReviewsPage.js';
 import { OwnerLayout } from './layouts/OwnerLayout.js';
 import { UserLayout } from './layouts/UserLayout.js';
 import { AdminLayout } from './layouts/AdminLayout.js';
@@ -49,6 +50,9 @@ import { Integrations } from './pages/Integrations.js';
 import { ApiDocs } from './pages/ApiDocs.js';
 import { ApiDocsTest } from './pages/ApiDocsTest.js';
 import { useRoleRedirect } from './hooks/useRoleRedirect.js';
+import PublicTicket from './pages/PublicTicket.js';
+import SessionsPage from './pages/dashboards/SessionsPage.js';
+
 
 const RoleRedirectHandler = () => {
   useRoleRedirect();
@@ -75,7 +79,9 @@ const App = () => {
           <Route path="/login" element={<PublicRoute><Auth /></PublicRoute>} />
 
           <Route path="/movie/:id" element={<MovieDetails />} />
+          <Route path="/movie/:id/reviews" element={<ReviewsPage type="Movie" />} />
           <Route path="/theatre/:id" element={<TheatreDetails />} />
+          <Route path="/theatre/:id/reviews" element={<ReviewsPage type="Theatre" />} />
           <Route path="/movies" element={<Movies />} />
           <Route path="/cinemas" element={<Theatres />} />
           <Route path="/hashtag/:tag" element={<Hashtag />} />
@@ -95,6 +101,7 @@ const App = () => {
           {/* Public chat onboarding — no auth required to view */}
           <Route path="/chat/g/:publicName"   element={<PublicChat />} />
           <Route path="/chat/invite/:token"   element={<ChatInvite />} />
+          <Route path="/ticket/:id"           element={<PublicTicket />} />
           <Route path="/docs-test"            element={<ApiDocsTest />} />
         </Route>
 
@@ -120,6 +127,7 @@ const App = () => {
           <Route path="api-keys" element={<ApiKeys />} />
           <Route path="api-docs" element={<ApiDocs />} />
           <Route path="integrations" element={<Integrations />} />
+          <Route path="sessions" element={<SessionsPage />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Settings Module Coming Soon</div>} />
 
         </Route>
@@ -147,6 +155,7 @@ const App = () => {
           <Route path="api-keys" element={<ApiKeys />} />
           <Route path="api-docs" element={<ApiDocs />} />
           <Route path="integrations" element={<Integrations />} />
+          <Route path="sessions" element={<SessionsPage />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">System Settings Hub Coming Soon</div>} />
 
         </Route>
@@ -172,17 +181,11 @@ const App = () => {
           <Route path="api-keys" element={<ApiKeys />} />
           <Route path="api-docs" element={<ApiDocs />} />
           <Route path="integrations" element={<Integrations />} />
+          <Route path="sessions" element={<SessionsPage />} />
           <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Account Settings Coming Soon</div>} />
 
         </Route>
 
-        {/* Shorthand Redirect Hub */}
-        <Route path="/integrations" element={<ProtectedRoute><div /></ProtectedRoute>} />
-        <Route path="/api-docs"     element={<ProtectedRoute><div /></ProtectedRoute>} />
-        <Route path="/api-keys"     element={<ProtectedRoute><div /></ProtectedRoute>} />
-        <Route path="/chat"         element={<ProtectedRoute><div /></ProtectedRoute>} />
-        <Route path="/settings"     element={<ProtectedRoute><div /></ProtectedRoute>} />
-        <Route path="/overview"     element={<ProtectedRoute><div /></ProtectedRoute>} />
 
         <Route path="/my-bookings" element={<Navigate to="/user/bookings" replace />} />
 

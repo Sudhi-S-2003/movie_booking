@@ -8,6 +8,10 @@ import { log, toTag } from './helpers.js';
 export type TheatreDoc = HydratedDocument<ITheatre>;
 export type ScreenDoc  = HydratedDocument<IScreen>;
 
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const theatreImage = (name: string) => `https://picsum.photos/seed/${slug(name)}-theatre/1200/800`;
+const theatreBackdrop = (name: string) => `https://picsum.photos/seed/${slug(name)}-backdrop/1920/1080`;
+
 export const seedTheatresAndScreens = async (
   ownerId: RefId,
 ): Promise<{ theatres: TheatreDoc[]; screens: ScreenDoc[] }> => {
@@ -23,6 +27,8 @@ export const seedTheatresAndScreens = async (
       ownerId,
       location: t.location,
       amenities: t.amenities,
+      imageUrl: theatreImage(t.name),
+      backdropUrl: theatreBackdrop(t.name),
       tags: [toTag(t.name), toTag(t.city), ...t.amenities.map(toTag)],
     });
     theatres.push(theatre);

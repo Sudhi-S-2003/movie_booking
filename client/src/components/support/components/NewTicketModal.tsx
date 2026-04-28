@@ -120,7 +120,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-blue to-transparent opacity-50" />
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black uppercase tracking-tight">Deploy Support Request</h2>
+              <h2 className="text-2xl font-black uppercase tracking-tight">New Support Ticket</h2>
               <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
                 <X size={24} />
               </button>
@@ -134,7 +134,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                     <input
                       name="guestName"
                       required
-                      placeholder="Cyber Entity"
+                      placeholder="Your name"
                       defaultValue={localStorage.getItem("guest_name") || ""}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-accent-blue transition-all text-xs"
                     />
@@ -145,7 +145,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                       name="guestEmail"
                       required
                       type="email"
-                      placeholder="entity@net.com"
+                      placeholder="your@email.com"
                       defaultValue={localStorage.getItem("guest_email") || ""}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-accent-blue transition-all text-xs"
                     />
@@ -182,22 +182,22 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Headline</label>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Subject</label>
                 <input
                   name="title"
                   required
-                  placeholder="Subject of the anomaly..."
+                  placeholder="What's the issue?"
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-accent-blue transition-all text-xs"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Full Description</label>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Description</label>
                 <textarea
                   name="description"
                   required
                   rows={4}
-                  placeholder="Describe the behavior in detail..."
+                  placeholder="Explain what's happening..."
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-accent-blue transition-all text-xs resize-none"
                 />
               </div>
@@ -205,13 +205,13 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
               <div className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl space-y-6">
                 <div className="flex items-center gap-2 mb-2">
                   <Filter size={12} className="text-accent-blue" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Link Related Resources</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Add Details (Optional)</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {userRole === "TheatreOwner" && (
                     <div className="space-y-2">
-                      <label className="text-[8px] font-black text-gray-600 uppercase tracking-[0.2em]">Target Theatre</label>
+                      <label className="text-[8px] font-black text-gray-600 uppercase tracking-[0.2em]">Theatre</label>
                       <SearchableSelect
                         options={manualTheatres.map((t) => ({ id: t._id, name: t.name }))}
                         onSearch={searchTheatres}
@@ -225,7 +225,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                   )}
 
                   <div className="space-y-2">
-                    <label className="text-[8px] font-black text-gray-600 uppercase tracking-[0.2em]">Related Movie</label>
+                    <label className="text-[8px] font-black text-gray-600 uppercase tracking-[0.2em]">Movie</label>
                     <SearchableSelect
                       options={manualMovies.map((m) => ({ id: m._id, name: m.title }))}
                       onSearch={searchMovies}
@@ -242,7 +242,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
               {Object.keys(contextMetadata).length > 0 && (
                 <div className="p-4 bg-accent-blue/5 border border-accent-blue/10 rounded-2xl">
                   <span className="text-[8px] font-black text-accent-blue uppercase block mb-2 tracking-widest flex items-center gap-2 underline underline-offset-4">
-                    <Hammer size={10} /> Auto-Context Detected
+                    <Hammer size={10} /> Extra Info
                   </span>
                   <div className="flex flex-wrap gap-4 opacity-50">
                     {Object.entries(contextMetadata).map(([k, v]) => (
@@ -267,7 +267,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                   disabled={loading}
                   className="flex-1 px-8 py-4 bg-accent-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-accent-blue/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {loading ? "Transmitting..." : "Submit Entry"}
+                  {loading ? "Sending..." : "Submit Ticket"}
                 </button>
               </div>
             </form>

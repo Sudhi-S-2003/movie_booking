@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Ticket, Clock, QrCode, BarChart3, User, Settings, LogOut } from 'lucide-react';
+import { Ticket, QrCode, BarChart3, User, Settings, LogOut } from 'lucide-react';
 import { bookingsApi } from '../../services/api/index.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { Link } from 'react-router-dom';
 import { IssueSuite } from '../../components/support/IssueSuite.js';
 import { LifeBuoy } from 'lucide-react';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SessionManager } from './components/SessionManager.js';
 
 export const UserDashboard = () => {
   useDocumentTitle("My Dashboard");
@@ -38,7 +39,7 @@ export const UserDashboard = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const SidebarItem = ({ icon: Icon, label, id, color }: any) => (
+  const SidebarItem = ({ icon: Icon, label, id }: any) => (
     <button 
       onClick={() => setActiveTab(id as any)}
       className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all ${
@@ -68,8 +69,8 @@ export const UserDashboard = () => {
         </div>
         
         <SidebarItem icon={Ticket} label="My Tickets" id="BOOKINGS" color="accent-blue" />
-        <SidebarItem icon={BarChart3} label="Activity Stats" id="STATS" color="accent-pink" />
-        <SidebarItem icon={LifeBuoy} label="Support Hub" id="SUPPORT" color="accent-purple" />
+        <SidebarItem icon={BarChart3} label="Stats" id="STATS" color="accent-pink" />
+        <SidebarItem icon={LifeBuoy} label="Support" id="SUPPORT" color="accent-purple" />
         <SidebarItem icon={Settings} label="Account Settings" id="SETTINGS" color="accent-purple" />
         
         <button 
@@ -91,7 +92,7 @@ export const UserDashboard = () => {
                className="space-y-12"
             >
                <div className="flex items-center justify-between">
-                  <h1 className="text-4xl font-black uppercase tracking-tighter">My <span className="text-accent-blue">Experience</span></h1>
+                  <h1 className="text-4xl font-black uppercase tracking-tighter">My <span className="text-accent-blue">Tickets</span></h1>
                   <Link to="/" className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all">Book More</Link>
                </div>
 
@@ -99,7 +100,7 @@ export const UserDashboard = () => {
                   {loading ? (
                     [1, 2].map(i => <div key={i} className="h-48 bg-white/5 rounded-[40px] animate-pulse" />)
                   ) : bookings.length > 0 ? (
-                    bookings.map((booking, idx) => (
+                    bookings.map((booking) => (
                       <div key={booking._id} className="relative bg-surface/30 border border-white/5 rounded-[40px] p-8 flex flex-col md:flex-row gap-8 items-center hover:bg-surface/50 transition-all">
                         <div className="absolute top-0 left-0 w-2 h-full bg-accent-blue" />
                         <img src={booking.showtimeId.movieId.posterUrl} className="w-32 aspect-[2/3] rounded-2xl object-cover shadow-2xl" />
@@ -129,7 +130,7 @@ export const UserDashboard = () => {
                   ) : (
                     <div className="py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10 text-center space-y-4">
                        <Ticket size={60} className="mx-auto text-gray-700 opacity-30" />
-                       <p className="text-xl font-black italic opacity-40">No active bookings found</p>
+                       <p className="text-xl font-black italic opacity-40">No tickets found</p>
                     </div>
                   )}
                </div>
@@ -145,7 +146,7 @@ export const UserDashboard = () => {
                <div className="bg-white/5 border border-white/10 p-10 rounded-[50px] space-y-6">
                   <BarChart3 className="text-accent-pink" size={32} />
                   <div>
-                     <h3 className="text-xl font-black uppercase tracking-tight">Movie Master</h3>
+                     <h3 className="text-xl font-black uppercase tracking-tight">Movies</h3>
                      <p className="text-sm text-gray-500 mt-2">You've watched <span className="text-white font-bold">{bookings.length}</span> movies this month! Keep it up!</p>
                   </div>
                   <div className="pt-6 border-t border-white/5 flex gap-2">
@@ -161,6 +162,16 @@ export const UserDashboard = () => {
                   </div>
                   <button className="w-full py-4 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl font-black text-[10px] uppercase tracking-widest text-accent-blue">Redeem Rewards</button>
                </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'SETTINGS' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-4xl"
+            >
+              <SessionManager />
             </motion.div>
           )}
 

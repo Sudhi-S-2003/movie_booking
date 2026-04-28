@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef, memo } from "react";
 import { Layout, Plus, Trash2, Sparkles, Wand2, Info, Monitor, Armchair } from "lucide-react";
 import { useOwner } from "./context/OwnerContext.js";
 import { ContextBar } from "./components/ContextBar.js";

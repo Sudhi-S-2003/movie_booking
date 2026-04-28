@@ -43,7 +43,9 @@ const MovieSchema = new Schema<IMovie>(
         profileUrl: { type: String }
       }
     ],
-    tags: [{ type: String }]
+    tags: [{ type: String }],
+    technicalSpecs: [{ type: String }],
+    isTrending: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

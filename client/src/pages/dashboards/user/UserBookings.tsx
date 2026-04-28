@@ -1,15 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Ticket, QrCode } from 'lucide-react';
+import { Ticket, Download } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { toPng } from 'html-to-image';
 import { bookingsApi } from '../../../services/api/index.js';
 import { Link } from 'react-router-dom';
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle.js';
 import { DashboardPage } from '../../../components/dashboard/index.js';
 import { groupBookings } from '../../../utils/groupBookings.js';
+import { NotificationRequest } from '../../../components/notifications/NotificationRequest.js';
 
 export const UserBookings = () => {
   useDocumentTitle('My Tickets — CinemaConnect');
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [qrSize, setQrSize] = useState(window.innerWidth < 768 ? 180 : 64);
+
+  useEffect(() => {
+    const handleResize = () => setQrSize(window.innerWidth < 768 ? 180 : 64);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     bookingsApi.getMyBookings()
@@ -19,17 +29,40 @@ export const UserBookings = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleDownload = async (id: string, movieTitle: string) => {
+    const element = document.getElementById(`booking-card-${id}`);
+    if (!element) return;
+
+    try {
+      const dataUrl = await toPng(element, {
+        backgroundColor: '#000000',
+        style: {
+          borderRadius: '0',
+        },
+      });
+      const link = document.createElement('a');
+      link.download = `Ticket-${movieTitle.replace(/\s+/g, '-')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Download failed', err);
+    }
+  };
+
   return (
     <DashboardPage
       title="My"
       accent="Experience"
       headerActions={
-        <Link
-          to="/"
-          className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all"
-        >
-          Book More
-        </Link>
+        <>
+          <NotificationRequest variant="button" />
+          <Link
+            to="/"
+            className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all"
+          >
+            Book More
+          </Link>
+        </>
       }
     >
       <div className="grid grid-cols-1 gap-8">
@@ -41,6 +74,7 @@ export const UserBookings = () => {
           bookings.map(booking => (
             <div
               key={booking._id}
+              id={`booking-card-${booking._id}`}
               className="relative bg-surface/30 border border-white/5 rounded-[40px] p-8 flex flex-col md:flex-row gap-8 items-center hover:bg-surface/50 transition-all"
             >
               <div className="absolute top-0 left-0 w-2 h-full bg-accent-blue rounded-l-[40px]" />
@@ -61,7 +95,7 @@ export const UserBookings = () => {
                     {new Date(booking.showtimeId.startTime).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
-                    })}
+                     })}
                   </p>
                 </div>
                 <div className="flex items-center gap-6 pt-4 border-t border-white/5">
@@ -75,8 +109,27 @@ export const UserBookings = () => {
                   </div>
                 </div>
               </div>
-              <div className="p-4 bg-white rounded-2xl opacity-80 hover:opacity-100 transition-opacity self-center md:self-end">
-                <QrCode size={48} className="text-black" />
+              <div className="flex flex-col gap-2 w-full md:w-auto">
+                <Link 
+                  to={`/ticket/${booking._id}?sig=${booking.signature}`}
+                  className="w-full md:w-auto p-6 md:p-3 bg-white rounded-2xl opacity-90 hover:opacity-100 transition-opacity flex flex-col items-center gap-4 md:gap-2"
+                >
+                  <div className="p-2 md:p-1 bg-white rounded-lg">
+                    <QRCodeCanvas 
+                      value={`${window.location.origin}/ticket/${booking._id}?sig=${booking.signature}`}
+                      size={qrSize}
+                      level="L"
+                      includeMargin={false}
+                    />
+                  </div>
+                  <span className="text-xs md:text-[9px] text-black font-black uppercase tracking-[0.2em] md:tracking-tighter">View Ticket</span>
+                </Link>
+                <button
+                  onClick={() => handleDownload(booking._id, booking.showtimeId.movieId.title)}
+                  className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all"
+                >
+                  <Download size={14} /> Download
+                </button>
               </div>
             </div>
           ))

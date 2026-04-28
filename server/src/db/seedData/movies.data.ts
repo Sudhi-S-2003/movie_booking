@@ -27,6 +27,8 @@ export interface SeedMovie {
   trailerUrl: string;
   cast: SeedCast[];
   crew: SeedCrew[];
+  technicalSpecs?: string[];
+  isTrending?: boolean;
 }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -46,6 +48,8 @@ const movie = (m: Omit<SeedMovie, 'posterUrl' | 'backdropUrl' | 'trailerUrl'> & 
   trailerUrl: trailer,
   cast: m.cast.map((c) => ({ ...c, profileUrl: profile(c.name) })),
   crew: m.crew.map((c) => ({ ...c, profileUrl: profile(c.name) })),
+  technicalSpecs: m.technicalSpecs || ['DOLBY ATMOS', '4K ULTRA HD', 'IMAX'],
+  isTrending: m.isTrending ?? Math.random() > 0.7,
 });
 
 export const moviesData: SeedMovie[] = [

@@ -6,7 +6,7 @@ const ReviewSchema = new Schema<IReview>(
     userId:     { type: Schema.Types.ObjectId, ref: 'User', required: true },
     targetId:   { type: Schema.Types.ObjectId, required: true, refPath: 'targetType' },
     targetType: { type: String, enum: ['Movie', 'Theatre'], required: true },
-    rating:     { type: Number, min: 1, max: 5, required: true },
+    rating:     { type: Number, min: 1, max: 10, required: true },
     comment:    { type: String, required: true, trim: true },
   },
   { timestamps: true },

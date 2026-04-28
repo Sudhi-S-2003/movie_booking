@@ -38,6 +38,7 @@ const buildShowtimeRow = (
     startTime,
     endTime,
     format: detectFormat(screen.name),
+    isActive: true,
     pricingOverrides: [
       { tier: PricingTier.STANDARD, price: 250 },
       { tier: PricingTier.PREMIUM,  price: 450 },

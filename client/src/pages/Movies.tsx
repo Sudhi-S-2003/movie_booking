@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Star, Clock, Heart, BookmarkCheck, ChevronRight, Play } from 'lucide-react';
+import { Search, Filter, Star, Heart, BookmarkCheck, Play, Info, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { moviesApi } from '../services/api/index.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 
 const GENRES = ['Action', 'Sci-Fi', 'Adventure', 'Drama', 'Crime', 'Fantasy', 'Animation', 'Romance', 'Thriller', 'Horror'];
-const LANGUAGES = ['English', 'Hindi', 'Japanese', 'Spanish', 'French'];
 
 export const Movies = () => {
   useDocumentTitle("Browse Movies");
@@ -38,23 +37,24 @@ export const Movies = () => {
 
   return (
     <div className="pb-32 space-y-12">
-      {}
       <section className="relative h-[40vh] -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden rounded-b-[60px] shadow-2xl flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-tr from-accent-blue/10 via-background to-accent-pink/10 z-0" />
           <div className="relative z-10 max-w-4xl w-full px-6 space-y-8 text-center">
-              <motion.h1 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-5xl sm:text-7xl font-black uppercase tracking-tighter text-white"
-              >
-                Cinematic <span className="text-accent-pink">Explorer</span>
-              </motion.h1>
-              
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                  >
+                        <h1 className="text-6xl sm:text-8xl font-black uppercase tracking-tighter text-white leading-[0.85]">
+                            Browse <br />
+                            <span className="text-accent-blue">Movies</span>
+                        </h1>
+                  </motion.div>
+                  <p className="text-gray-400 font-medium max-w-sm mx-auto italic">Find films and showtimes near you.</p>
               <div className="relative group max-w-2xl mx-auto">
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent-blue transition-colors" size={24} />
                 <input 
                   type="text" 
-                  placeholder="Search by title, actor, or director..." 
+                  placeholder="Search movies..." 
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-[30px] py-6 pl-16 pr-8 text-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-blue/50 transition-all font-bold placeholder:text-gray-600"
@@ -63,7 +63,6 @@ export const Movies = () => {
           </div>
       </section>
 
-      {}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between bg-surface/30 backdrop-blur-3xl border border-white/5 p-8 rounded-[40px]">
               <div className="flex flex-wrap gap-4">
@@ -74,7 +73,7 @@ export const Movies = () => {
                   >
                     <option value="now_showing" className="bg-background">Now Showing</option>
                     <option value="upcoming" className="bg-background">Coming Soon</option>
-                    <option value="archived" className="bg-background">Classic Archive</option>
+                    <option value="archived" className="bg-background">Classics</option>
                   </select>
 
                   <select 
@@ -88,8 +87,9 @@ export const Movies = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                    Showing {movies.length} Results
+                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Results</h3>
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest">
+                    {movies.length}
                   </span>
                   <div className="h-4 w-px bg-white/10" />
                   <button className="text-accent-pink hover:text-white transition-colors">
@@ -99,7 +99,6 @@ export const Movies = () => {
           </div>
       </section>
 
-      {}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait">
           {loading ? (
@@ -182,13 +181,19 @@ export const Movies = () => {
                 animate={{ opacity: 1 }}
                 className="text-center py-32 bg-white/5 rounded-[60px] border border-dashed border-white/10"
             >
-              <Search size={48} className="text-gray-700 mx-auto mb-4" />
-              <p className="text-gray-500 font-black text-xl italic opacity-50">No movies match your filter parameters.</p>
+              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-gray-700 mx-auto mb-6">
+                <Info size={36} />
+              </div>
+              <p className="text-gray-500 font-black text-xl italic opacity-50">No movies found.</p>
+              <div className="flex items-center gap-3 p-4 bg-accent-blue/5 border border-accent-blue/10 rounded-xl mt-6 max-w-sm mx-auto">
+                <ShieldCheck size={18} className="text-accent-blue flex-shrink-0" />
+                <p className="text-[10px] font-bold text-accent-blue/80 leading-relaxed">Secure browsing only.</p>
+              </div>
               <button 
                 onClick={() => setFilters({ genre: '', language: '', status: 'now_showing', search: '' })}
-                className="mt-6 text-accent-blue font-black uppercase text-[10px] tracking-widest hover:underline"
+                className="mt-8 text-accent-pink font-black uppercase text-[10px] tracking-widest hover:underline"
               >
-                Clear All Nodes
+                Reset
               </button>
             </motion.div>
           )}

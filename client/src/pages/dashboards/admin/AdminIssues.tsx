@@ -3,13 +3,13 @@ import { SupportPage } from '../../../components/dashboard/index.js';
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle.js';
 
 export const AdminIssues = () => {
-  useDocumentTitle('Issues — OpsCenter');
+  useDocumentTitle('Support Issues');
   return (
     <SupportPage
-      title="Global Support"
-      accent="Hub"
+      title="Support"
+      accent="Tickets"
       accentColor="text-accent-pink"
-      subtitle="Cross-Platform Assistance & Technical Resolution"
+      subtitle="Manage and resolve support tickets."
       icon={<ShieldAlert className="text-accent-pink" size={40} />}
       adminMode
     />

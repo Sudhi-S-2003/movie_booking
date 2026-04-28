@@ -159,7 +159,7 @@ export const useChatMessages = (
       chatMessagesSocket.leaveConversation(conversationId);
       chatMessagesSocket.disconnect();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- onIncoming tracked via ref
+   
   }, [conversationId, currentUserId]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────

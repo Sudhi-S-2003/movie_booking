@@ -148,12 +148,24 @@ export interface CreateReviewBody {
 export interface ReviewResponse {
   review: Review;
 }
+export interface ReviewsListQuery {
+  page?: number;
+  limit?: number;
+  sort?: 'newest' | 'highest' | 'lowest';
+}
+
+export interface ReviewBreakdownItem {
+  _id: number;
+  count: number;
+}
+
 export interface ReviewsListResponse {
-  reviews:     Review[];
+  reviews: Review[];
   pagination?: Pagination;
   stats?: {
     averageRating: number;
-    totalReviews:  number;
+    totalReviews: number;
+    breakdown: ReviewBreakdownItem[];
   };
 }
 

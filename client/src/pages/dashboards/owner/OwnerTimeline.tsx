@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Clock, Film, Trash2, Edit3, AlertCircle } from "lucide-react";
+import { Plus, Clock, Film, Trash2, Edit3, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useOwner } from "./context/OwnerContext.js";
 import { ContextBar } from "./components/ContextBar.js";
 import { adminApi } from "../../../services/api/index.js";
@@ -9,7 +9,7 @@ import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 
 export const OwnerTimeline = () => {
-  useDocumentTitle("Timeline — OwnerHub");
+  useDocumentTitle("Showtimes");
   const { selectedTheatreId, selectedScreenId, loading } = useOwner();
   const [showtimes, setShowtimes] = useState<any[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -41,7 +41,7 @@ export const OwnerTimeline = () => {
       setShowAddForm(false);
       fetchShowtimes();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create showtime");
+      setError(err.response?.data?.message || "Failed to add show");
     }
   };
 
@@ -53,41 +53,41 @@ export const OwnerTimeline = () => {
       setEditingShow(null);
       fetchShowtimes();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update showtime");
+      setError(err.response?.data?.message || "Failed to update show");
     }
   };
 
   const handleDeleteShowtime = async (id: string) => {
-    if (!confirm("Are you sure you want to cancel this performance? This cannot be undone.")) return;
+    if (!confirm("Are you sure you want to delete this show? This cannot be undone.")) return;
     try {
       await adminApi.deleteShowtime(id);
       fetchShowtimes();
     } catch (err) {
-      alert("Failed to delete showtime");
+      alert("Failed to delete show");
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px] font-black animate-pulse text-accent-blue">SYNCHRONIZING CORE DATA...</div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px] font-black animate-pulse text-accent-blue">Loading...</div>;
 
   return (
     <DashboardPage
       title="Timeline"
-      accent="Suite"
+      accent="Schedule"
       accentColor="text-accent-purple"
       badge="Pro v2.1"
-      subtitle="Advanced conflict-aware cinematic scheduling."
+      subtitle="Manage movie showtimes for your screens."
       headerActions={
         <button
           onClick={() => setShowAddForm(true)}
           className="px-8 py-4 bg-accent-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-accent-blue/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
         >
-          <Plus size={18} /> Schedule New Performance
+          <Plus size={18} /> Add Showtime
         </button>
       }
     >
       <ContextBar />
         <div className="flex justify-between items-center border-b border-white/5 pb-4">
-          <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-600">Active Screen Schedule</h3>
+          <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-600">Showtimes</h3>
         </div>
 
         {}
@@ -132,7 +132,7 @@ export const OwnerTimeline = () => {
           {showtimes.length === 0 ? (
             <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-24 flex flex-col items-center gap-8 text-white/5 group">
                <Clock size={80} strokeWidth={1} className="group-hover:text-accent-blue/20 transition-colors" />
-               <p className="font-black uppercase tracking-[1em] text-[10px]">No Performances Slotted</p>
+               <p className="font-black uppercase tracking-[1em] text-[10px]">No shows scheduled</p>
             </div>
           ) : (
             showtimes.map((show) => {
@@ -165,16 +165,30 @@ export const OwnerTimeline = () => {
 
                   <div className="flex items-center gap-2">
                     <button 
+                      onClick={async () => {
+                        try {
+                          await adminApi.updateShowtime(show._id, { isActive: !show.isActive });
+                          fetchShowtimes();
+                        } catch (err) {
+                          alert("Failed to update status");
+                        }
+                      }}
+                      className={`p-4 transition-all rounded-2xl ${show.isActive ? 'text-accent-blue hover:bg-accent-blue/10' : 'text-gray-400 hover:bg-white/10'}`}
+                      title={show.isActive ? "Deactivate Show" : "Activate Show"}
+                    >
+                      {show.isActive ? <Eye size={20} /> : <EyeOff size={20} />}
+                    </button>
+                    <button 
                       onClick={() => setEditingShow(show)}
                       className="p-4 text-gray-600 hover:text-white transition-all hover:bg-white/5 rounded-2xl"
-                      title="Edit Performance"
+                      title="Edit Show"
                     >
                       <Edit3 size={20} />
                     </button>
                     <button 
                       onClick={() => handleDeleteShowtime(show._id)}
                       className="p-4 text-gray-800 group-hover:text-red-500/40 hover:text-red-500 transition-all hover:bg-red-500/5 rounded-2xl"
-                      title="Cancel Performance"
+                      title="Delete Show"
                     >
                       <Trash2 size={20} />
                     </button>

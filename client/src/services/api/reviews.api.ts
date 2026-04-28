@@ -3,12 +3,8 @@ import type {
   CreateReviewBody,
   ReviewResponse,
   ReviewsListResponse,
+  ReviewsListQuery,
 } from '../../types/api.js';
-
-export interface ReviewsListQuery {
-  page?:  number;
-  limit?: number;
-}
 
 export const reviewsApi = {
   create: (data: CreateReviewBody) => http.post<ReviewResponse>('/reviews', data),

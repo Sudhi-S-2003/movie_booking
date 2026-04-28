@@ -92,12 +92,12 @@ export const IssueSuite: React.FC<IssueSuiteProps> = ({
           <div>
             <h2 className="text-lg font-black uppercase tracking-tight flex items-center gap-2 text-white">
               <LifeBuoy size={18} className="text-accent-blue" />
-              Support Hub
+              Support
             </h2>
             <p className="text-white/30 text-[8px] font-bold uppercase tracking-widest mt-0.5">
               {userRole === "TheatreOwner"
-                ? "Advanced Technical Orchestration"
-                : "Global Cinema Support"}
+                ? "Help Center"
+                : "Support Tickets"}
             </p>
           </div>
         </div>
@@ -105,7 +105,7 @@ export const IssueSuite: React.FC<IssueSuiteProps> = ({
           onClick={() => setShowForm(true)}
           className="px-4 py-2 bg-accent-blue text-white rounded-lg font-bold text-[8px] uppercase tracking-widest flex items-center gap-1.5 hover:scale-105 transition-all shadow-md shadow-accent-blue/20"
         >
-          <Plus size={13} /> Open New Ticket
+          <Plus size={13} /> New Ticket
         </button>
       </div>
 

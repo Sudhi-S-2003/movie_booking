@@ -1,7 +1,7 @@
 import { useSearchParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search as SearchIcon, MapPin, Star, ChevronRight, Play, Heart, BookmarkCheck } from 'lucide-react';
+import { Search as SearchIcon, MapPin, Star, ChevronRight, Heart, BookmarkCheck } from 'lucide-react';
 import { searchApi } from '../services/api/index.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 
