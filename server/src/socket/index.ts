@@ -27,39 +27,63 @@ export const initSocket = (server: HttpServer) => {
     },
   });
 
+  const setupNamespace = (ns: Namespace, registerHandlers: (ns: Namespace) => void) => {
+    ns.on('connection', (socket) => {
+      if (socket.data.userId) {
+        socket.join(`user:${socket.data.userId}`);
+      }
+      if (socket.data.sessionId) {
+        socket.join(`session:${socket.data.sessionId}`);
+      }
+    });
+    registerHandlers(ns);
+  };
+
   // ── Namespaces ──
   bookingNamespace = io.of('/booking');
-  registerBookingHandlers(bookingNamespace);
+  setupNamespace(bookingNamespace, registerBookingHandlers);
 
-  // Support is split into TWO channels (see channel files for rationale):
-  //   /support-messages → per-issue chat events (replies, receipts, status)
-  //   /support-list     → user-scoped list events (unread counts, ticket updates)
   supportMessagesNamespace = io.of('/support-messages');
-  registerSupportMessagesHandlers(supportMessagesNamespace);
+  setupNamespace(supportMessagesNamespace, registerSupportMessagesHandlers);
 
   supportListNamespace = io.of('/support-list');
-  registerSupportListHandlers(supportListNamespace);
+  setupNamespace(supportListNamespace, registerSupportListHandlers);
 
-  // Hashtag live feed
   hashtagNamespace = io.of('/hashtag');
-  registerHashtagHandlers(hashtagNamespace);
+  setupNamespace(hashtagNamespace, registerHashtagHandlers);
 
-  // General-purpose chat — split into two channels (same pattern as support):
-  //   /chat-messages → per-conversation events (messages, typing, receipts)
-  //   /chat-list     → user-scoped list events (unread badges, conversation updates)
   chatMessagesNamespace = io.of('/chat-messages');
-  registerChatMessagesHandlers(chatMessagesNamespace);
+  setupNamespace(chatMessagesNamespace, registerChatMessagesHandlers);
 
   chatListNamespace = io.of('/chat-list');
-  registerChatListHandlers(chatListNamespace);
+  setupNamespace(chatListNamespace, registerChatListHandlers);
 
   notificationNamespace = io.of('/notification-push');
-  registerNotificationHandlers(notificationNamespace);
+  setupNamespace(notificationNamespace, registerNotificationHandlers);
 
   return io;
 };
 
 // --- Accessors ---
+
+export const disconnectSessionSockets = (sessionId: string) => {
+  if (!io) return;
+  const namespaces = [
+    bookingNamespace, 
+    supportMessagesNamespace, 
+    supportListNamespace, 
+    hashtagNamespace, 
+    chatMessagesNamespace, 
+    chatListNamespace, 
+    notificationNamespace
+  ];
+
+  namespaces.forEach(ns => {
+    if (ns) {
+      ns.to(`session:${sessionId}`).disconnectSockets(true);
+    }
+  });
+};
 
 export const getIO = () => {
   if (!io) throw new Error('Socket.io not initialized!');

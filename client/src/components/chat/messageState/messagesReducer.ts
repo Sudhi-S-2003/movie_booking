@@ -77,7 +77,16 @@ export const messagesReducer = (
 
     case 'WINDOW_LOADED': {
       if (action.mode === 'replace') {
-        const { list } = applySlidingWindow(action.messages, 'none');
+        const optimistic = state.messages.filter((m) => !!m._status);
+        const merged = [...action.messages, ...optimistic];
+        merged.sort((a, b) => {
+          const tA = new Date(a.createdAt).getTime();
+          const tB = new Date(b.createdAt).getTime();
+          if (tA !== tB) return tA - tB;
+          return a._id.localeCompare(b._id);
+        });
+
+        const { list } = applySlidingWindow(merged, 'none');
         return {
           ...state,
           messages:       list,

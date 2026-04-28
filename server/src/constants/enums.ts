@@ -70,6 +70,13 @@ export const IntegrationType = {
 } as const;
 export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType];
 
+export const NotificationType = {
+  SECURITY_ALERT: 'security_alert',
+  BOOKING_CONFIRMED: 'booking_confirmed',
+  SYSTEM: 'system',
+} as const;
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
+
 
 // ── System Account ──────────────────────────────────────────────────────────
 // Internal server-side account used for system messages, notifications, etc.

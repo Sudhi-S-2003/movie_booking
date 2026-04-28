@@ -27,12 +27,17 @@ export function useChatSocket({
 
     const unsubs = [
       supportMessagesSocket.on("new_reply", (raw: IssueMessage) => {
+        const isMe = currentUserId ? raw.senderId === currentUserId : false;
         const msg: IssueMessage = {
           ...raw,
-          isYou: currentUserId ? raw.senderId === currentUserId : false,
+          isYou: isMe,
         };
         dispatch({ type: "SOCKET_NEW", message: msg });
-        onIncoming?.(msg);
+        
+        // Only trigger callback/sound for messages from OTHERS.
+        if (!isMe) {
+          onIncoming?.(msg);
+        }
       }),
 
       supportMessagesSocket.on(

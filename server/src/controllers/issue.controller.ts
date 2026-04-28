@@ -266,13 +266,32 @@ export const addReply = async (req: Request, res: Response) => {
     // Sender's own list view ignores this because the client filters by senderId.
     try {
       const recipientId = issue.userId?.toString();
-      if (recipientId && recipientId !== user?.id) {
+      const adminId = user?.role === 'admin' ? user.id : null;
+
+      // Notify the issue owner
+      if (recipientId) {
         emitUnreadChanged(getSupportListNamespace(), recipientId, {
           issueId: id as string,
-          // delta-style hint; the client refetches the canonical map on receipt
           count: -1,
         });
         emitIssueListUpdated(getSupportListNamespace(), recipientId, {
+          issueId: id as string,
+          status: issue.status,
+          lastActivityAt: new Date().toISOString(),
+        });
+      }
+
+      // If an admin is replying, also notify all admins (including self for multi-session sync)
+      // Actually, we can just broadcast to the admin room or specific admins.
+      // But for simplicity, if current user is admin, we already notified them if they are the owner.
+      // If we want ALL admins to stay in sync, we'd need an admin room.
+      // For now, let's just make sure the sender (if user) gets the update too.
+      if (user?.id && user.id !== recipientId) {
+        emitUnreadChanged(getSupportListNamespace(), user.id, {
+          issueId: id as string,
+          count: -1,
+        });
+        emitIssueListUpdated(getSupportListNamespace(), user.id, {
           issueId: id as string,
           status: issue.status,
           lastActivityAt: new Date().toISOString(),

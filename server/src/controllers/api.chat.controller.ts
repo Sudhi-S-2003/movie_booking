@@ -176,6 +176,7 @@ export const getGuestMessages = async (req: Request, res: Response) => {
     const after = req.query.after as string | undefined;
     const around = req.query.around as string | undefined;
     const anchor = req.query.anchor as string | undefined;
+    const latest = req.query.latest === 'true';
 
     // Look up the guest's read cursor for this conversation
     const readCursor = await ChatReadCursor.findOne(
@@ -186,7 +187,8 @@ export const getGuestMessages = async (req: Request, res: Response) => {
     const lastReadMsgId = readCursor?.lastReadMessageId?.toString() ?? null;
 
     let result;
-    if (before) result = await loadOlder(conversationId, before, limit);
+    if (latest) result = await loadLatest(conversationId, limit);
+    else if (before) result = await loadOlder(conversationId, before, limit);
     else if (after) result = await loadNewer(conversationId, after, limit);
     else if (around) result = await loadAround(conversationId, around, limit);
     else if (anchor) result = await loadWithAnchor(conversationId, anchor, limit);

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useCallback } from 'react';
 import { notificationSocket } from '../services/socket/notification.socket.js';
 import { useAuthStore } from '../store/authStore.js';
+import { NotificationType } from '../constants/enums.js';
 
 interface NotificationContextType {
   requestPermission: () => Promise<boolean>;
@@ -14,7 +15,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     if (!('Notification' in window)) return;
 
     if (Notification.permission === 'granted') {
-      const { title, message, url, icon, image, badge, tag } = payload;
+      const { title, message, url, icon, image, badge, tag, type } = payload;
       
       const notification = new Notification(title, {
         body: message,
@@ -47,6 +48,15 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     // Subscribe to events
     const unsubscribe = notificationSocket.subscribe((payload) => {
       console.log('🔔 [CLIENT] Notification Received!', payload);
+      
+      // Dedicated type check for frontend logic
+      if (payload.type === NotificationType.SECURITY_ALERT) {
+        console.log(`🛡️ [SECURITY] Critical alert received: ${payload.title}`);
+        // Add custom security handling here
+      } else if (payload.type) {
+        console.log(`📡 [NOTIFICATION] Handling specific type: ${payload.type}`);
+      }
+
       showBrowserNotification(payload);
     });
 

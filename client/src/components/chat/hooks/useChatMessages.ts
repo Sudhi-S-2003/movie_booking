@@ -15,6 +15,7 @@ interface LoadOptions {
   after?:  string;
   around?: string;
   anchor?: string;
+  latest?: boolean;
 }
 
 const KIND_TO_MODE: Record<LoadKind, WindowLoadMode> = {
@@ -121,10 +122,15 @@ export const useChatMessages = (
           ? (!msg.senderId && msg.senderName === guest.name)
           : (!!selfId && msg.senderId === selfId);
 
-        if (isOwn) return;
-        const decorated = { ...msg, isYou: false };
+        // We process all messages to support multi-tab sync.
+        // The reducer handles deduplication so the sender tab won't show it twice.
+        const decorated = { ...msg, isYou: isOwn };
         dispatch({ type: 'SOCKET_NEW', message: decorated });
-        onIncomingRef.current?.(decorated);
+        
+        // Only trigger incoming sound/notifications for messages from OTHERS.
+        if (!isOwn) {
+          onIncomingRef.current?.(decorated);
+        }
       }),
       chatMessagesSocket.on<ReceiptsUpdate>('receipts_update', (payload) => {
         if (payload.conversationId !== conversationId) return;
@@ -193,6 +199,7 @@ export const useChatMessages = (
         if (opts.after)  params.after  = opts.after;
         if (opts.around) params.around = opts.around;
         if (opts.anchor) params.anchor = opts.anchor;
+        if (opts.latest) params.latest = opts.latest;
 
         const res = guestSession
           ? await chatApi.getGuestMessages(
@@ -258,6 +265,14 @@ export const useChatMessages = (
    */
   const loadInitial = useCallback(
     (): Promise<InitialLoadResult> => fetchMessages('initial'),
+    [fetchMessages],
+  );
+
+  /**
+   * Explicitly load the absolute newest page of messages, bypassing the unread anchor.
+   */
+  const loadLatestWindow = useCallback(
+    (): Promise<InitialLoadResult> => fetchMessages('initial', { latest: true }),
     [fetchMessages],
   );
 
@@ -341,6 +356,7 @@ export const useChatMessages = (
     beforeCursor:    state.beforeCursor,
     afterCursor:    state.afterCursor,
     loadInitial,
+    loadLatestWindow,
     loadBefore,
     loadAfter,
     loadAround,

@@ -1,18 +1,19 @@
 import { getIO } from '../socket/index.js';
-import { UserRole } from '../constants/enums.js';
+import { UserRole, NotificationType } from '../constants/enums.js';
 
-export type NotificationTarget = 'all' | 'guests' | 'authenticated' | 'admins' | 'owners' | `user_${string}`;
+export type NotificationTarget = 'all' | 'guests' | 'authenticated' | 'admins' | 'owners' | `user:${string}`;
 
 interface NotificationPayload {
-  targets?: NotificationTarget[];
-  userIds?: string[];    // New: send to specific raw user IDs
+  targets?: NotificationTarget[] | undefined;
+  userIds?: string[] | undefined;    // New: send to specific raw user IDs
+  type?: NotificationType | undefined;       // Dedicated type for frontend checks
   title: string;
   message: string;
-  url?: string;       // Dynamic link to navigate to on click
-  icon?: string;      // Override icon
-  image?: string;     // Large banner image
-  badge?: string;     // Small status bar icon (mobile)
-  tag?: string;       // Notification grouping ID
+  url?: string | undefined;       // Dynamic link to navigate to on click
+  icon?: string | undefined;      // Override icon
+  image?: string | undefined;     // Large banner image
+  badge?: string | undefined;     // Small status bar icon (mobile)
+  tag?: string | undefined;       // Notification grouping ID
   data?: any;         // Arbitrary metadata
 }
 
@@ -31,7 +32,7 @@ class NotificationService {
       // Collect all rooms to target
       const rooms = new Set<string>(payload.targets || []);
       if (payload.userIds) {
-        payload.userIds.forEach(id => rooms.add(`user_${id}`));
+        payload.userIds.forEach(id => rooms.add(`user:${id}`));
       }
 
       if (rooms.size === 0) {
@@ -47,6 +48,7 @@ class NotificationService {
       });
 
       broadcaster.emit('notification_received', {
+        type: payload.type,
         title: payload.title,
         message: payload.message,
         url: payload.url,
@@ -81,12 +83,13 @@ class NotificationService {
   /**
    * Helper to notify a specific user.
    */
-  public notifyUser(userId: string, title: string, message: string, data?: any) {
+  public notifyUser(userId: string, title: string, message: string, data?: any, type?: NotificationType) {
     this.sendNotification({
-      targets: [`user_${userId}`],
+      targets: [`user:${userId}`],
       title,
       message,
-      data
+      data,
+      type
     });
   }
 }

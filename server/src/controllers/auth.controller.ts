@@ -3,11 +3,13 @@ import bcrypt from 'bcryptjs';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { env } from '../env.js';
 import { User } from '../models/user.model.js';
-import { UserRole, AuthProvider } from '../constants/enums.js';
+import { UserRole, AuthProvider, NotificationType } from '../constants/enums.js';
 import type { AuthRequest, JwtPayload } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { getOrCreateForUser as ensureSubscription } from '../services/subscription/subscription.service.js';
 import { Session } from '../models/session.model.js';
+import { disconnectSessionSockets } from '../socket/index.js';
+import { notificationService } from '../services/notification.service.js';
 
 const generateToken = (id: string, role: string, sessionId: string) =>
   jwt.sign(
@@ -101,6 +103,12 @@ export const login = async (req: Request, res: Response) => {
       ip: req.ip || 'unknown',
     });
 
+    // Notify other sessions about the new login
+    notificationService.notifyUser(user._id.toString(), 'New Login Detected', `A new device just logged into your account from ${session.userAgent} (${session.ip}).`, {
+      severity: 'warning',
+      ...session.toObject()
+    }, NotificationType.SECURITY_ALERT);
+
     const token = generateToken(user._id.toString(), user.role, session._id.toString());
 
     res.status(200).json({
@@ -122,7 +130,18 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (req: AuthRequest, res: Response) => {
   try {
     if (req.sessionId) {
-      await Session.findByIdAndUpdate(req.sessionId, { isValid: false });
+      const session = await Session.findById(req.sessionId);
+      if (session) {
+        session.isValid = false;
+        await session.save();
+
+        // Notify other sessions about the logout
+        notificationService.notifyUser(req.user!._id.toString(), 'Session Terminated', `A session from ${session.userAgent} was recently logged out.`, {
+          severity: 'info',
+          ...session.toObject()
+        }, NotificationType.SECURITY_ALERT);
+      }
+      disconnectSessionSockets(req.sessionId);
     }
     res.status(200).json({ success: true, message: 'Logged out successfully' });
   } catch (error: unknown) {
@@ -164,6 +183,14 @@ export const revokeSession = async (req: AuthRequest, res: Response) => {
 
     session.isValid = false;
     await session.save();
+
+    // Notify other sessions about the revocation
+    notificationService.notifyUser(req.user!._id.toString(), 'Session Revoked', `A session from ${session.userAgent} was revoked by you.`, {
+      severity: 'warning',
+      ...session.toObject()
+    }, NotificationType.SECURITY_ALERT);
+
+    disconnectSessionSockets(session._id.toString());
 
     res.status(200).json({ success: true, message: 'Session revoked' });
   } catch (error: unknown) {

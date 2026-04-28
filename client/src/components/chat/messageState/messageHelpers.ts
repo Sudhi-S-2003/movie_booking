@@ -36,7 +36,19 @@ export const mergePage = (
   const known = new Set(current.map((m) => m._id));
   const fresh = page.filter((m) => !known.has(m._id));
   if (fresh.length === 0) return current;
-  return position === 'prepend' ? [...fresh, ...current] : [...current, ...fresh];
+  
+  const merged = position === 'prepend' ? [...fresh, ...current] : [...current, ...fresh];
+  
+  // Sort chronologically to ensure newly sent messages (which are newer than the fetched page)
+  // remain at the end, and fetched messages are placed correctly in the middle.
+  merged.sort((a, b) => {
+    const tA = new Date(a.createdAt).getTime();
+    const tB = new Date(b.createdAt).getTime();
+    if (tA !== tB) return tA - tB;
+    return a._id.localeCompare(b._id);
+  });
+  
+  return merged;
 };
 
 /**

@@ -11,7 +11,7 @@ import { UserRole } from '../../constants/enums.js';
  * - 'authenticated' : Real registered users.
  * - 'admins'        : Admin role only.
  * - 'owners'        : Theatre Owner role only.
- * - 'user_{id}'     : Private room for registered users.
+ * - 'user:{id}'     : Private room for registered users.
  */
 export const registerNotificationHandlers = (namespace: Namespace) => {
   // Use auth middleware to identify the user
@@ -19,7 +19,6 @@ export const registerNotificationHandlers = (namespace: Namespace) => {
 
   namespace.on('connection', (socket) => {
     const { userId, isGuest } = socket.data;
-    const userRole = (socket as any).data?.role; // Role might be added to socket data in middleware or fetched
 
     console.log(`🔌 [NOTIFICATION] Client connected: ${socket.id} (Guest: ${isGuest}, User: ${userId}, Role: ${socket.data.role})`);
 
@@ -32,10 +31,6 @@ export const registerNotificationHandlers = (namespace: Namespace) => {
     } else {
       // 3. Registered users join 'authenticated' and personal room
       socket.join('authenticated');
-      if (userId) {
-        socket.join(`user_${userId}`);
-      }
-
     }
 
     // 4. Role-specific rooms

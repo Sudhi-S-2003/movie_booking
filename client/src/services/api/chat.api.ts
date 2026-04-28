@@ -180,6 +180,7 @@ interface MessagesQuery {
   after?:  string;
   around?: string;
   anchor?: string;
+  latest?: boolean;
 }
 
 interface CreateConversationBody {

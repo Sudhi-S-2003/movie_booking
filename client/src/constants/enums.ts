@@ -41,3 +41,10 @@ export const PricingTier = {
   VIP: 'vip',
 } as const;
 export type PricingTier = (typeof PricingTier)[keyof typeof PricingTier];
+
+export const NotificationType = {
+  SECURITY_ALERT: 'security_alert',
+  BOOKING_CONFIRMED: 'booking_confirmed',
+  SYSTEM: 'system',
+} as const;
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];

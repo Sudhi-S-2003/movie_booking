@@ -20,9 +20,6 @@ export const registerSupportListHandlers = (namespace: Namespace) => {
     const userId = socket.data.userId as string;
     console.log(`📋 [SUPPORT-LIST] Client connected: ${socket.id} (user: ${userId})`);
 
-    // Auto-join user's personal room from auth token — no client-sent userId needed
-    socket.join(`user:${userId}`);
-
     socket.on('disconnect', () => {
       console.log(`🔌 [SUPPORT-LIST] Client disconnected: ${socket.id}`);
     });

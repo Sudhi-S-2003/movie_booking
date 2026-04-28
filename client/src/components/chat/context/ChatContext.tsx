@@ -219,6 +219,7 @@ export const ChatProvider: React.FC<{
     beforeCursor,
     afterCursor,
     loadInitial,
+    loadLatestWindow,
     loadBefore: loadBeforeMessages,
     loadAfter: loadAfterMessages,
     loadAround,
@@ -597,7 +598,15 @@ export const ChatProvider: React.FC<{
       setReplyingTo(null);
       sendStopTyping();
       setLastReadMessageId(null);
-      requestAnimationFrame(() => scroll.scrollToBottom(true));
+
+      if (hasAfter) {
+        loadLatestWindow().then(() => {
+          requestAnimationFrame(() => scroll.scrollToBottom(true));
+        });
+      } else {
+        requestAnimationFrame(() => scroll.scrollToBottom(true));
+      }
+
       await dispatchLongtextSend(optimistic, fullText, replyTo);
       return;
     }
@@ -677,8 +686,14 @@ export const ChatProvider: React.FC<{
     sendStopTyping();
     // Clear the unread divider — user is now at the bottom
     setLastReadMessageId(null);
-    // User sent a message → scroll to bottom
-    requestAnimationFrame(() => scroll.scrollToBottom(true));
+    
+    if (hasAfter) {
+      loadLatestWindow().then(() => {
+        requestAnimationFrame(() => scroll.scrollToBottom(true));
+      });
+    } else {
+      requestAnimationFrame(() => scroll.scrollToBottom(true));
+    }
 
     await dispatchSend(optimistic);
   }, [selectedConversation, user, appendOptimistic, dispatchSend, dispatchLongtextSend, sendStopTyping, scroll, guestSession]);

@@ -6,18 +6,15 @@ import { Conversation } from '../models/chat.model.js';
 import { verifyConversationSignature } from '../utils/signature.util.js';
 import type { JwtPayload } from '../interfaces/auth.interface.js';
 
+import { Session } from '../models/session.model.js';
+
 /**
  * Socket.io authentication middleware.
  *
  * Clients pass the JWT via `socket.handshake.auth.token`. On success the
- * socket is decorated with `socket.data.userId` and `socket.data.userName`
- * so downstream handlers never need to trust client-sent user IDs.
- *
- * Usage:
- *   namespace.use(socketAuthMiddleware);
- *   namespace.on('connection', (socket) => {
- *     const userId = socket.data.userId; // guaranteed string
- *   });
+ * socket is decorated with `socket.data.userId`, `socket.data.userName`, 
+ * and `socket.data.sessionId` so downstream handlers never need to trust 
+ * client-sent identities.
  */
 export const socketAuthMiddleware = async (
   socket: Socket,
@@ -33,13 +30,26 @@ export const socketAuthMiddleware = async (
     // 1. Try JWT Auth first
     if (token) {
       const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+      
+      // Verify session exists and is valid
+      const session = await Session.findOne({
+        _id: decoded.sessionId,
+        userId: decoded.id,
+        isValid: true
+      });
+
+      if (!session) {
+        return next(new Error('Session expired or revoked. Please login again.'));
+      }
+
       const user = await User.findById(decoded.id).select('_id name username role').lean();
       if (!user) return next(new Error('User not found'));
 
-      socket.data.userId   = String(user._id);
-      socket.data.userName = user.name;
-      socket.data.role     = user.role;
-      socket.data.isGuest  = false;
+      socket.data.userId    = String(user._id);
+      socket.data.userName  = user.name;
+      socket.data.role      = user.role;
+      socket.data.sessionId = String(session._id);
+      socket.data.isGuest   = false;
       return next();
     }
 

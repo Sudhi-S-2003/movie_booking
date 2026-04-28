@@ -501,6 +501,7 @@ export const getMessages = async (req: Request, res: Response) => {
     const after = req.query.after as string | undefined;
     const around = req.query.around as string | undefined;
     const anchor = req.query.anchor as string | undefined;
+    const latest = req.query.latest === 'true';
 
     // Look up the user's read cursor for this conversation — needed for both
     // smart initial load and for returning lastReadMessageId in the response.
@@ -512,7 +513,8 @@ export const getMessages = async (req: Request, res: Response) => {
     const lastReadMsgId = readCursor?.lastReadMessageId?.toString() ?? null;
 
     let result;
-    if (before) result = await loadOlder(conversationId, before, limit);
+    if (latest) result = await loadLatest(conversationId, limit);
+    else if (before) result = await loadOlder(conversationId, before, limit);
     else if (after) result = await loadNewer(conversationId, after, limit);
     else if (around) result = await loadAround(conversationId, around, limit);
     else if (anchor) result = await loadWithAnchor(conversationId, anchor, limit);
@@ -684,7 +686,9 @@ export const sendMessage = async (req: Request, res: Response) => {
     const nextMessageCount = conversation.messageCount + 1;
     await forEachParticipant(conversationId, (pid) => {
       const pidStr = pid.toString();
-      if (pidStr === selfIdStr) return;
+      // We no longer skip the sender (selfIdStr).
+      // This ensures that if the user has multiple tabs/devices open, 
+      // all of them receive the update and stay in sync.
 
       emitChatUnreadChanged(chatListNs, pidStr, {
         conversationId,

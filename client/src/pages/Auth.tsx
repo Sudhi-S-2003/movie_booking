@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Globe, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../store/authStore.js';
@@ -17,7 +17,6 @@ export const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const navigate = useNavigate();
   const location = useLocation();
   const { setAuth } = useAuthStore();
 
@@ -37,7 +36,8 @@ export const Auth = () => {
       const { data } = await axios.post(`${API_URL}${endpoint}`, payload);
 
       setAuth(data.user, data.token);
-      navigate(from, { replace: true });
+      // Force reload to reset all socket connections with the new token
+      window.location.href = from;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Authentication failed');
     } finally {
