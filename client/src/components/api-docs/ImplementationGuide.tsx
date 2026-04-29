@@ -1,5 +1,5 @@
-import React from 'react';
-import { Terminal, Code, CheckCircle2 } from 'lucide-react';
+// // // // import _React from '_React';
+import { Terminal,  CheckCircle2 } from 'lucide-react';
 import { DocSection, DocCodeBlock } from './DocComponents.js';
 
 export const ImplementationGuide = () => {

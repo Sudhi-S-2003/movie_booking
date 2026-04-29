@@ -14,8 +14,8 @@ interface ReviewSectionProps {
   split?: boolean;
 }
 
-export const ReviewSection: React.FC<ReviewSectionProps> = ({ targetId, targetType, targetName, split = false }) => {
-  const { user, isAuthenticated } = useAuthStore();
+export const ReviewSection: React.FC<ReviewSectionProps> = ({ targetId, targetType, targetName }) => {
+  const { isAuthenticated } = useAuthStore();
   const { 
     reviews, 
     stats, 

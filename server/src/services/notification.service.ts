@@ -1,5 +1,5 @@
 import { getIO } from '../socket/index.js';
-import { UserRole, NotificationType } from '../constants/enums.js';
+import { NotificationType } from '../constants/enums.js';
 
 export type NotificationTarget = 'all' | 'guests' | 'authenticated' | 'admins' | 'owners' | `user:${string}`;
 

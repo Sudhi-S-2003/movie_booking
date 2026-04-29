@@ -15,7 +15,6 @@ export const registerChatMessagesHandlers = (namespace: Namespace) => {
 
   namespace.on('connection', (socket) => {
     const userId   = socket.data.userId as string;
-    const userName = socket.data.userName as string;
     console.log(`💬 [CHAT-MSG] Client connected: ${socket.id} (user: ${userId})`);
 
     socket.on('join_conversation', (conversationId: string) => {

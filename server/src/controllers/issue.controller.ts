@@ -266,8 +266,6 @@ export const addReply = async (req: Request, res: Response) => {
     // Sender's own list view ignores this because the client filters by senderId.
     try {
       const recipientId = issue.userId?.toString();
-      const adminId = user?.role === 'admin' ? user.id : null;
-
       // Notify the issue owner
       if (recipientId) {
         emitUnreadChanged(getSupportListNamespace(), recipientId, {

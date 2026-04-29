@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { moviesApi, reviewsApi, usersApi } from '../services/api/index.js';
-import { useAuthStore } from '../store/authStore.js';
 
 export interface SubmitReviewInput {
   rating: number;
@@ -8,7 +7,6 @@ export interface SubmitReviewInput {
 }
 
 export function useMovieInteractions(movieId: string | undefined) {
-  const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
 
   const toggleInterestMutation = useMutation({

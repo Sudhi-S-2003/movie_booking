@@ -1,8 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery,  useQueryClient } from '@tanstack/react-query';
 import { moviesApi, bookingsApi, reviewsApi } from '../services/api/index.js';
 import { groupShowtimesByTheatre } from '../utils/groupShowtimes.js';
-import type { GroupedTheatre } from '../utils/groupShowtimes.js';
-import type { Movie, Review, ID } from '../types/models.js';
+import type { Movie} from '../types/models.js';
 
 export type MovieWithViewerFlags = Movie & {
   isInterested?: boolean;

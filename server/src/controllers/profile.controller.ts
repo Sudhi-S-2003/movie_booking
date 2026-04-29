@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import mongoose from 'mongoose';
 import { User } from '../models/user.model.js';
 import { Post } from '../models/post.model.js';
 import { PostLike } from '../models/postLike.model.js';

@@ -108,9 +108,11 @@ export const getTheatreReviews = async (req: Request, res: Response) => {
 };
 
 // GET /api/theatres/:id/showtimes?from=&to=&page=&limit=
+import { getParam } from '../utils/params.utils.js';
+
 export const getShowtimesByTheatre = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id!;
+    const id = getParam(req, 'id');
     const { date, isActive } = req.query as { date?: string; isActive?: string };
 
     const match: any = { theatreId: new Types.ObjectId(id) };

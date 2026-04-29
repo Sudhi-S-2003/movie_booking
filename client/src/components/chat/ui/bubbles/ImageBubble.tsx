@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import { memo, useState } from 'react';
 import { ImageLightbox } from './ImageLightbox.js';
 import type { ChatMessage } from '../../types.js';
 

@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import { memo, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { ChatAvatar } from '../chat/ui/ChatAvatar.js';
 import type { JoinRequestWithUser } from '../../services/api/chat.api.js';

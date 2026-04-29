@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Clock, Film, Trash2, Edit3, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useOwner } from "./context/OwnerContext.js";
@@ -135,7 +135,7 @@ export const OwnerTimeline = () => {
                <p className="font-black uppercase tracking-[1em] text-[10px]">No shows scheduled</p>
             </div>
           ) : (
-            showtimes.map((show) => {
+            showtimes.map((show: any) => {
               const isPast = new Date(show.endTime) < new Date();
               const isCurrent = new Date(show.startTime) <= new Date() && new Date(show.endTime) >= new Date();
 

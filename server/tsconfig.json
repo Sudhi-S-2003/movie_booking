@@ -61,8 +61,8 @@
     "noPropertyAccessFromIndexSignature": false,
     // noUnusedLocals/Parameters are style checks; leave to ESLint so tsc
     // failures reflect genuine type problems, not dead identifiers.
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
 
@@ -75,7 +75,7 @@
     "noUncheckedSideEffectImports": true,
 
     /* ---------- Runtime types ---------- */
-    "types": ["node"]
+    // "types": ["node"]
   },
   "include": ["src/**/*.ts"],
   "exclude": [

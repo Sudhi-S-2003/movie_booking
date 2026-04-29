@@ -15,7 +15,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     if (!('Notification' in window)) return;
 
     if (Notification.permission === 'granted') {
-      const { title, message, url, icon, image, badge, tag, type } = payload;
+      const { title, message, url, icon, image, badge, tag } = payload;
       
       const notification = new Notification(title, {
         body: message,

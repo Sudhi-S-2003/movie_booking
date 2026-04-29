@@ -1,6 +1,6 @@
-import React, { memo, useState } from 'react';
+import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, User, Copy, Check, MessageCircle, ExternalLink } from 'lucide-react';
+import { Phone, User, Copy, Check, MessageCircle} from 'lucide-react';
 import { gradientForName } from './helpers.js';
 import type { ChatMessage } from '../../types.js';
 

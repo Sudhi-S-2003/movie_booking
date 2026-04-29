@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Book, Key, User, Terminal, Mail, MessageSquare, Code as CodeIcon } from 'lucide-react';
 import { GettingStarted } from './GettingStarted';
 import { ManagementApi } from './ManagementApi';

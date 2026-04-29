@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, X } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 interface ReviewModalProps {
   isOpen: boolean;

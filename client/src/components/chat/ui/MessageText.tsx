@@ -104,7 +104,6 @@ function formatRichContent(text: string): React.ReactNode[] {
   nodes = nodes.flatMap(node => {
     if (typeof node !== 'string') return node;
     // Regex for single asterisk but NOT double asterisk
-    const parts = node.split(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g);
     // Note: split with capturing group in regex returns the groups too.
     // For italics, we need to be careful. Let's use a simpler split for demo.
     const results: React.ReactNode[] = [];

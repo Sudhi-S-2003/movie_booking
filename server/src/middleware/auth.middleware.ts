@@ -93,7 +93,7 @@ export const isAuthenticated = async (
  */
 export const optionalAuthenticate = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   const token = extractBearerToken(req);

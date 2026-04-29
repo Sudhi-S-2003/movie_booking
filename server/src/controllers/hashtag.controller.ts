@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import mongoose from 'mongoose';
 import { Hashtag } from '../models/hashtag.model.js';
 import { Post } from '../models/post.model.js';
 import { HashtagFollow } from '../models/hashtagFollow.model.js';

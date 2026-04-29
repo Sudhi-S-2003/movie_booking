@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, UserPlus, X } from 'lucide-react';
 import { ChatAvatar } from '../chat/ui/ChatAvatar.js';

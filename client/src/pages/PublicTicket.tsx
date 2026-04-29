@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import { bookingsApi } from '../services/api/bookings.api.js';
 import { toPng } from 'html-to-image';
-import { Ticket, Calendar, Clock, MapPin, Download, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import {  Calendar, Clock, MapPin, Download, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const PublicTicket = () => {
   const { id } = useParams();

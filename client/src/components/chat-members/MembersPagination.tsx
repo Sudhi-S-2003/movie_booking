@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { buildPageWindow } from './utils/pageWindow.js';
 

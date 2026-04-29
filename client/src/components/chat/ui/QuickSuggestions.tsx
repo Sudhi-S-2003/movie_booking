@@ -1,5 +1,5 @@
-import React, { memo, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { memo, useEffect, useRef } from 'react';
+import { motion} from 'framer-motion';
 import * as LucideIcons from 'lucide-react';
 import { getAvailablePlatforms, getSocialMeta } from '../../../utils/social-resolver.js';
 

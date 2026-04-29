@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Crown, LogOut, UserMinus } from 'lucide-react';
 import { ChatAvatar } from '../chat/ui/ChatAvatar.js';

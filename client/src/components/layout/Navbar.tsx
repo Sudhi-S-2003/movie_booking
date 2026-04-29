@@ -10,7 +10,7 @@ import { CitySelector } from './CitySelector.js';
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { selectedCity, setCity, searchQuery, setSearchQuery } = useBookingStore();
+  const { selectedCity, searchQuery, setSearchQuery } = useBookingStore();
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();

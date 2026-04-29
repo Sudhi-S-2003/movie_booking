@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { MessageText } from '../MessageText.js';
 import { ReplyPreview } from '../ReplyPreview.js';
 import type { ChatMessage } from '../../types.js';

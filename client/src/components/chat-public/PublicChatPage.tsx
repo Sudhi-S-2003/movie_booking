@@ -24,7 +24,7 @@ export const PublicChatPage = () => {
 
   const { publicName = '' } = useParams<{ publicName: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
 
   const { data, loading, status, error } = usePublicChat(publicName);
 

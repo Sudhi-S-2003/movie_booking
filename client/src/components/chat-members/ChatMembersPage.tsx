@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Inbox, Settings, UserPlus, Users, X } from 'lucide-react';
 import { chatApi } from '../../services/api/chat.api.js';

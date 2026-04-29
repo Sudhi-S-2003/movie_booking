@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { moviesApi } from "../../../services/api/index.js";
-import { Plus, Film, Search, Filter, Edit3, Trash2, Calendar, Globe, Clock, ChevronRight } from "lucide-react";
+import { Film, Plus, Search, Trash2, Calendar, Clock, Globe, Edit2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
@@ -131,7 +131,7 @@ export const AdminMovies = () => {
 
                           <div className="mt-auto flex items-center gap-3 pt-4 border-t border-white/5">
                               <button className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 py-3 rounded-xl flex items-center justify-center gap-2 transition-all group/btn">
-                                  <Edit3 size={14} className="text-gray-500 group-hover/btn:text-accent-blue" />
+                                  <Edit2 size={14} className="text-gray-500 group-hover/btn:text-accent-blue" />
                                    <span className="text-[9px] font-black uppercase text-gray-400 group-hover/btn:text-white">Edit</span>
                               </button>
                               <button className="p-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500 transition-all group/trash rounded-xl text-red-500 hover:text-white shadow-xl shadow-red-500/0 hover:shadow-red-500/20">

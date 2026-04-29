@@ -1,8 +1,5 @@
 import { PricingTier } from '../../constants/enums.js';
 
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const theatreImage = (name: string) => `https://picsum.photos/seed/${slug(name)}-theatre/1200/800`;
-const theatreBackdrop = (name: string) => `https://picsum.photos/seed/${slug(name)}-backdrop/1920/1080`;
 
 export const theatresData = [
   // --- INDIA ---

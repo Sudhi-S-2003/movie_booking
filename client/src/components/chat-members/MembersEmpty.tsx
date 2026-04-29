@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Users } from 'lucide-react';
 
 /** Empty state for a page with no members (e.g. after removing the last one). */

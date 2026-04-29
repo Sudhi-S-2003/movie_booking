@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Search, X, Globe, Loader2, ChevronDown } from 'lucide-react';
+import { MapPin, Search, X, Globe, Loader2} from 'lucide-react';
 import { useBookingStore } from '../../store/bookingStore.js';
 import { theatresApi } from '../../services/api/theatres.api.js';
 

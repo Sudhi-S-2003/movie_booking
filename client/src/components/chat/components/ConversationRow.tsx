@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { ChatAvatar } from '../ui/ChatAvatar.js';
 import { useChat } from '../context/ChatContext.js';
 import { PREVIEW_MAX_LENGTH } from '../constants.js';

@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, useRef, useEffect } from 'react';
+import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, MessageCircle, Users } from 'lucide-react';
 import { chatApi } from '../../../services/api/chat.api.js';
@@ -66,9 +66,9 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
 
   const handleSelectUser = useCallback(async (user: SearchedUser) => {
     if (mode === 'group') {
-      setSelected((prev) => {
-        if (prev.some((u) => u._id === user._id)) {
-          return prev.filter((u) => u._id !== user._id);
+      setSelected((prev: SearchedUser[]) => {
+        if (prev.some((u: SearchedUser) => u._id === user._id)) {
+          return prev.filter((u: SearchedUser) => u._id !== user._id);
         }
         return [...prev, user];
       });
@@ -94,7 +94,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
     setCreating(true);
     setCreateError(null);
     const conv = await createGroupChat(
-      selected.map((u) => u._id),
+      selected.map((u: SearchedUser) => u._id),
       groupTitle.trim() || 'Group Chat',
       trimmedSlug,
     );
@@ -138,7 +138,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
               <div className="flex items-center gap-2">
                 {/* Toggle mode */}
                 <button
-                  onClick={() => setMode((m) => m === 'search' ? 'group' : 'search')}
+                  onClick={() => setMode((m: 'search' | 'group') => m === 'search' ? 'group' : 'search')}
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${
                     mode === 'group'
                       ? 'bg-accent-blue/20 text-accent-blue border border-accent-blue/30'
@@ -197,10 +197,10 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
             {/* Selected users (group mode) */}
             {mode === 'group' && selected.length > 0 && (
               <div className="flex flex-wrap gap-1.5 px-4 pt-2">
-                {selected.map((u) => (
+                {selected.map((u: SearchedUser) => (
                   <span
                     key={u._id}
-                    onClick={() => setSelected((prev) => prev.filter((s) => s._id !== u._id))}
+                    onClick={() => setSelected((prev: SearchedUser[]) => prev.filter((s: SearchedUser) => s._id !== u._id))}
                     className="inline-flex items-center gap-1 px-2 py-1 bg-accent-blue/20 border border-accent-blue/30 rounded-full text-[9px] text-accent-blue font-bold cursor-pointer hover:bg-accent-blue/30 transition-all"
                   >
                     {u.name}
@@ -238,8 +238,8 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
                 </div>
               )}
 
-              {!loading && results.map((user) => {
-                const isSelected = selected.some((s) => s._id === user._id);
+              {!loading && results.map((user: SearchedUser) => {
+                const isSelected = selected.some((s: SearchedUser) => s._id === user._id);
                 return (
                   <button
                     key={user._id}

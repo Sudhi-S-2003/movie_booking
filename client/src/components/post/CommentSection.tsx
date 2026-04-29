@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, ArrowUp } from 'lucide-react';
+import { MessageCircle,  ArrowUp } from 'lucide-react';
 import { postsApi } from '../../services/api/index.js';
 import type { PostComment } from '../../services/api/posts.api.js';
 import { CommentItem } from './CommentItem.js';

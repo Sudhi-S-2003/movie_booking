@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Info } from 'lucide-react';
 import type { ChatMessage } from '../../types.js';
 

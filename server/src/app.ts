@@ -23,6 +23,7 @@ import apiKeyPublicRoutes from './routes/apiKey.public.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 import externalWebhookRoutes from './routes/external.webhook.routes.js';
 import integrationRoutes from './routes/integration.routes.js';
+import { errorHandler } from './middleware/error.middleware.js';
 
 
 const app = express();
@@ -45,7 +46,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Health Check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'OK', message: 'CinemaConnect API is running' });
 });
 
@@ -69,5 +70,12 @@ app.use('/api/keys', apiKeyRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/integrations', integrationRoutes);
 
+// 404 handler
+app.use((_req, res, _next) => {
+  res.status(404).json({ success: false, message: 'API Route Not Found' });
+});
+
+// Global Error Handler
+app.use(errorHandler);
 
 export default app;

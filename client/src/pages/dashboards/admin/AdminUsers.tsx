@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import { useState } from 'react';
 import { usersApi } from "../../../services/api/index.js";
-import { Users, Search, Mail, Shield, Calendar, UserCheck, UserPlus, Filter } from "lucide-react";
-import { motion } from "framer-motion";
+import { useQuery } from '@tanstack/react-query';
+import { Users, Search, Filter, Shield, Mail, Calendar } from 'lucide-react';
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { Pagination } from "../../../components/common/Pagination.js";
 import { PAGE_SIZE } from "../../../constants/pagination.js";
-
-import { useQuery } from "@tanstack/react-query";
 
 export const AdminUsers = () => {
   useDocumentTitle("Users");

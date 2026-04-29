@@ -17,7 +17,7 @@ export const createMovie = async (req: Request, res: Response) => {
 export const getMovies = async (req: AuthRequest, res: Response) => {
   try {
     const pageParams = parsePage(req);
-    const { skip, limit, page } = pageParams;
+    const { skip, limit } = pageParams;
 
     const { status, genre, search, q, minimal } = req.query;
     const filter: any = {};

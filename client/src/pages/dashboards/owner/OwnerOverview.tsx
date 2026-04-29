@@ -1,5 +1,5 @@
-import React from "react";
-import { motion } from "framer-motion";
+// // // import _React from "_React";
+// // import { _motion } from "framer-motion";
 import { Map, Clock, Users, BarChart3 } from "lucide-react";
 import { useOwner } from "./context/OwnerContext.js";
 import { ContextBar } from "./components/ContextBar.js";
@@ -8,8 +8,7 @@ import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 
 import { NotificationRequest } from "../../../components/notifications/NotificationRequest.js";
 import { statsApi } from "../../../services/api/index.js";
-import type { OwnerStats } from "../../../services/api/stats.api.js";
-import { useEffect, useState } from "react";
+// // // import { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 

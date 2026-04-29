@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import type { Conversation, ChatParticipant } from '../types.js';
 
 interface ChatAvatarProps {

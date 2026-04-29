@@ -1,4 +1,4 @@
-import type { HydratedDocument, Types } from 'mongoose';
+import type { HydratedDocument } from 'mongoose';
 import { Theatre } from '../../models/theatre.model.js';
 import { Screen } from '../../models/screen.model.js';
 import type { ITheatre, IScreen, RefId } from '../../interfaces/models.interface.js';

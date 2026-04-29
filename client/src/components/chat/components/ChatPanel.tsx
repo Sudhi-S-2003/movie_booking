@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { useChat } from '../context/ChatContext.js';
 import { ChatHeader } from './ChatHeader.js';
 import { MessageThread } from './MessageThread.js';
@@ -14,7 +14,6 @@ export const ChatPanel = memo(() => {
     selectedConversation,
     selectConversation,
     messages,
-    messagesLoading,
     initialLoading,
     hasBefore,
     hasAfter,

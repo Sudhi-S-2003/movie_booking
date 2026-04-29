@@ -16,10 +16,8 @@ export const unifiedSearch = async (req: AuthRequest, res: Response) => {
     }
 
     let interpretedQ = q;
-    let isHashtag = false;
 
     if (q.startsWith('#')) {
-      isHashtag = true;
       interpretedQ = q.substring(1).replace(/_/g, ' ').trim();
     }
 

@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import { memo, useState } from 'react';
 import { Check, Copy, Download, ShieldOff, Trash2 } from 'lucide-react';
 import type { ApiKeyRecord } from '../../services/api/apiKeys.api.js';
 import { CATEGORY_LABELS, formatLastUsed, maskKeyId } from './utils/maskKeyId.js';

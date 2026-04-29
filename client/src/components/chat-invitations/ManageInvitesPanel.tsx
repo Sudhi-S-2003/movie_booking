@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import { memo, useState } from 'react';
 import { Link2, Plus } from 'lucide-react';
 import { MembersPagination } from '../chat-members/MembersPagination.js';
 import { InviteRow } from './InviteRow.js';

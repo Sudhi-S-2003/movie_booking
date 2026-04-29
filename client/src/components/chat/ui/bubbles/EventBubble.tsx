@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { CalendarPlus, MapPin, ExternalLink } from 'lucide-react';
 import type { ChatMessage } from '../../types.js';
 

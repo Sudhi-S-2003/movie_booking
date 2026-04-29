@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Zap, Crown, Building2, ChevronDown, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription.js';
@@ -45,7 +45,7 @@ export const resolveLimits = (plan: SubscriptionPlan, sub: SubscriptionInfo | nu
 };
 
 export const buildBuckets = (
-  plan:      SubscriptionPlan,
+  _plan:      SubscriptionPlan,
   remaining: TokenRemaining | null,
   limits:    { daily?: number; weekly?: number; monthly?: number },
 ): BucketInfo[] => {
@@ -185,7 +185,7 @@ export const TokenUsageBadge = memo(() => {
     <div ref={wrapRef} className="relative block">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((v: boolean) => !v)}
         aria-label={`${planLabel(plan)} plan usage — ${bindingPctTxt} remaining. Click to open details.`}
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -248,7 +248,7 @@ export const TokenUsageBadge = memo(() => {
             {buckets.length === 0 && (
               <div className="text-[11px] font-bold text-white/40">No usage data yet.</div>
             )}
-            {buckets.map((b) => (
+            {buckets.map((b: BucketInfo) => (
               <BucketBar key={b.key} bucket={b} tone={b.pct <= 0.10 ? 'amber' : 'accent'} />
             ))}
           </div>

@@ -682,7 +682,6 @@ export const sendMessage = async (req: Request, res: Response) => {
     // Streams membership via a server-side cursor so fan-out on large groups
     // doesn't buffer the whole roster.
     const chatListNs = getChatListNamespace();
-    const selfIdStr = String(userId);
     const nextMessageCount = conversation.messageCount + 1;
     await forEachParticipant(conversationId, (pid) => {
       const pidStr = pid.toString();

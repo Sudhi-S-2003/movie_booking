@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Copy, Check, Globe, Trash2 } from 'lucide-react';
 import { chatApi } from '../../services/api/chat.api.js';
 import { ApiError } from '../../services/api/http.js';

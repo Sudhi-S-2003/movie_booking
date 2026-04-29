@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { MessageText } from '../MessageText.js';
 import { ReplyPreview } from '../ReplyPreview.js';
 import { chatApi } from '../../../../services/api/chat.api.js';
@@ -54,7 +54,7 @@ const useLongtextChunks = (msg: ChatMessage) => {
     setLoading(true);
     try {
       const { content, nextChunkId } = await fetchChunk(nextId);
-      setChunks((prev) => [...prev, { id: nextId, content, nextChunkId }]);
+      setChunks((prev: LoadedChunk[]) => [...prev, { id: nextId, content, nextChunkId }]);
       return Boolean(nextChunkId);
     } catch (e) {
       console.error('[LongTextBubble] loadNext failed:', e);
@@ -79,7 +79,7 @@ const useLongtextChunks = (msg: ChatMessage) => {
         acc.push({ id: cursorId, content, nextChunkId });
         cursorId = nextChunkId;
       }
-      setChunks((prev) => [...prev, ...acc]);
+      setChunks((prev: LoadedChunk[]) => [...prev, ...acc]);
     } catch (e) {
       console.error('[LongTextBubble] loadAll failed:', e);
     } finally {
@@ -140,7 +140,7 @@ export const LongTextBubble = memo(({
 
       <MessageText text={msg.text} isOwn={isOwn} />
 
-      {chunks.map((c) => (
+      {chunks.map((c: LoadedChunk) => (
         <div
           key={c.id}
           className="mt-1 animate-[fadeIn_240ms_ease-out]"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { Search, Bell, HelpCircle } from 'lucide-react';
+import { Search,  HelpCircle } from 'lucide-react';
 import { DashboardLayout } from './DashboardLayout.js';
 
 import { NotificationRequest } from '../components/notifications/NotificationRequest.js';

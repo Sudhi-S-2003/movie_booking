@@ -1,4 +1,4 @@
-import React from 'react';
+// // // // import _React from '_React';
 import { Book, Globe, Shield } from 'lucide-react';
 import { API_URL } from '../../services/api/http.js';
 import { DocSection, DocCodeBlock } from './DocComponents.js';
