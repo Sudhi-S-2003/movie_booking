@@ -8,16 +8,15 @@ import type {
   UnlockSeatResponse,
 } from '../../types/api.js';
 
+import { cleanParams } from '../../utils/api.js';
+
 export const bookingsApi = {
   getShowtimeDetails: (id: string) =>
     http.get<ShowtimeDetailsResponse>(`/booking/showtime/${id}`),
 
-  getShowtimesByMovie: (movieId: string, city?: string, date?: string) =>
+  getShowtimesByMovie: (movieId: string, city?: string, date?: string, q?: string, page?: number, limit?: number) =>
     http.get<ShowtimesListResponse>(`/booking/movie/${movieId}`, {
-      params: { 
-        ...(city ? { city } : {}),
-        ...(date ? { date } : {})
-      },
+      params: cleanParams({ city, date, q, page, limit }),
     }),
 
   lockSeats: (showtimeId: string, seatIds: string[], prices: number[]) =>

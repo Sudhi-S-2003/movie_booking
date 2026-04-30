@@ -1,7 +1,9 @@
-import { useQuery,  useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { moviesApi, bookingsApi, reviewsApi } from '../services/api/index.js';
 import { groupShowtimesByTheatre } from '../utils/groupShowtimes.js';
-import type { Movie} from '../types/models.js';
+import { useDebounce } from './useDebounce.js';
+import type { Movie } from '../types/models.js';
 
 export type MovieWithViewerFlags = Movie & {
   isInterested?: boolean;
@@ -14,6 +16,9 @@ export function useMovieDetails(
   selectedDate?: string,
 ) {
   const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 500);
+  const [page, setPage] = useState(1);
 
   const { data: movieRes, isLoading: movieLoading } = useQuery({
     queryKey: ['movie', movieId],
@@ -22,8 +27,8 @@ export function useMovieDetails(
   });
 
   const { data: showtimesRes, isLoading: showtimesLoading } = useQuery({
-    queryKey: ['movie', 'showtimes', movieId, city, selectedDate],
-    queryFn: () => bookingsApi.getShowtimesByMovie(movieId!, city ?? undefined, selectedDate),
+    queryKey: ['movie', 'showtimes', movieId, city, selectedDate, debouncedSearch, page],
+    queryFn: () => bookingsApi.getShowtimesByMovie(movieId!, city ?? undefined, selectedDate, debouncedSearch, page),
     enabled: !!movieId,
   });
 
@@ -36,17 +41,27 @@ export function useMovieDetails(
   const movie = movieRes?.movie || null;
   const reviews = reviewsRes?.reviews || [];
   const groupedShowtimes = showtimesRes ? groupShowtimesByTheatre(showtimesRes.showtimes) : {};
-  const loading = movieLoading || showtimesLoading || reviewsLoading;
+  const pagination = showtimesRes?.pagination || null;
+
+  const handleSearch = (q: string) => {
+    setSearchQuery(q);
+    setPage(1);
+  };
 
   return {
     movie,
     reviews,
     groupedShowtimes,
-    loading,
+    pagination,
+    movieLoading,
+    showtimesLoading,
+    reviewsLoading,
+    searchQuery,
+    page,
+    setSearchQuery: handleSearch,
+    setPage,
     isInterested: movie?.isInterested ?? false,
     isWatchlisted: movie?.isWatchlisted ?? false,
-    // We'll handle updates via mutations in useMovieInteractions or directly here if needed
-    // But for now, we'll expose a way to invalidate queries
     refresh: () => {
       queryClient.invalidateQueries({ queryKey: ['movie', movieId] });
       queryClient.invalidateQueries({ queryKey: ['movie', 'reviews', movieId] });

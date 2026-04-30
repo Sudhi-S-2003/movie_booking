@@ -1,10 +1,20 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { theatresApi } from '../services/api/index.js';
+import { useDebounce } from './useDebounce.js';
 
 export function useTheatreDetails(
   theatreId: string | undefined,
   selectedDate?: string
 ) {
+  const [searchParams] = useSearchParams();
+  const movieId = searchParams.get('movieId') || undefined;
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 500);
+  const [page, setPage] = useState(1);
+
   const { data: theatreRes, isLoading: theatreLoading } = useQuery({
     queryKey: ['theatre', theatreId],
     queryFn: () => theatresApi.getById(theatreId!),
@@ -12,8 +22,8 @@ export function useTheatreDetails(
   });
 
   const { data: showtimesRes, isLoading: showtimesLoading } = useQuery({
-    queryKey: ['theatre', 'showtimes', theatreId, selectedDate],
-    queryFn: () => theatresApi.getShowtimes(theatreId!, { from: selectedDate }),
+    queryKey: ['theatre', 'showtimes', theatreId, selectedDate, debouncedSearch, page, movieId],
+    queryFn: () => theatresApi.getShowtimes(theatreId!, { date: selectedDate, q: debouncedSearch, page, movieId }),
     enabled: !!theatreId,
   });
 
@@ -55,10 +65,22 @@ export function useTheatreDetails(
     return acc;
   }, {}) || {};
 
+  const handleSearch = (q: string) => {
+    setSearchQuery(q);
+    setPage(1);
+  };
+
   return {
     theatre: theatreRes?.theatre,
     reviews: reviewsRes?.reviews || [],
     moviesWithShowtimes: movieGroupedShowtimes,
-    loading: theatreLoading || showtimesLoading || reviewsLoading
+    pagination: showtimesRes?.pagination || null,
+    theatreLoading,
+    showtimesLoading,
+    reviewsLoading,
+    searchQuery,
+    page,
+    setSearchQuery: handleSearch,
+    setPage
   };
 }

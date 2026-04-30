@@ -21,23 +21,12 @@ export interface TheatreReviewsQuery {
 export interface TheatreShowtimesQuery {
   page?:  number;
   limit?: number;
-  from?:  string;
-  to?:    string;
+  date?:  string;
+  q?:     string;
+  movieId?: string;
 }
 
-/**
- * Strip undefined so `exactOptionalPropertyTypes` stays happy and so we
- * don't stuff `undefined` into axios params (which gets serialized as the
- * literal string "undefined").
- */
-const cleanParams = (obj: Record<string, unknown> | undefined): Record<string, unknown> => {
-  const out: Record<string, unknown> = {};
-  if (!obj) return out;
-  for (const [k, v] of Object.entries(obj)) {
-    if (v !== undefined && v !== null && v !== '') out[k] = v;
-  }
-  return out;
-};
+import { cleanParams } from '../../utils/api.js';
 
 export const theatresApi = {
   list: (params?: TheatresListQuery) =>

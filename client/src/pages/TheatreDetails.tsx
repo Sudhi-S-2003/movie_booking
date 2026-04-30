@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Info, Star, Clock, ExternalLink, ShieldCheck } from 'lucide-react';
+import { MapPin, Info, Star, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { TagCloud } from '../components/ui/TagCloud.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
@@ -8,6 +8,9 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useTheatreDetails } from '../hooks/useTheatreDetails.js';
 import { DateSelector } from '../components/ui/DateSelector.js';
 import { ReviewSection } from '../components/ReviewSection.js';
+import { FilterBar } from '../components/browse/FilterBar.js';
+import { PaginationBar } from '../components/browse/PaginationBar.js';
+import { MovieShowtimeCard } from '../components/detail/MovieShowtimeCard.js';
 
 export const TheatreDetails = () => {
   const { id } = useParams();
@@ -16,7 +19,12 @@ export const TheatreDetails = () => {
   const { 
     theatre, 
     moviesWithShowtimes, 
-    loading 
+    theatreLoading,
+    showtimesLoading,
+    pagination,
+    searchQuery,
+    setSearchQuery,
+    setPage
   } = useTheatreDetails(id, selectedDate);
 
   const [activeTab, setActiveTab] = useState<'SHOWTIMES' | 'REVIEWS'>('SHOWTIMES');
@@ -24,7 +32,7 @@ export const TheatreDetails = () => {
   useDocumentTitle(theatre?.name || 'Loading Theatre...');
 
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse">Loading theatre details...</div>;
+  if (theatreLoading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.5em] text-gray-500">Connecting to Theatre...</div>;
   if (!theatre) return <div className="min-h-screen flex items-center justify-center font-black">THEATRE NOT FOUND</div>;
 
   return (
@@ -136,6 +144,16 @@ export const TheatreDetails = () => {
           )}
         </div>
 
+        {activeTab === 'SHOWTIMES' && (
+          <div className="mt-8">
+            <FilterBar 
+              searchPlaceholder="Search movies playing here..."
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {activeTab === 'SHOWTIMES' ? (
             <motion.div 
@@ -145,69 +163,28 @@ export const TheatreDetails = () => {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-12"
             >
-              {Object.keys(moviesWithShowtimes).length > 0 ? (
+              {showtimesLoading ? (
+                <div className="space-y-12">
+                   {[1, 2].map(i => (
+                     <div key={i} className="h-[400px] bg-white/5 rounded-[40px] animate-pulse border border-white/5" />
+                   ))}
+                </div>
+              ) : Object.keys(moviesWithShowtimes).length > 0 ? (
                 Object.values(moviesWithShowtimes).map((movie: any) => (
-                  <motion.div 
-                    key={movie.id}
-                    layout
-                    className="bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-[40px] p-8 sm:p-12 hover:bg-surface/50 transition-all group overflow-hidden"
-                  >
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                      {}
-                      <div className="lg:col-span-3 space-y-6">
-                        <div className="relative aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                          <img src={movie.posterUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={movie.title} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
-                            <Link to={`/movie/${movie.id}`} className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-[10px] font-black uppercase text-white hover:bg-accent-pink transition-colors">View Details</Link>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-2xl font-black text-white leading-tight">{movie.title}</h3>
-                          <div className="flex flex-wrap gap-2">
-                            <span className="text-[10px] font-black text-accent-blue py-1 px-2 bg-accent-blue/10 rounded uppercase">{movie.certification}</span>
-                            {movie.genres?.[0] && (
-                              <span className="text-[10px] font-black text-accent-pink py-1 px-2 bg-accent-pink/10 rounded uppercase">{movie.genres[0]}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {}
-                      <div className="lg:col-span-9 space-y-10">
-                        {Object.values(movie.screens).map((screen: any, idx: number) => (
-                          <div key={screen.name} className={`space-y-6 ${idx !== 0 ? 'pt-8 border-t border-white/5' : ''}`}>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-accent-blue border border-white/10">
-                                  <Clock size={20} />
-                                </div>
-                                <div>
-                                  <h4 className="font-black text-white uppercase tracking-wider">{screen.name}</h4>
-                                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{screen.format} Experience</p>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-4">
-                              {screen.times.map((st: any) => (
-                                <Link 
-                                  key={st.id}
-                                  to={`/booking/${st.id}`}
-                                  className="px-10 py-5 bg-white/5 border border-white/10 rounded-2xl text-sm font-black text-accent-blue hover:bg-accent-blue hover:text-white hover:scale-105 transition-all outline-none shadow-xl"
-                                >
-                                  {st.time}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
+                  <MovieShowtimeCard key={movie.id} movie={movie} />
                 ))
               ) : (
                 <div className="text-center py-32 bg-white/5 rounded-[60px] border border-dashed border-white/10">
                   <p className="text-gray-500 font-black text-2xl italic opacity-50">No movies scheduled for today at this theatre.</p>
+                </div>
+              )}
+
+              {pagination && pagination.totalPages > 1 && (
+                <div className="pt-12 border-t border-white/5">
+                  <PaginationBar 
+                    pagination={pagination}
+                    onChange={setPage}
+                  />
                 </div>
               )}
             </motion.div>

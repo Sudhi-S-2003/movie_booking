@@ -11,6 +11,9 @@ import { useMovieDetails } from '../hooks/useMovieDetails.js';
 import { useMovieInteractions } from '../hooks/useMovieInteractions.js';
 import { formatCountCompact } from '../utils/format.js';
 import { ReviewSection } from '../components/ReviewSection.js';
+import { FilterBar } from '../components/browse/FilterBar.js';
+import { PaginationBar } from '../components/browse/PaginationBar.js';
+import { TheatreShowtimeCard } from '../components/detail/TheatreShowtimeCard.js';
 
 export const MovieDetails = () => {
   const { id } = useParams();
@@ -21,7 +24,12 @@ export const MovieDetails = () => {
   const {
     movie,
     groupedShowtimes: showtimesByTheatre,
-    loading,
+    movieLoading,
+    showtimesLoading,
+    pagination,
+    searchQuery,
+    setSearchQuery,
+    setPage,
     isInterested,
     isWatchlisted,
   } = useMovieDetails(id, selectedCity, selectedDate);
@@ -49,7 +57,7 @@ export const MovieDetails = () => {
   };
 
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse">Loading movie details...</div>;
+  if (movieLoading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.5em] text-gray-500">Initializing Cinema Experience...</div>;
   if (!movie) return <div className="min-h-screen flex items-center justify-center font-black">MOVIE NOT FOUND</div>;
 
   return (
@@ -284,6 +292,16 @@ export const MovieDetails = () => {
           )}
         </div>
 
+        {activeTab === 'SHOWTIMES' && (
+          <div className="mt-8">
+            <FilterBar 
+              searchPlaceholder="Search theatres or cities..."
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {activeTab === 'SHOWTIMES' ? (
             <motion.div 
@@ -293,54 +311,28 @@ export const MovieDetails = () => {
               exit={{ opacity: 0, y: -20 }}
               className="grid grid-cols-1 gap-8"
             >
-              {Object.keys(showtimesByTheatre).length > 0 ? (
+              {showtimesLoading ? (
+                <div className="space-y-8">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="h-64 bg-white/5 rounded-[40px] animate-pulse border border-white/5" />
+                  ))}
+                </div>
+              ) : Object.keys(showtimesByTheatre).length > 0 ? (
                 Object.values(showtimesByTheatre).map((theatre: any) => (
-                  <motion.div 
-                    key={theatre.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="bg-surface/40 backdrop-blur-3xl border border-white/5 rounded-[40px] p-10 hover:bg-surface/60 transition-all group"
-                  >
-                    <div className="flex flex-col gap-10">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <Link to={`/theatre/${theatre.id}`} className="text-3xl font-black text-white hover:text-accent-blue transition-colors flex items-center gap-3">
-                            {theatre.name}
-                            <span className="text-[10px] bg-accent-blue/10 text-accent-blue px-3 py-1 rounded-lg uppercase tracking-widest">{theatre.city}</span>
-                          </Link>
-                          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Premium Cinema Experience</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-8">
-                        {Object.values(theatre.screens).map((screen: any) => (
-                          <div key={screen.name} className="space-y-4 border-t border-white/5 pt-6">
-                            <div className="flex items-center gap-3">
-                                <span className="w-2 h-2 rounded-full bg-accent-pink shadow-[0_0_10px_rgba(255,51,102,0.8)]" /> 
-                                <span className="text-sm font-black text-white uppercase tracking-wider">{screen.name}</span>
-                                <span className="text-[10px] bg-white/5 text-gray-400 px-3 py-1 rounded-lg border border-white/10">{screen.format}</span>
-                            </div>
-                            <div className="flex flex-wrap gap-4">
-                              {screen.times.map((st: any) => (
-                                <Link 
-                                  key={st.id}
-                                  to={`/booking/${st.id}`}
-                                  className="px-10 py-5 bg-white/5 border border-white/10 rounded-2xl text-sm font-black text-accent-blue hover:bg-accent-blue hover:text-white hover:scale-105 transition-all outline-none shadow-xl"
-                                >
-                                  {st.time}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
+                  <TheatreShowtimeCard key={theatre.id} theatre={theatre} currentMovieId={id} />
                 ))
               ) : (
                 <div className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10">
                   <p className="text-gray-500 font-black text-xl italic opacity-50">No showtimes found for this movie in your city.</p>
+                </div>
+              )}
+              
+              {pagination && pagination.totalPages > 1 && (
+                <div className="pt-12 border-t border-white/5">
+                  <PaginationBar 
+                    pagination={pagination}
+                    onChange={setPage}
+                  />
                 </div>
               )}
             </motion.div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, ChevronDown, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -13,12 +13,24 @@ export const Navbar = () => {
   const { selectedCity, searchQuery, setSearchQuery } = useBookingStore();
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setIsSearchOpen(false);
     }
+    if (e.key === 'Escape') {
+      setIsSearchOpen(false);
+    }
+  };
+
+  const openSearch = () => {
+    setIsSearchOpen(true);
+    // focus after animation starts
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   return (
@@ -46,30 +58,60 @@ export const Navbar = () => {
               <ChevronDown size={14} className="ml-2 group-hover:translate-y-0.5 transition-transform text-gray-500" />
             </button>
 
-            <div className="hidden lg:flex items-center gap-8 border-l border-white/10 pl-10">
-              <Link to="/movies" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-pink transition-colors">Movies</Link>
-              <Link to="/cinemas" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-blue transition-colors">Cinemas</Link>
-              <Link to="/subscription" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-pink transition-colors">Pricing</Link>
-            </div>
+            <AnimatePresence>
+              {!isSearchOpen && (
+                <motion.div
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="hidden lg:flex items-center gap-8 border-l border-white/10 pl-10"
+                >
+                  <Link to="/movies" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-pink transition-colors">Movies</Link>
+                  <Link to="/cinemas" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-blue transition-colors">Cinemas</Link>
+                  <Link to="/subscription" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-pink transition-colors">Pricing</Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Desktop Auth/Search */}
-          <div className="hidden md:flex items-center gap-6">
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent-blue transition-colors" size={18} />
-              <input
-                type="text"
-                placeholder="Search movies..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearch}
-                className="bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-6 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent-blue/50 w-72 transition-all shadow-inner placeholder:text-gray-600"
-              />
+          <div className="hidden md:flex items-center gap-3">
+            {/* Collapsible search */}
+            <div className="relative flex items-center">
+              <AnimatePresence>
+                {isSearchOpen && (
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 240, opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    className="overflow-hidden"
+                  >
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      placeholder="Search movies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={handleSearch}
+                      onBlur={() => { if (!searchQuery) setIsSearchOpen(false); }}
+                      className="bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-4 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent-blue/50 w-full shadow-inner placeholder:text-gray-600"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                onClick={isSearchOpen ? () => { setSearchQuery(''); setIsSearchOpen(false); } : openSearch}
+                className="ml-1 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+              >
+                {isSearchOpen && searchQuery ? <X size={18} /> : <Search size={18} />}
+              </button>
             </div>
 
             {isAuthenticated ? (
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-3 bg-white/5 pr-4 rounded-2xl border border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 bg-white/5 pr-3 rounded-2xl border border-white/5">
                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-accent-pink to-accent-purple flex items-center justify-center text-sm font-black text-white shadow-lg shadow-accent-pink/20">
                     {user?.name[0]}
                   </div>
@@ -78,20 +120,20 @@ export const Navbar = () => {
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{user?.role}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <Link
                     to={user?.role === 'admin' ? '/admin' : user?.role === 'theatre_owner' ? '/owner' : '/user'}
-                    className="text-[10px] font-black uppercase tracking-widest text-accent-blue hover:text-white transition-colors"
+                    className="text-[10px] font-black uppercase tracking-widest text-accent-blue hover:text-white transition-colors whitespace-nowrap"
                   >
                     Dashboard
                   </Link>
-                  <button onClick={logout} className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-red-400 transition-colors">Logout</button>
+                  <button onClick={logout} className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-red-400 transition-colors whitespace-nowrap">Logout</button>
                 </div>
               </div>
             ) : (
               <Link
                 to="/login"
-                className="bg-accent-pink hover:bg-accent-pink/80 text-white text-[10px] font-black uppercase tracking-widest px-8 py-3.5 rounded-2xl transition-all active:scale-95 shadow-xl shadow-accent-pink/20"
+                className="bg-accent-pink hover:bg-accent-pink/80 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3.5 rounded-2xl transition-all active:scale-95 shadow-xl shadow-accent-pink/20 whitespace-nowrap"
               >
                 Access Account
               </Link>

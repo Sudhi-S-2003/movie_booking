@@ -6,6 +6,7 @@ import { User } from '../models/user.model.js';
 import { UserRole, AuthProvider, NotificationType } from '../constants/enums.js';
 import type { AuthRequest, JwtPayload } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
+import { generateUsernameSuggestions } from '../utils/username.utils.js';
 import { getOrCreateForUser as ensureSubscription } from '../services/subscription/subscription.service.js';
 import { Session } from '../models/session.model.js';
 import { disconnectSessionSockets } from '../socket/index.js';
@@ -29,7 +30,12 @@ export const register = async (req: Request, res: Response) => {
 
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
-      return res.status(400).json({ success: false, message: 'Username already taken. Please try another.' });
+      const suggestions = await generateUsernameSuggestions(username);
+      return res.status(400).json({
+        success: false,
+        message: 'Username already taken. Please try another.',
+        suggestions,
+      });
     }
 
     const salt = await bcrypt.genSalt(10);

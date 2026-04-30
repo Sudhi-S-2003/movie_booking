@@ -5,6 +5,7 @@ import { Showtime } from '../models/showtime.model.js';
 import { Review } from '../models/review.model.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { parsePage, buildPageEnvelope } from '../utils/pagination.js';
+import { getParam } from '../utils/params.utils.js';
 
 // GET /api/theatres?city=&q=&page=&limit=
 export const getAllTheatres = async (req: Request, res: Response) => {
@@ -108,14 +109,17 @@ export const getTheatreReviews = async (req: Request, res: Response) => {
 };
 
 // GET /api/theatres/:id/showtimes?from=&to=&page=&limit=
-import { getParam } from '../utils/params.utils.js';
-
 export const getShowtimesByTheatre = async (req: Request, res: Response) => {
   try {
     const id = getParam(req, 'id');
-    const { date, isActive } = req.query as { date?: string; isActive?: string };
+    const { date, isActive, q, movieId } = req.query as { date?: string; isActive?: string; q?: string; movieId?: string };
+    const pageParams = parsePage(req, 20);
 
     const match: any = { theatreId: new Types.ObjectId(id) };
+
+    if (movieId) {
+      match.movieId = new Types.ObjectId(movieId);
+    }
 
     if (date) {
       const startOfDay = new Date(date);
@@ -128,12 +132,10 @@ export const getShowtimesByTheatre = async (req: Request, res: Response) => {
     if (isActive !== undefined) {
       match.isActive = isActive === 'true';
     } else {
-      // By default for public view, only show active ones
-      // If we are in an admin context, we might want all, but this is a public API
       match.isActive = true;
     }
 
-    const pipeline = [
+    const pipeline: any[] = [
       { $match: match },
       {
         $lookup: {
@@ -152,28 +154,49 @@ export const getShowtimesByTheatre = async (req: Request, res: Response) => {
           as: 'screen'
         }
       },
-      { $unwind: '$screen' },
-      { $sort: { startTime: 1 } as const },
-      {
-        $project: {
-          _id: 1,
-          movieId: '$movie',
-          theatreId: 1,
-          screenId: '$screen',
-          startTime: 1,
-          endTime: 1,
-          format: 1,
-          isActive: 1,
-          pricingOverrides: 1
-        }
-      }
+      { $unwind: '$screen' }
     ];
 
-    const showtimes = await Showtime.aggregate(pipeline);
+    // Filter by movie title
+    if (q) {
+      pipeline.push({
+        $match: { 'movie.title': { $regex: q, $options: 'i' } }
+      });
+    }
+
+    pipeline.push({ $sort: { startTime: 1 } });
+
+    // Handle Pagination
+    const countPipeline = [...pipeline, { $count: 'total' }];
+    
+    pipeline.push({ $skip: pageParams.skip });
+    pipeline.push({ $limit: pageParams.limit });
+
+    pipeline.push({
+      $project: {
+        _id: 1,
+        movieId: '$movie',
+        theatreId: 1,
+        screenId: '$screen',
+        startTime: 1,
+        endTime: 1,
+        format: 1,
+        isActive: 1,
+        pricingOverrides: 1
+      }
+    });
+
+    const [showtimes, totalRes] = await Promise.all([
+      Showtime.aggregate(pipeline),
+      Showtime.aggregate(countPipeline)
+    ]);
+
+    const total = totalRes[0]?.total || 0;
 
     res.status(200).json({
       success: true,
-      showtimes
+      showtimes,
+      pagination: buildPageEnvelope(total, pageParams)
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });

@@ -49,13 +49,17 @@ export const getShowtimeDetails = async (req: Request, res: Response) => {
 export const getShowtimesByMovie = async (req: Request, res: Response) => {
   try {
     const { movieId } = req.params;
-    const { city, date } = req.query;
+    const { city, date, q } = req.query;
+    const pageParams = parsePage(req, 20); // Default 20 showtimes per page
 
     if (!movieId || typeof movieId !== 'string') {
       return res.status(400).json({ success: false, message: 'Invalid movie ID' });
     }
 
-    const match: any = { movieId: new Types.ObjectId(movieId) };
+    const match: any = { 
+      movieId: new Types.ObjectId(movieId),
+      isActive: true 
+    };
 
     if (date && typeof date === 'string') {
       const startOfDay = new Date(date);
@@ -87,15 +91,33 @@ export const getShowtimesByMovie = async (req: Request, res: Response) => {
       { $unwind: '$screen' }
     ];
 
+    // Filter by city (exact or fuzzy)
     if (city && typeof city === 'string') {
       pipeline.push({
         $match: { 'theatre.city': { $regex: new RegExp(`^${city}$`, 'i') } }
       });
     }
 
+    // Filter by search query (Theatre Name or City)
+    if (q && typeof q === 'string') {
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'theatre.name': { $regex: q, $options: 'i' } },
+            { 'theatre.city': { $regex: q, $options: 'i' } }
+          ]
+        }
+      });
+    }
+
     pipeline.push({ $sort: { startTime: 1 } });
 
-    // Project back to a format similar to populate() for frontend compatibility
+    // Handle Pagination in aggregation
+    const countPipeline = [...pipeline, { $count: 'total' }];
+    
+    pipeline.push({ $skip: pageParams.skip });
+    pipeline.push({ $limit: pageParams.limit });
+
     pipeline.push({
       $project: {
         _id: 1,
@@ -109,11 +131,17 @@ export const getShowtimesByMovie = async (req: Request, res: Response) => {
       }
     });
 
-    const showtimes = await Showtime.aggregate(pipeline);
+    const [showtimes, totalRes] = await Promise.all([
+      Showtime.aggregate(pipeline),
+      Showtime.aggregate(countPipeline)
+    ]);
+
+    const total = totalRes[0]?.total || 0;
 
     res.status(200).json({
       success: true,
-      showtimes
+      showtimes,
+      pagination: buildPageEnvelope(total, pageParams)
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
