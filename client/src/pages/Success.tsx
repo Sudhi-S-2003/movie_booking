@@ -1,10 +1,9 @@
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Ticket, Printer, Share2, Home } from 'lucide-react';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 
 export const Success = () => {
-  useDocumentTitle("Booking Confirmed");
   const location = useLocation();
   const bookingData = location.state;
 
@@ -14,6 +13,7 @@ export const Success = () => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
+      <SEO title="Booking Confirmed" description="Your booking has been successfully confirmed." />
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}

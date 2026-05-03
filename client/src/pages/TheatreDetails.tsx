@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Info, Star, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { TagCloud } from '../components/ui/TagCloud.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
+import { SITE_CONFIG } from '../config/site.config.js';
 
 import { useTheatreDetails } from '../hooks/useTheatreDetails.js';
 import { DateSelector } from '../components/ui/DateSelector.js';
@@ -29,7 +30,6 @@ export const TheatreDetails = () => {
 
   const [activeTab, setActiveTab] = useState<'SHOWTIMES' | 'REVIEWS'>('SHOWTIMES');
   
-  useDocumentTitle(theatre?.name || 'Loading Theatre...');
 
 
   if (theatreLoading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.5em] text-gray-500">Connecting to Theatre...</div>;
@@ -37,6 +37,10 @@ export const TheatreDetails = () => {
 
   return (
     <div className="pb-32">
+      <SEO 
+        title={theatre.name} 
+        description={`Book tickets at ${theatre.name}, ${theatre.city}. Check showtimes and amenities.`} 
+      />
       {}
       <div className="relative h-[40vh] -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden rounded-b-[60px] shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
@@ -99,7 +103,7 @@ export const TheatreDetails = () => {
                              </div>
                              <div>
                                  <p className="text-sm font-black text-white">Verified Venue</p>
-                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed mt-1">CinemaConnect Standards</p>
+                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed mt-1">{SITE_CONFIG.name} Standards</p>
                              </div>
                         </div>
                     </div>

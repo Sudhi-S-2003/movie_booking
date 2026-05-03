@@ -1,26 +1,29 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Ticket, QrCode, BarChart3, User, Settings, LogOut } from 'lucide-react';
-import { bookingsApi } from '../../services/api/index.js';
+import { bookingsApi, usersApi } from '../../services/api/index.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { Link } from 'react-router-dom';
 import { IssueSuite } from '../../components/support/IssueSuite.js';
 import { LifeBuoy } from 'lucide-react';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SEO } from '../../components/common/SEO.js';
 import { SessionManager } from './components/SessionManager.js';
 
 export const UserDashboard = () => {
-  useDocumentTitle("My Dashboard");
   const { user, logout } = useAuthStore();
   const [bookings, setBookings] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'BOOKINGS' | 'STATS' | 'SETTINGS' | 'SUPPORT'>('BOOKINGS');
 
   useEffect(() => {
-    bookingsApi.getMyBookings()
-      .then(res => {
-        const grouped = res.bookings.reduce((acc: any, curr: any) => {
-          const showtimeId = curr.showtimeId._id;
+    Promise.all([
+      bookingsApi.getMyBookings(),
+      usersApi.me()
+    ]).then(([bookingsRes, profileRes]) => {
+        const grouped = bookingsRes.bookings.reduce((acc: any, curr: any) => {
+          const showtimeId = curr.showtimeId?._id;
+          if (!showtimeId) return acc;
           const date = new Date(curr.createdAt).getTime();
           const group = acc.find((g: any) =>
             g.showtimeId._id === showtimeId &&
@@ -35,6 +38,7 @@ export const UserDashboard = () => {
           return acc;
         }, []);
         setBookings(grouped);
+        setProfile(profileRes.user);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -55,6 +59,7 @@ export const UserDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex pt-20">
+      <SEO title="User Dashboard" description="Manage your movie tickets, view watch history, and update your account settings." />
       
       {}
       <aside className="w-80 border-r border-white/5 p-8 flex flex-col gap-2">
@@ -146,8 +151,8 @@ export const UserDashboard = () => {
                <div className="bg-white/5 border border-white/10 p-10 rounded-[50px] space-y-6">
                   <BarChart3 className="text-accent-pink" size={32} />
                   <div>
-                     <h3 className="text-xl font-black uppercase tracking-tight">Movies</h3>
-                     <p className="text-sm text-gray-500 mt-2">You've watched <span className="text-white font-bold">{bookings.length}</span> movies this month! Keep it up!</p>
+                     <h3 className="text-xl font-black uppercase tracking-tight">Activities</h3>
+                     <p className="text-sm text-gray-500 mt-2">You've completed <span className="text-white font-bold">{profile?.stats?.bookings ?? 0}</span> bookings and written <span className="text-white font-bold">{profile?.stats?.reviews ?? 0}</span> reviews.</p>
                   </div>
                   <div className="pt-6 border-t border-white/5 flex gap-2">
                      {[1,2,3,4,5].map(i => <div key={i} className={`h-12 flex-1 rounded-xl ${i < 4 ? 'bg-accent-pink' : 'bg-white/5'}`} />)}
@@ -158,7 +163,7 @@ export const UserDashboard = () => {
                   <User className="text-accent-blue" size={32} />
                   <div>
                      <h3 className="text-xl font-black uppercase tracking-tight">Loyalty Points</h3>
-                     <p className="text-4xl font-black text-white mt-4">{bookings.length * 120} <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Points</span></p>
+                     <p className="text-4xl font-black text-white mt-4">{(profile?.stats?.bookings ?? 0) * 120} <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Points</span></p>
                   </div>
                   <button className="w-full py-4 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl font-black text-[10px] uppercase tracking-widest text-accent-blue">Redeem Rewards</button>
                </div>

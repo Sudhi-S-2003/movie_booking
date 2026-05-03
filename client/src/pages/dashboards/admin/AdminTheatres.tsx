@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { adminApi } from "../../../services/api/index.js";
 import { Plus, MapPin, Search, Building2, Users, ShieldCheck, ChevronRight, Layout } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
+import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { Pagination } from "../../../components/common/Pagination.js";
 import { PAGE_SIZE } from "../../../constants/pagination.js";
@@ -10,7 +10,6 @@ import { PAGE_SIZE } from "../../../constants/pagination.js";
 import { useQuery } from "@tanstack/react-query";
 
 export const AdminTheatres = () => {
-  useDocumentTitle("Theatres");
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -51,9 +50,9 @@ export const AdminTheatres = () => {
       title="Theatres"
       accent="List"
       accentColor="text-accent-purple"
-      subtitle="Manage theatres and owners."
-      headerActions={
-        <div className="flex flex-wrap gap-4">
+    >
+      <SEO title="Manage Theatres" description="Admin theatre management dashboard. Add, verify, and manage cinema partners." />
+      <div className="flex flex-wrap gap-4">
           <div className="relative group max-w-xs w-full lg:w-80">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
             <input
@@ -71,8 +70,6 @@ export const AdminTheatres = () => {
             <Plus size={18} /> Add Theatre
           </button>
         </div>
-      }
-    >
 
       {}
 

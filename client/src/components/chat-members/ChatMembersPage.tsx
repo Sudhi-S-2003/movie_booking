@@ -4,7 +4,7 @@ import { ArrowLeft, Inbox, Settings, UserPlus, Users, X } from 'lucide-react';
 import { chatApi } from '../../services/api/chat.api.js';
 import type { ConversationMember } from '../../services/api/chat.api.js';
 import { useAuthStore } from '../../store/authStore.js';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SEO } from '../../components/common/SEO.js';
 import { DashboardPage } from '../dashboard/DashboardPage.js';
 import { useChatMembers } from './hooks/useChatMembers.js';
 import { MemberRow } from './MemberRow.js';
@@ -25,7 +25,6 @@ const PAGE_LIMIT = 15;
  * orchestrates navigation, permissions, and member mutations.
  */
 export const ChatMembersPage = () => {
-  useDocumentTitle('Group Members — CinemaConnect');
   const { conversationId = '' } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -132,6 +131,7 @@ export const ChatMembersPage = () => {
           </div>
         }
       >
+        <SEO title="Group Members" description={`Manage the membership roster for ${conversation?.title || 'the chat group'}.`} />
         {error ? (
           <div className="p-10 rounded-3xl border border-rose-500/20 bg-rose-500/5 text-rose-200 text-xs font-bold">
             {error}

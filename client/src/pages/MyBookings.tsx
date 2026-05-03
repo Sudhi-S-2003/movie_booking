@@ -3,11 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Ticket, Clock, QrCode } from 'lucide-react';
 import { bookingsApi } from '../services/api/index.js';
 import { Link } from 'react-router-dom';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { groupBookings } from '../utils/groupBookings.js';
 
 export const MyBookings = () => {
-  useDocumentTitle("My Bookings");
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,6 +32,7 @@ export const MyBookings = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-4 max-w-5xl mx-auto space-y-12">
+      <SEO title="My Bookings" description="View and manage your past and upcoming movie ticket bookings." />
 
       <div className="space-y-2">
         <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter">

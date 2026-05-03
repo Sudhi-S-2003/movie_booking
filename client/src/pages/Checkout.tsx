@@ -5,13 +5,12 @@ import { CreditCard, ShieldCheck, Ticket, ChevronLeft, Lock, CheckCircle2, Loade
 import { useBookingStore } from '../store/bookingStore.js';
 import { useBookingSession } from '../providers/BookingSessionProvider.js';
 import { bookingsApi } from '../services/api/index.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { useSeatPaymentFlow } from '../hooks/usePaymentFlow.js';
 import { usePaymentMethodForm } from '../hooks/usePaymentMethodForm.js';
 import { computeCheckoutTotals } from '../utils/checkoutTotals.js';
 
 export const Checkout = () => {
-  useDocumentTitle("Checkout");
   const navigate = useNavigate();
   const { selectedSeats, currentShowtimeId, activeReservationIds, clearSelection } = useBookingStore();
   const { showtime, setShowtime } = useBookingSession();
@@ -82,6 +81,7 @@ export const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] py-8 px-4">
+      <SEO title="Checkout" description="Complete your booking and secure your seats." />
       <div className="max-w-5xl mx-auto">
 
         {}

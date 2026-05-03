@@ -13,7 +13,7 @@ import {
   type SubscriptionPlan,
 } from '../services/api/index.js';
 import type { OfferType, PlanCatalogViewer } from '../services/api/subscription.api.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { useSubscription } from '../components/chat/hooks/useSubscription.js';
 import { usePaymentFlow, type PaymentStep } from '../hooks/usePaymentFlow.js';
 import { usePaymentMethodForm, type UsePaymentMethodForm } from '../hooks/usePaymentMethodForm.js';
@@ -129,7 +129,6 @@ interface EnterpriseCheckoutTarget {
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export const Subscription = () => {
-  useDocumentTitle('Subscription');
   const { sub, plan, remaining, refresh } = useSubscription();
 
   const [plans,    setPlans]    = useState<PlanCatalogResponse['plans'] | null>(null);
@@ -171,6 +170,10 @@ export const Subscription = () => {
 
   return (
     <div className="min-h-[100dvh] bg-[#09090b] py-6 sm:py-10 px-3 sm:px-4 overflow-x-hidden">
+      <SEO 
+        title="Subscription Plans" 
+        description="Choose the right plan for your needs. Explore Pro and Pro Max plans for premium features." 
+      />
       {/* Thin pink progress bar during post-success refresh */}
       <AnimatePresence>
         {refreshing && (

@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { env } from './env.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
@@ -23,8 +25,12 @@ import apiKeyPublicRoutes from './routes/apiKey.public.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 import externalWebhookRoutes from './routes/external.webhook.routes.js';
 import integrationRoutes from './routes/integration.routes.js';
+import urlPreviewRoutes from './routes/urlPreview.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -35,6 +41,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(morgan('dev'));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Webhook routes register BEFORE the global json parser so their per-route
 // `express.raw` body capture (needed for HMAC over the exact bytes) isn't
@@ -69,6 +76,7 @@ app.use('/api/public/chat', apiKeyPublicRoutes);
 app.use('/api/keys', apiKeyRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/integrations', integrationRoutes);
+app.use('/api/url/preview', urlPreviewRoutes);
 
 // 404 handler
 app.use((_req, res, _next) => {

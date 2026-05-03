@@ -3,7 +3,7 @@ import { Layout, Plus, Trash2, Sparkles, Wand2, Info, Monitor, Armchair } from "
 import { useOwner } from "./context/OwnerContext.js";
 import { ContextBar } from "./components/ContextBar.js";
 import { SeatMinimap } from "./components/SeatMinimap.js";
-import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
+import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { useLayoutEditor } from "../../../hooks/useLayoutEditor.js";
 import {
@@ -171,7 +171,6 @@ const SeatRow = memo(({
 SeatRow.displayName = "SeatRow";
 
 export const OwnerArchitecture = () => {
-  useDocumentTitle("Architecture — OwnerHub");
   const { screens, selectedScreenId, loading } = useOwner();
   const {
     rows,
@@ -221,6 +220,7 @@ export const OwnerArchitecture = () => {
       subtitle="Design high-performance cinematic spaces with visual intelligence."
       icon={<Sparkles size={20} className="text-accent-blue" />}
     >
+      <SEO title="Theatre Architecture" description="Design and manage screen layouts, seat pricing, and spatial configuration." />
       <ContextBar onSaveLayout={handleSaveLayout} saveStatus={saveStatus} />
 
       {}

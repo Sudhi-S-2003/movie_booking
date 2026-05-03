@@ -4,13 +4,12 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { toPng } from 'html-to-image';
 import { bookingsApi } from '../../../services/api/index.js';
 import { Link } from 'react-router-dom';
-import { useDocumentTitle } from '../../../hooks/useDocumentTitle.js';
+import { SEO } from '../../../components/common/SEO.js';
 import { DashboardPage } from '../../../components/dashboard/index.js';
 import { groupBookings } from '../../../utils/groupBookings.js';
 import { NotificationRequest } from '../../../components/notifications/NotificationRequest.js';
 
 export const UserBookings = () => {
-  useDocumentTitle('My Tickets — CinemaConnect');
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [qrSize, setQrSize] = useState(window.innerWidth < 768 ? 180 : 64);
@@ -65,6 +64,7 @@ export const UserBookings = () => {
         </>
       }
     >
+      <SEO title="My Tickets" description="View and download your active movie tickets and booking details." />
       <div className="grid grid-cols-1 gap-8">
         {loading ? (
           [1, 2].map(i => (

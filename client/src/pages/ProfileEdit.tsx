@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Check, Plus, X, AlertCircle, Sparkles } from 'lucide-react';
 import { usersApi } from '../services/api/index.js';
 import type { UserProfile, SocialLink } from '../services/api/users.api.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 
 const inputCls =
   'w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-accent-pink';
@@ -51,7 +51,6 @@ export const ProfileEdit = () => {
   const { username } = useParams();
   const handle = username?.toLowerCase() ?? '';
   const navigate = useNavigate();
-  useDocumentTitle('Edit profile');
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -167,6 +166,7 @@ export const ProfileEdit = () => {
 
   return (
     <div className="pb-32">
+      <SEO title="Edit Profile" description="Update your profile information, avatar, and social links." />
       {/* Header bar */}
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 bg-background/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">

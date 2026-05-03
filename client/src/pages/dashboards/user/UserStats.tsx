@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { BarChart3, User } from 'lucide-react';
 import { bookingsApi } from '../../../services/api/index.js';
-import { useDocumentTitle } from '../../../hooks/useDocumentTitle.js';
+import { SEO } from '../../../components/common/SEO.js';
 import { DashboardPage } from '../../../components/dashboard/index.js';
 
 export const UserStats = () => {
-  useDocumentTitle('Activity Stats — CinemaConnect');
   const [bookingCount, setBookingCount] = useState(0);
 
   useEffect(() => {
@@ -31,6 +30,7 @@ export const UserStats = () => {
       accentColor="text-accent-pink"
       subtitle="Your cinema journey at a glance."
     >
+      <SEO title="Activity Stats" description="Check your movie watching statistics and loyalty points." />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white/5 border border-white/10 p-10 rounded-[40px] space-y-6">
           <BarChart3 className="text-accent-pink" size={32} />

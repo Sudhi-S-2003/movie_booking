@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ChatPage } from '@/components/chat/ChatPage.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { useIframeBridge } from '@/components/chat/hooks/useIframeBridge.js';
 import {
   SignedLinkError,
@@ -26,7 +26,6 @@ import { SubscriptionProvider } from '@/components/chat/hooks/useSubscription.js
  *      also emits `chat:ready` / `chat:close` for iframe embedders.
  */
 export const ApiKeyChat = () => {
-  useDocumentTitle('Messages — CinemaConnect');
 
   const { conversationId = '' } = useParams<{ conversationId: string }>();
   const [searchParams] = useSearchParams();
@@ -57,7 +56,12 @@ export const ApiKeyChat = () => {
   // reads from the signature-authenticated endpoint (the API-key owner's
   // pool) instead of the JWT-gated `/api/subscription`. The outer provider
   // in App.tsx is eclipsed by this inner one for the subtree.
-  const inner = <ChatPage guestSession={guestSession} />;
+  const inner = (
+    <>
+      <SEO title="Secure Chat" description="Participate in a secure conversation via signed link." />
+      <ChatPage guestSession={guestSession} />
+    </>
+  );
   if (!guestSession) return inner;
   return (
     <SubscriptionProvider

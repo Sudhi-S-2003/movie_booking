@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LogIn, ShieldOff, UserPlus } from 'lucide-react';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SEO } from '../../components/common/SEO.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { chatApi } from '../../services/api/chat.api.js';
 import { ApiError } from '../../services/api/http.js';
@@ -18,7 +18,6 @@ import { formatExpiry, formatUses } from './utils/formatExpiry.js';
  * chat.
  */
 export const InvitePreviewPage = () => {
-  useDocumentTitle('Chat Invite — CinemaConnect');
 
   const { token = '' } = useParams<{ token: string }>();
   const navigate = useNavigate();
@@ -91,6 +90,10 @@ export const InvitePreviewPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
+      <SEO 
+        title="Chat Invite" 
+        description={`You've been invited to join ${data?.conversation?.title || 'a chat'}. Preview the group and join the conversation.`} 
+      />
       <PublicChatCard conversation={conversation}>
         <div className="space-y-4">
           <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">

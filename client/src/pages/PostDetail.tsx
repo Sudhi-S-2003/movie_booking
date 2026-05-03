@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { postsApi } from '../services/api/index.js';
 import type { Post } from '../services/api/posts.api.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { useAuthStore } from '../store/authStore.js';
 import { PostContent } from '../components/post/index.js';
 import { CommentSection } from '../components/post/CommentSection.js';
@@ -38,7 +38,6 @@ export const PostDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [theater, setTheater] = useState(false);
 
-  useDocumentTitle(post?.title ?? 'Post');
 
   useEffect(() => {
     if (!postId) return;
@@ -123,6 +122,11 @@ export const PostDetail = () => {
   /* ── Default: side-by-side 50/50 on lg+ ── */
   return (
     <div className="py-4 pb-8">
+      <SEO 
+        title={post.title} 
+        description={post.content.substring(0, 160)} 
+        ogType="article"
+      />
       {/* Desktop: two equal panels, edge-to-edge within parent */}
       <div className="hidden lg:flex lg:gap-5 lg:items-start">
         {/* Left — post (sticky, scrolls internally) */}

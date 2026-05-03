@@ -5,7 +5,7 @@ import { ChevronLeft, Film, MapPin } from 'lucide-react';
 import { ReviewSection } from '../components/ReviewSection.js';
 import { useMovieDetails } from '../hooks/useMovieDetails.js';
 import { useTheatreDetails } from '../hooks/useTheatreDetails.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 
 export const ReviewsPage: React.FC<{ type: 'Movie' | 'Theatre' }> = ({ type }) => {
   const { id } = useParams();
@@ -16,13 +16,12 @@ export const ReviewsPage: React.FC<{ type: 'Movie' | 'Theatre' }> = ({ type }) =
   const theatreData = useTheatreDetails(type === 'Theatre' ? id : undefined, undefined);
 
   const target = type === 'Movie' ? movieData.movie : theatreData.theatre;
-  const loading = type === 'Movie' ? movieData.loading : theatreData.loading;
+  const loading = type === 'Movie' ? movieData.movieLoading : theatreData.theatreLoading;
 
   const title = type === 'Movie' 
     ? (target as any)?.title 
     : (target as any)?.name;
 
-  useDocumentTitle(`${title || 'Reviews'} | CinemaConnect`);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.3em]">Downloading Intelligence...</div>;
   if (!target) return <div className="min-h-screen flex items-center justify-center font-black">NODE NOT FOUND</div>;
@@ -34,6 +33,10 @@ export const ReviewsPage: React.FC<{ type: 'Movie' | 'Theatre' }> = ({ type }) =
 
   return (
     <div className="pb-32">
+      <SEO 
+        title={title || 'Reviews'} 
+        description={`Read and write reviews for ${title}. See what others are saying about this ${type}.`} 
+      />
       {/* Hero Section */}
       <div className="relative h-[40vh] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />

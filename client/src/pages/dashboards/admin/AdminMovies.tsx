@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { moviesApi } from "../../../services/api/index.js";
 import { Film, Plus, Search, Trash2, Calendar, Clock, Globe, Edit2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
-import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
+import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { Pagination } from "../../../components/common/Pagination.js";
 import { PAGE_SIZE } from "../../../constants/pagination.js";
@@ -10,7 +10,6 @@ import { PAGE_SIZE } from "../../../constants/pagination.js";
 import { useQuery } from "@tanstack/react-query";
 
 export const AdminMovies = () => {
-  useDocumentTitle("Movies");
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -62,9 +61,9 @@ export const AdminMovies = () => {
       title="Movies"
       accent="List"
       accentColor="text-accent-pink"
-      subtitle="Manage movie listings and status."
-      headerActions={
-        <div className="flex flex-wrap gap-4">
+    >
+      <SEO title="Manage Movies" description="Admin movie management dashboard. Add, edit, or remove movies from the platform." />
+      <div className="flex flex-wrap gap-4">
           <div className="relative group max-w-xs w-full lg:w-80">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
             <input
@@ -82,8 +81,6 @@ export const AdminMovies = () => {
             <Plus size={18} /> Add Movie
           </button>
         </div>
-      }
-    >
 
       {}
 

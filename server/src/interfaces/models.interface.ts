@@ -189,3 +189,16 @@ export interface IIntegration {
   updatedAt: Date;
 }
 
+export interface IUrlPreview {
+  _id: RefId;
+  url: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  favIcon?: string;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+

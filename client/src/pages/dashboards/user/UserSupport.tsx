@@ -1,7 +1,11 @@
 import { SupportPage } from '../../../components/dashboard/index.js';
-import { useDocumentTitle } from '../../../hooks/useDocumentTitle.js';
+import { SEO } from '../../../components/common/SEO.js';
 
 export const UserSupport = () => {
-  useDocumentTitle('Support Hub — CinemaConnect');
-  return <SupportPage />;
+  return (
+    <>
+      <SEO title="Support Hub" description="Get help with your bookings, account, or any other issues." />
+      <SupportPage />
+    </>
+  );
 };

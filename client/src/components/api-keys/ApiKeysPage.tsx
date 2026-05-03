@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Key, KeyRound, Plus, Book } from 'lucide-react';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SEO } from '../../components/common/SEO.js';
 import { DashboardPage } from '../dashboard/DashboardPage.js';
 import { MembersPagination } from '../chat-members/MembersPagination.js';
 import { useApiKeys } from './hooks/useApiKeys.js';
 import { ApiKeyRow } from './ApiKeyRow.js';
 import { CreateApiKeyModal } from './CreateApiKeyModal.js';
 import { RevealSecretModal } from './RevealSecretModal.js';
+import { SITE_CONFIG } from '../../config/site.config.js';
 
 /**
  * `/{role}/api-keys` — key management screen.
@@ -17,7 +18,6 @@ import { RevealSecretModal } from './RevealSecretModal.js';
  * the list view only ever stores `keyId` + metadata.
  */
 export const ApiKeysPage = () => {
-  useDocumentTitle('API Keys — CinemaConnect');
 
   const {
     keys, pagination, loading, error,
@@ -53,6 +53,7 @@ export const ApiKeysPage = () => {
           </div>
         }
       >
+        <SEO title="API Keys" description={`Manage your API credentials for programmatic access to ${SITE_CONFIG.name} services.`} />
         <div className="bg-white/[0.02] border border-white/5 rounded-[40px] shadow-2xl backdrop-blur-3xl overflow-hidden">
           <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
             <div className="flex items-center gap-4">

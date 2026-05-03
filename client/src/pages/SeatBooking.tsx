@@ -1,4 +1,4 @@
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { useSeatBooking } from '../hooks/useSeatBooking.js';
 import {
   BookingHeader,
@@ -9,7 +9,6 @@ import {
 } from '../components/booking/index.js';
 
 export const SeatBooking = () => {
-  useDocumentTitle('Select Seats');
 
   const {
     showtime,
@@ -41,6 +40,10 @@ export const SeatBooking = () => {
 
   return (
     <div className="min-h-screen pb-40 text-white selection:bg-accent-pink/30">
+      <SEO 
+        title={movie ? `Select Seats: ${movie.title}` : 'Select Seats'} 
+        description={movie ? `Book your seats for ${movie.title} at ${theatre?.name}.` : 'Choose your preferred seats.'} 
+      />
       {}
       <div className="fixed inset-0 -z-10 bg-[#050505]" />
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-accent-pink/[0.03] via-transparent to-transparent" />

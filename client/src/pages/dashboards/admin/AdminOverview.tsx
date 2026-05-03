@@ -3,7 +3,7 @@ import { statsApi, type AdminStats } from "../../../services/api/index.js";
 import { usePlatformStats } from "../../../hooks/usePlatformStats.js";
 import { Film, MapPin, Users, Ticket, BarChart3, TrendingUp, ChevronRight, Activity, Shield } from "lucide-react";
 import { motion } from "framer-motion";
-import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
+import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { formatCountCompact } from "../../../utils/format.js";
 import { NotificationRequest } from "../../../components/notifications/NotificationRequest.js";
@@ -32,7 +32,6 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, colorClas
 );
 
 export const AdminOverview = () => {
-  useDocumentTitle("Admin Overview");
 
   const { stats: platform, loading: platformLoading } = usePlatformStats();
   const [admin, setAdmin] = useState<AdminStats | null>(null);
@@ -71,6 +70,7 @@ export const AdminOverview = () => {
         <NotificationRequest variant="button" />
       }
     >
+      <SEO title="Admin Overview" description="View platform-wide statistics, top genres, and recent bookings." />
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <StatCard
           label="Registered Users"

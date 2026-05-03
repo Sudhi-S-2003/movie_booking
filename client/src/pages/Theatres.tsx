@@ -2,14 +2,14 @@ import { useEffect } from 'react';
 import { MapPin } from 'lucide-react';
 import { useTheatresStore } from '../store/browseStore.js';
 import { useBookingStore } from '../store/bookingStore.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
+import { PAGE_META } from '../constants/seo.constants.js';
 import { BrowseLayout } from '../components/layout/BrowseLayout.js';
 import { FilterBar } from '../components/browse/FilterBar.js';
 import { TheatreCard } from '../components/browse/TheatreCard.js';
 import { PaginationBar } from '../components/browse/PaginationBar.js';
 
 export const Theatres = () => {
-  useDocumentTitle('Cinemas');
   const { theatres, filters, page, pagination, loading, setFilters, setPage, resetFilters, fetch } =
     useTheatresStore();
   const { selectedCity } = useBookingStore();
@@ -22,6 +22,11 @@ export const Theatres = () => {
     : 'No cinemas found.';
 
   return (
+    <>
+      <SEO 
+        title={PAGE_META.CINEMAS.TITLE} 
+        description={PAGE_META.CINEMAS.DESCRIPTION} 
+      />
     <BrowseLayout
       title="Find"
       titleHighlight="Cinemas"
@@ -62,5 +67,6 @@ export const Theatres = () => {
         ))}
       </div>
     </BrowseLayout>
+    </>
   );
 };

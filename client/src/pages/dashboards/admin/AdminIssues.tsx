@@ -1,11 +1,12 @@
 import { ShieldAlert } from 'lucide-react';
 import { SupportPage } from '../../../components/dashboard/index.js';
-import { useDocumentTitle } from '../../../hooks/useDocumentTitle.js';
+import { SEO } from '../../../components/common/SEO.js';
 
 export const AdminIssues = () => {
-  useDocumentTitle('Support Issues');
   return (
-    <SupportPage
+    <>
+      <SEO title="Admin Support Issues" description="Overview and management of all support tickets across the platform." />
+      <SupportPage
       title="Support"
       accent="Tickets"
       accentColor="text-accent-pink"
@@ -13,5 +14,6 @@ export const AdminIssues = () => {
       icon={<ShieldAlert className="text-accent-pink" size={40} />}
       adminMode
     />
+    </>
   );
 };

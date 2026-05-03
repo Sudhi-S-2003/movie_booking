@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search as SearchIcon, MapPin, Star, ChevronRight, Heart, BookmarkCheck } from 'lucide-react';
 import { searchApi } from '../services/api/index.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
+import { SITE_CONFIG } from '../config/site.config.js';
+import { PAGE_META } from '../constants/seo.constants.js';
 
 export const Search = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  useDocumentTitle(query ? `Search: ${query}` : "Search");
   const [results, setResults] = useState<{ movies: any[], theatres: any[] }>({ movies: [], theatres: [] });
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +48,10 @@ export const Search = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-4 max-w-7xl mx-auto space-y-20">
+      <SEO 
+        title={query ? `Search: ${query}` : PAGE_META.SEARCH.TITLE} 
+        description={query ? `Search results for ${query} on ${SITE_CONFIG.name}.` : PAGE_META.SEARCH.DESCRIPTION} 
+      />
       
       {}
       <div className="space-y-4">

@@ -2,10 +2,9 @@
 import { Shield } from 'lucide-react';
 import { DashboardPage } from '../../components/dashboard/index.js';
 import { SessionManager } from './components/SessionManager.js';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SEO } from '../../components/common/SEO.js';
 
 const SessionsPage = () => {
-  useDocumentTitle('Security & Sessions — CinemaConnect');
 
   return (
     <DashboardPage
@@ -18,6 +17,7 @@ const SessionsPage = () => {
         </div>
       }
     >
+      <SEO title="Security & Sessions" description="Manage your active sessions and account security settings." />
       <div className="max-w-4xl">
         <SessionManager />
       </div>

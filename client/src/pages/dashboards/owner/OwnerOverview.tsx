@@ -3,7 +3,7 @@
 import { Map, Clock, Users, BarChart3 } from "lucide-react";
 import { useOwner } from "./context/OwnerContext.js";
 import { ContextBar } from "./components/ContextBar.js";
-import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
+import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 
 import { NotificationRequest } from "../../../components/notifications/NotificationRequest.js";
@@ -13,7 +13,6 @@ import { statsApi } from "../../../services/api/index.js";
 import { useQuery } from "@tanstack/react-query";
 
 export const OwnerOverview = () => {
-  useDocumentTitle("Owner Overview");
   const { loading: contextLoading } = useOwner();
 
   const { data: statsRes, isLoading: statsLoading } = useQuery({
@@ -34,6 +33,7 @@ export const OwnerOverview = () => {
       subtitle="Manage your theatres and screens."
       headerActions={<NotificationRequest variant="button" />}
     >
+      <SEO title="Owner Overview" description="Manage your theatre chain, screens, and view operational statistics." />
       <ContextBar showScreenSelector={false} />
 
       <div className="space-y-12">

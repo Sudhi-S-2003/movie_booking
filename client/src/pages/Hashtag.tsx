@@ -6,7 +6,7 @@ import { hashtagsApi, postsApi } from '../services/api/index.js';
 import type { Hashtag as HashtagT, RelatedHashtag } from '../services/api/hashtags.api.js';
 import type { Post } from '../services/api/posts.api.js';
 import { hashtagSocket } from '../services/socket/index.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { useAuthStore } from '../store/authStore.js';
 import { PAGE_SIZE } from '../constants/pagination.js';
 import {
@@ -55,7 +55,6 @@ const EmptyFeed = ({ accent }: { accent: string }) => (
 export const Hashtag = () => {
   const { tag } = useParams();
   const slug = useMemo(() => toSlug(tag ?? ''), [tag]);
-  useDocumentTitle(tag ? `#${tag}` : 'Hashtag');
 
   const user = useAuthStore((s) => s.user);
 
@@ -203,6 +202,10 @@ export const Hashtag = () => {
 
   return (
     <div className="pb-32">
+      <SEO 
+        title={tag ? `#${tag}` : 'Hashtag'} 
+        description={`Join the conversation about #${tag}. See latest posts and trending discussions.`} 
+      />
       <HashtagHero
         hashtag={hashtag}
         fallbackTag={tag}

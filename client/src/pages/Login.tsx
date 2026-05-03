@@ -3,9 +3,9 @@ import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../store/authStore.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { API_URL } from '../services/api/http.js';
-import axios from 'axios';
+import { SEO } from '../components/common/SEO.js';
+import { PAGE_META } from '../constants/seo.constants.js';
+import { authApi } from '../services/api/auth.api.js';
 
 export const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,6 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  useDocumentTitle("Sign In | CinemaConnect");
 
   const location = useLocation();
   const { setAuth } = useAuthStore();
@@ -26,14 +25,14 @@ export const Login = () => {
     setError('');
 
     try {
-      const { data } = await axios.post(`${API_URL}/auth/login`, {
+      const { user, token } = await authApi.login({
         identifier: loginId.trim(),
         password: password
       });
-      setAuth(data.user, data.token);
+      setAuth(user, token);
       window.location.href = from;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Authentication failed');
+      setError(err.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -41,6 +40,10 @@ export const Login = () => {
 
   return (
     <div className="space-y-6">
+      <SEO 
+        title={PAGE_META.AUTH.LOGIN.TITLE} 
+        description={PAGE_META.AUTH.LOGIN.DESCRIPTION} 
+      />
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">

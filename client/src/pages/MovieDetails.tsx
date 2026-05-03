@@ -6,7 +6,6 @@ import { useBookingStore } from '../store/bookingStore.js';
 import { ThumbsUp, Bookmark, BookmarkCheck, Hash } from 'lucide-react';
 import { TagCloud } from '../components/ui/TagCloud.js';
 import { DateSelector } from '../components/ui/DateSelector.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { useMovieDetails } from '../hooks/useMovieDetails.js';
 import { useMovieInteractions } from '../hooks/useMovieInteractions.js';
 import { formatCountCompact } from '../utils/format.js';
@@ -14,6 +13,7 @@ import { ReviewSection } from '../components/ReviewSection.js';
 import { FilterBar } from '../components/browse/FilterBar.js';
 import { PaginationBar } from '../components/browse/PaginationBar.js';
 import { TheatreShowtimeCard } from '../components/detail/TheatreShowtimeCard.js';
+import { SEO } from '../components/common/SEO.js';
 
 export const MovieDetails = () => {
   const { id } = useParams();
@@ -38,7 +38,6 @@ export const MovieDetails = () => {
 
   const [activeTab, setActiveTab] = useState<'SHOWTIMES' | 'REVIEWS'>('SHOWTIMES');
 
-  useDocumentTitle(movie?.title || 'Loading Movie...');
 
   const handleToggleInterest = async () => {
     try {
@@ -62,6 +61,12 @@ export const MovieDetails = () => {
 
   return (
     <div className="pb-32">
+      <SEO 
+        title={movie.title} 
+        description={movie.description} 
+        ogImage={movie.posterUrl}
+        ogType="video.movie"
+      />
       
       {}
       <div className="relative h-[65vh] -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden rounded-b-[60px] shadow-2xl">

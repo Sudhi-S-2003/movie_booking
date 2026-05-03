@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { Filter } from 'lucide-react';
 import { useMoviesStore } from '../store/browseStore.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
+import { PAGE_META } from '../constants/seo.constants.js';
 import { BrowseLayout } from '../components/layout/BrowseLayout.js';
 import { FilterBar } from '../components/browse/FilterBar.js';
 import { MovieCard } from '../components/browse/MovieCard.js';
@@ -21,7 +22,6 @@ const GENRE_OPTIONS = [
 ];
 
 export const Movies = () => {
-  useDocumentTitle('Browse Movies');
   const { movies, filters, page, pagination, loading, setFilters, setPage, resetFilters, fetch } =
     useMoviesStore();
 
@@ -29,6 +29,11 @@ export const Movies = () => {
   useEffect(() => { fetch(); }, [filters, page]);
 
   return (
+    <>
+      <SEO 
+        title={PAGE_META.MOVIES.TITLE} 
+        description={PAGE_META.MOVIES.DESCRIPTION} 
+      />
     <BrowseLayout
       title="Browse"
       titleHighlight="Movies"
@@ -84,5 +89,6 @@ export const Movies = () => {
         ))}
       </div>
     </BrowseLayout>
+    </>
   );
 };

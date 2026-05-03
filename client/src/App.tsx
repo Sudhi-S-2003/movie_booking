@@ -57,6 +57,9 @@ import SessionsPage from './pages/dashboards/SessionsPage.js';
 import { ScrollToTop } from './components/common/ScrollToTop.js';
 
 
+import { SEO } from './components/common/SEO.js';
+
+
 const RoleRedirectHandler = () => {
   useRoleRedirect();
   return null;
@@ -70,6 +73,7 @@ const App = () => {
     <BrowserRouter>
       <ScrollToTop />
       <RoleRedirectHandler />
+      <SEO />
       <NotificationProvider>
         <SubscriptionProvider>
           <BookingSessionProvider>

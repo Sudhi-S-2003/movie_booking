@@ -1,8 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { SITE_CONFIG } from '../config/site.config.js';
+import { usePlatformStats } from '../hooks/usePlatformStats.js';
+import { formatCountCompact } from '../utils/format.js';
 
 export const AuthLayout = () => {
   const location = useLocation();
+  const { stats, loading: statsLoading } = usePlatformStats();
+  
   const isLogin = location.pathname === '/login';
 
   const title = isLogin ? 'Welcome' : 'Join';
@@ -19,7 +24,7 @@ export const AuthLayout = () => {
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-[20s] ease-out"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop")',
+            backgroundImage: `url("${SITE_CONFIG.assets.authBackground}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -34,8 +39,8 @@ export const AuthLayout = () => {
 
         <div className="relative z-20 w-full p-20 flex flex-col justify-between">
           <Link to="/" className="text-3xl font-black tracking-tighter text-white group/logo flex items-center gap-2">
-            <span className="w-8 h-8 bg-gradient-to-br from-accent-pink to-accent-purple rounded-lg flex items-center justify-center text-sm">CC</span>
-            <span>CINEMA<span className="text-accent-pink group-hover/logo:text-accent-blue transition-colors duration-500">CONNECT</span></span>
+            <span className="w-8 h-8 bg-gradient-to-br from-accent-pink to-accent-purple rounded-lg flex items-center justify-center text-sm">{SITE_CONFIG.shortName}</span>
+            <span>{SITE_CONFIG.firstName.toUpperCase()}<span className="text-accent-pink group-hover/logo:text-accent-blue transition-colors duration-500">{SITE_CONFIG.lastName.toUpperCase()}</span></span>
           </Link>
 
           <div className="space-y-8">
@@ -57,19 +62,23 @@ export const AuthLayout = () => {
 
             <div className="flex gap-16 text-white/40">
               <div className="space-y-2">
-                <p className="text-4xl font-black text-white tracking-tighter">50k+</p>
+                <p className="text-4xl font-black text-white tracking-tighter">
+                  {statsLoading ? '...' : formatCountCompact(stats?.users ?? 0) || SITE_CONFIG.stats.users}
+                </p>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-blue">Active Users</p>
               </div>
               <div className="h-16 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
               <div className="space-y-2">
-                <p className="text-4xl font-black text-white tracking-tighter">2.5k+</p>
+                <p className="text-4xl font-black text-white tracking-tighter">
+                  {statsLoading ? '...' : formatCountCompact(stats?.theatres ?? 0) || SITE_CONFIG.stats.partners}
+                </p>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-pink">Cinema Partners</p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">© 2026 CinemaConnect Global</p>
+            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">© {SITE_CONFIG.year} {SITE_CONFIG.author}</p>
             <div className="h-px flex-1 bg-white/5" />
           </div>
         </div>
@@ -92,8 +101,8 @@ export const AuthLayout = () => {
             <div className="space-y-6">
               <div className="lg:hidden mb-12">
                  <Link to="/" className="text-2xl font-black tracking-tighter text-white flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-accent-pink to-accent-purple rounded flex items-center justify-center text-[10px]">CC</div>
-                  <span>CINEMA<span className="text-accent-pink">CONNECT</span></span>
+                  <div className="w-6 h-6 bg-gradient-to-br from-accent-pink to-accent-purple rounded flex items-center justify-center text-[10px]">{SITE_CONFIG.shortName}</div>
+                  <span>{SITE_CONFIG.firstName.toUpperCase()}<span className="text-accent-pink">{SITE_CONFIG.lastName.toUpperCase()}</span></span>
                 </Link>
               </div>
               

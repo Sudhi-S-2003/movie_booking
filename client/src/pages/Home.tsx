@@ -3,12 +3,12 @@ import { Play, Info, ChevronRight, Star, Heart, BookmarkCheck } from 'lucide-rea
 import { Link } from 'react-router-dom';
 import { moviesApi } from '../services/api/index.js';
 import { useBookingStore } from '../store/bookingStore.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
+import { PAGE_META } from '../constants/seo.constants.js';
 
 import { useQuery } from '@tanstack/react-query';
 
 export const Home = () => {
-  useDocumentTitle("Home");
   const { searchQuery } = useBookingStore();
 
   const { data: trendingRes, isLoading: trendingLoading } = useQuery({
@@ -40,6 +40,10 @@ export const Home = () => {
 
   return (
     <div className="pb-20 space-y-16">
+      <SEO 
+        title={PAGE_META.HOME.TITLE} 
+        description={PAGE_META.HOME.DESCRIPTION} 
+      />
 
       { }
       <section className="relative h-[85vh] -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden rounded-b-[40px] shadow-2xl">

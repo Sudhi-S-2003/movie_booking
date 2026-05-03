@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Inbox } from 'lucide-react';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SEO } from '../../components/common/SEO.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { DashboardPage } from '../dashboard/DashboardPage.js';
 import { MembersPagination } from '../chat-members/MembersPagination.js';
@@ -20,7 +20,6 @@ type Status = 'pending' | 'approved' | 'rejected';
  * first fetching the conversation owner — non-owners see a 403 message.
  */
 export const JoinRequestsPage = () => {
-  useDocumentTitle('Join Requests — CinemaConnect');
 
   const { conversationId = '' } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
@@ -74,6 +73,7 @@ export const JoinRequestsPage = () => {
         </button>
       }
     >
+      <SEO title="Join Requests" description="Review and manage pending join requests for your chat groups." />
       {ownerCheck === 'loading' ? (
         <div className="p-20 text-center">
           <div className="w-8 h-8 border-2 border-white/10 border-t-white/40 rounded-full animate-spin mx-auto" />

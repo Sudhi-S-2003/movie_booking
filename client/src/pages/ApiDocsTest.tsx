@@ -1,12 +1,12 @@
 // // // // import _React from '_React';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
 import { DashboardPage } from '../components/dashboard/DashboardPage.js';
 import { EndpointCard } from '../components/api-docs/EndpointCard.js';
 import { DocSection, DocCodeBlock, ParamTable } from '../components/api-docs/DocComponents.js';
 import { Beaker, Globe, Shield, Terminal } from 'lucide-react';
+import { SITE_CONFIG } from '../config/site.config.js';
 
 export const ApiDocsTest = () => {
-  useDocumentTitle('API Component Test — CinemaConnect');
 
   return (
     <DashboardPage
@@ -15,6 +15,7 @@ export const ApiDocsTest = () => {
       subtitle="Testing the reusability of our documentation atoms."
       accentColor="text-purple-400"
     >
+      <SEO title="API Component Test" description="Internal tool for testing documentation components." />
       <div className="max-w-5xl mx-auto space-y-24 pb-32">
         
         {/* Test Section 1: EndpointCard */}
@@ -60,8 +61,7 @@ export const ApiDocsTest = () => {
               <h4 className="text-white font-bold text-lg">Independent CodeBlock</h4>
               <DocCodeBlock 
                 title="CLI Example"
-                content="curl -X GET https://api.cinemaconnect.app/v1/health \
-  -H 'Authorization: Bearer YOUR_TOKEN'"
+                content={`curl -X GET https://api.${SITE_CONFIG.domain}/v1/health \\\n  -H 'Authorization: Bearer YOUR_TOKEN'`}
                 variant="blue"
                 icon={<Terminal size={14} />}
               />

@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LogIn, ShieldOff } from 'lucide-react';
-import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
+import { SEO } from '../../components/common/SEO.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { usePublicChat } from './hooks/usePublicChat.js';
 import { PublicChatCard } from './PublicChatCard.js';
 import { JoinRequestPanel } from './JoinRequestPanel.js';
 import { getConversationPath } from './utils/resolveChatPath.js';
+import { SITE_CONFIG } from '../../config/site.config.js';
 
 /**
  * `/chat/g/:publicName`
@@ -20,7 +21,6 @@ import { getConversationPath } from './utils/resolveChatPath.js';
  *   4. Non-group / forbidden     → server returns 403, we render a "not viewable" card
  */
 export const PublicChatPage = () => {
-  useDocumentTitle('Join Chat — CinemaConnect');
 
   const { publicName = '' } = useParams<{ publicName: string }>();
   const navigate = useNavigate();
@@ -60,6 +60,10 @@ export const PublicChatPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
+      <SEO 
+        title={conversation?.title ? `Join ${conversation.title}` : 'Join Chat'} 
+        description={`Request to join ${conversation?.title || 'this chat group'} on ${SITE_CONFIG.name}.`} 
+      />
       <PublicChatCard conversation={conversation}>
         {!membership.authenticated ? (
           <AnonymousCta publicName={publicName} onLogin={() => {

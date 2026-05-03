@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { usersApi } from "../../../services/api/index.js";
 import { useQuery } from '@tanstack/react-query';
 import { Users, Search, Filter, Shield, Mail, Calendar } from 'lucide-react';
-import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
+import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { Pagination } from "../../../components/common/Pagination.js";
 import { PAGE_SIZE } from "../../../constants/pagination.js";
 
 export const AdminUsers = () => {
-  useDocumentTitle("Users");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
 
@@ -28,9 +27,9 @@ export const AdminUsers = () => {
     <DashboardPage
       title="Users"
       accent="List"
-      subtitle="Manage users and their roles."
-      headerActions={
-        <div className="flex flex-wrap gap-4">
+    >
+      <SEO title="Manage Users" description="Admin user management dashboard. Monitor users, roles, and account statuses." />
+      <div className="flex flex-wrap gap-4">
           <div className="relative group max-w-xs w-full lg:w-80">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
             <input
@@ -45,8 +44,6 @@ export const AdminUsers = () => {
             <Filter size={16} /> Filters
           </button>
         </div>
-      }
-    >
 
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-8">

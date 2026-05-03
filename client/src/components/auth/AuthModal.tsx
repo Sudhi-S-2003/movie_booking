@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore.js';
+import { SITE_CONFIG } from '../../config/site.config.js';
+import { authApi } from '../../services/api/auth.api.js';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,20 +12,37 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'user' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const mockUser = {
-      id: 'mock-id',
-      name: formData.name || 'User',
-      email: formData.email,
-      role: formData.role as 'user' | 'admin'
-    };
-    
-    setAuth(mockUser, 'mock-token');
-    onClose();
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isLogin) {
+        const { user, token } = await authApi.login({
+          identifier: formData.email,
+          password: formData.password
+        });
+        setAuth(user, token);
+      } else {
+        const { user, token } = await authApi.register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        });
+        setAuth(user, token);
+      }
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +65,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-purple-500 to-indigo-600" />
             
             <h2 className="text-glow mb-6 text-3xl font-bold">
-              {isLogin ? 'Welcome Back' : 'Join CinemaConnect'}
+              {isLogin ? 'Welcome Back' : `Join ${SITE_CONFIG.name}`}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -108,8 +127,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 </div>
               )}
 
-              <button type="submit" className="btn-primary w-full mt-4 py-3">
-                {isLogin ? 'Sign In' : 'Create Account'}
+              {error && (
+                <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest text-center animate-shake">
+                  {error}
+                </p>
+              )}
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className={`btn-primary w-full mt-4 py-3 ${loading ? 'opacity-50 cursor-wait' : ''}`}
+              >
+                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
               </button>
             </form>
 

@@ -3,10 +3,10 @@ import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../store/authStore.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
+import { PAGE_META } from '../constants/seo.constants.js';
 import { UsernameSuggestions } from '../components/auth/UsernameSuggestions.js';
-import { API_URL } from '../services/api/http.js';
-import axios from 'axios';
+import { authApi } from '../services/api/auth.api.js';
 
 export const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,6 @@ export const Register = () => {
   const [error, setError] = useState('');
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[] | null>(null);
 
-  useDocumentTitle("Join | CinemaConnect");
 
   const location = useLocation();
   const { setAuth } = useAuthStore();
@@ -27,12 +26,12 @@ export const Register = () => {
     setError('');
 
     try {
-      const { data } = await axios.post(`${API_URL}/auth/register`, formData);
-      setAuth(data.user, data.token);
+      const { user, token } = await authApi.register(formData);
+      setAuth(user, token);
       window.location.href = from;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Registration failed';
-      const suggestions: string[] | undefined = err.response?.data?.suggestions;
+      const message = err.message || 'Registration failed';
+      const suggestions: string[] | undefined = err.fieldErrors?.username ? [err.fieldErrors.username] : undefined; 
       setError(message);
       if (suggestions !== undefined) setUsernameSuggestions(suggestions);
     } finally {
@@ -42,6 +41,10 @@ export const Register = () => {
 
   return (
     <div className="space-y-6">
+      <SEO 
+        title={PAGE_META.AUTH.REGISTER.TITLE} 
+        description={PAGE_META.AUTH.REGISTER.DESCRIPTION} 
+      />
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">

@@ -5,11 +5,10 @@ import { useOwner } from "./context/OwnerContext.js";
 import { ContextBar } from "./components/ContextBar.js";
 import { adminApi } from "../../../services/api/index.js";
 import { ShowtimeForm } from "./components/ShowtimeForm.js";
-import { useDocumentTitle } from "../../../hooks/useDocumentTitle.js";
+import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 
 export const OwnerTimeline = () => {
-  useDocumentTitle("Showtimes");
   const { selectedTheatreId, selectedScreenId, loading } = useOwner();
   const [showtimes, setShowtimes] = useState<any[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -85,6 +84,7 @@ export const OwnerTimeline = () => {
         </button>
       }
     >
+      <SEO title="Schedule & Showtimes" description="Manage movie showtimes, formats, and scheduling for your theatre screens." />
       <ContextBar />
         <div className="flex justify-between items-center border-b border-white/5 pb-4">
           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-600">Showtimes</h3>

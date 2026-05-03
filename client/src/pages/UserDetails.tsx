@@ -11,7 +11,8 @@ import type {
   ActivityItem,
 } from '../services/api/users.api.js';
 import type { Post } from '../services/api/posts.api.js';
-import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
+import { SEO } from '../components/common/SEO.js';
+import { SITE_CONFIG } from '../config/site.config.js';
 import { useAuthStore } from '../store/authStore.js';
 import { PAGE_SIZE } from '../constants/pagination.js';
 import {
@@ -72,7 +73,6 @@ const EmptyPosts = ({
 export const UserDetails = () => {
   const { username } = useParams();
   const handle = username?.toLowerCase() ?? '';
-  useDocumentTitle(username ? `@${username}` : 'Profile');
 
   const navigate = useNavigate();
   const currentUser = useAuthStore((s) => s.user);
@@ -404,6 +404,10 @@ export const UserDetails = () => {
 
   return (
     <div className="pb-32">
+      <SEO 
+        title={username ? `@${username}` : 'Profile'} 
+        description={`View ${username}'s profile, posts, and movie reviews on ${SITE_CONFIG.name}.`} 
+      />
       <ProfileHero
         profile={profile}
         isSelf={isSelf}
