@@ -19,8 +19,9 @@ import axios, {
   type AxiosResponse,
 } from 'axios';
 import { useAuthStore } from '../../store/authStore.js';
+import { env } from '../../config/env.js';
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_URL = env.VITE_API_URL;
 
 
 /** Structured error thrown whenever a request fails (network or server-side). */

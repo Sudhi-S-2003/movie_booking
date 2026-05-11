@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 import { useNotification } from '../../providers/NotificationProvider.js';
 
@@ -7,27 +7,28 @@ interface NotificationRequestProps {
 }
 
 export const NotificationRequest: React.FC<NotificationRequestProps> = ({ variant = 'button' }) => {
-  const { requestPermission } = useNotification();
-  const [status, setStatus] = useState<NotificationPermission>(Notification.permission);
+  const { requestPermission, permissionStatus, testNotification } = useNotification();
 
-  const handleRequest = async () => {
-    if (status === 'granted') return;
-    const granted = await requestPermission();
-    setStatus(granted ? 'granted' : 'denied');
-  };
+  const handleRequest = useCallback(async () => {
+    if (permissionStatus === 'granted') {
+      testNotification();
+      return;
+    }
+    await requestPermission();
+  }, [permissionStatus, testNotification, requestPermission]);
 
   if (variant === 'icon') {
     return (
       <button
         onClick={handleRequest}
         className={`w-9 h-9 flex items-center justify-center border rounded-xl transition-all ${
-          status === 'granted'
+          permissionStatus === 'granted'
             ? 'bg-green-500/10 text-green-500 border-green-500/20 cursor-default'
             : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
         }`}
-        title={status === 'granted' ? 'Notifications Active' : 'Enable Notifications'}
+        title={permissionStatus === 'granted' ? 'Notifications Active' : 'Enable Notifications'}
       >
-        {status === 'granted' ? <Bell size={16} /> : <BellOff size={16} />}
+        {permissionStatus === 'granted' ? <Bell size={16} /> : <BellOff size={16} />}
       </button>
     );
   }
@@ -36,12 +37,12 @@ export const NotificationRequest: React.FC<NotificationRequestProps> = ({ varian
     <button
       onClick={handleRequest}
       className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-        status === 'granted'
+        permissionStatus === 'granted'
           ? 'bg-green-500/10 text-green-500 border border-green-500/20 cursor-default'
           : 'bg-accent-blue/10 text-accent-blue border border-accent-blue/20 hover:bg-accent-blue/20'
       }`}
     >
-      {status === 'granted' ? (
+      {permissionStatus === 'granted' ? (
         <>
           <Bell size={14} />
           Notifications Active
