@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 import { formatCountCompact } from "../../../utils/format.js";
-import { NotificationRequest } from "../../../components/notifications/NotificationRequest.js";
+import { NotificationSetup } from "../../../components/notifications/NotificationSetup.js";
 
 interface StatCardProps {
   label:        string;
@@ -67,7 +67,7 @@ export const AdminOverview = () => {
       accent="Overview"
       subtitle="Track users, movies, and bookings."
       headerActions={
-        <NotificationRequest variant="button" />
+        <NotificationSetup />
       }
     >
       <SEO title="Admin Overview" description="View platform-wide statistics, top genres, and recent bookings." />

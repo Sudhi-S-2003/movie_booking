@@ -6,7 +6,7 @@ import { ContextBar } from "./components/ContextBar.js";
 import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
 
-import { NotificationRequest } from "../../../components/notifications/NotificationRequest.js";
+import { NotificationSetup } from "../../../components/notifications/NotificationSetup.js";
 import { statsApi } from "../../../services/api/index.js";
 // // // import { useEffect, useState } from "react";
 
@@ -31,7 +31,7 @@ export const OwnerOverview = () => {
       accentColor="text-accent-pink"
       badge="v2.0.4"
       subtitle="Manage your theatres and screens."
-      headerActions={<NotificationRequest variant="button" />}
+      headerActions={<NotificationSetup />}
     >
       <SEO title="Owner Overview" description="Manage your theatre chain, screens, and view operational statistics." />
       <ContextBar showScreenSelector={false} />

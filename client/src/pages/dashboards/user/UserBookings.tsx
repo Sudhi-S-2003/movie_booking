@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { SEO } from '../../../components/common/SEO.js';
 import { DashboardPage } from '../../../components/dashboard/index.js';
 import { groupBookings } from '../../../utils/groupBookings.js';
-import { NotificationRequest } from '../../../components/notifications/NotificationRequest.js';
+import { NotificationSetup } from '../../../components/notifications/NotificationSetup.js';
 
 export const UserBookings = () => {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -54,7 +54,7 @@ export const UserBookings = () => {
       accent="Experience"
       headerActions={
         <>
-          <NotificationRequest variant="button" />
+          <NotificationSetup />
           <Link
             to="/"
             className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all"
