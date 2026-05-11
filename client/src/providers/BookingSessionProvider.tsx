@@ -4,6 +4,7 @@ import { useBookingStore } from '../store/bookingStore.js';
 import { useAuthStore } from '../store/authStore.js';
 import { bookingSocket } from '../services/socket/index.js';
 import { bookingsApi } from '../services/api/index.js';
+import { env } from '../config/env.js';
 
 const BOOKING_ROUTES = ['/booking/', '/checkout'];
 
@@ -67,7 +68,7 @@ export const BookingSessionProvider = ({ children }: { children: React.ReactNode
       const { selectedSeats, currentShowtimeId } = useBookingStore.getState();
       if (!currentShowtimeId || selectedSeats.length === 0) return;
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const apiUrl = env.VITE_API_URL;
       const token = useAuthStore.getState().token;
 
       navigator.sendBeacon(
@@ -91,7 +92,7 @@ export const BookingSessionProvider = ({ children }: { children: React.ReactNode
 
       const token = useAuthStore.getState().token;
       if (token) {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const apiUrl = env.VITE_API_URL;
         fetch(`${apiUrl}/booking/unlock`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

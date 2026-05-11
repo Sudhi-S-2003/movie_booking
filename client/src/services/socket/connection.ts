@@ -1,7 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../../store/authStore.js';
+import { env } from '../../config/env.js';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const SOCKET_URL = env.VITE_SOCKET_URL;
 
 /**
  * Reconnection policy:
