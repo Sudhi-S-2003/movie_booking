@@ -41,6 +41,8 @@ const UserSchema = new Schema<IUser>(
     followerCount: { type: Number, default: 0 },
     followingCount: { type: Number, default: 0 },
     postCount: { type: Number, default: 0 },
+    isOnline: { type: Boolean, default: false },
+    lastSeen: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

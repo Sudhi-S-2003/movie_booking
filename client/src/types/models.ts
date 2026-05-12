@@ -35,6 +35,8 @@ export interface User {
   avatar?: string;
   phoneNumber?: string;
   managedTheatres?: ID[];
+  isOnline?: boolean;
+  lastSeen?: ISODateString;
   createdAt: ISODateString;
   updatedAt: ISODateString;
 }

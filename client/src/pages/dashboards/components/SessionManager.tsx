@@ -87,13 +87,19 @@ export const SessionManager = () => {
                   <div>
                     <h4 className="font-black text-white flex items-center gap-2">
                       {parseUserAgent(session.userAgent)}
-                      {session.isCurrent ? (
+                      {session.isCurrent && (
                         <span className="px-2 py-0.5 bg-accent-blue/20 text-accent-blue text-[8px] font-black rounded-md border border-accent-blue/30 uppercase tracking-tighter">
                           This Device
                         </span>
-                      ) : session.isValid && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       )}
+                      <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[8px] font-black uppercase tracking-tighter ${
+                        session.isOnline 
+                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
+                          : 'bg-gray-500/10 border-white/10 text-gray-500'
+                      }`}>
+                        <div className={`w-1 h-1 rounded-full ${session.isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-gray-600'}`} />
+                        {session.isOnline ? 'Online' : 'Offline'}
+                      </div>
                     </h4>
                     <div className="flex flex-wrap gap-4 mt-1">
                       <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">

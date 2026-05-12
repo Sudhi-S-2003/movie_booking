@@ -7,6 +7,8 @@ export interface User {
   email: string;
   role: 'user' | 'admin' | 'theatre_owner';
   avatar?: string;
+  isOnline?: boolean;
+  lastSeen?: string;
 }
 
 interface AuthState {

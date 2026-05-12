@@ -18,7 +18,9 @@ export const Register = () => {
 
   const location = useLocation();
   const { setAuth } = useAuthStore();
-  const from = location.state?.from?.pathname || '/';
+  
+  // Use location state first, then fallback to localStorage
+  const from = location.state?.from?.pathname || localStorage.getItem('redirectPath') || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +30,10 @@ export const Register = () => {
     try {
       const { user, token } = await authApi.register(formData);
       setAuth(user, token);
+
+      // Clear the redirect path from localStorage after use
+      localStorage.removeItem('redirectPath');
+
       window.location.href = from;
     } catch (err: any) {
       const message = err.message || 'Registration failed';
@@ -154,7 +160,7 @@ export const Register = () => {
               Already a member?
             </span>
             <span className="text-sm font-black text-white uppercase tracking-tighter group-hover:text-accent-pink transition-colors border-b-2 border-accent-blue/30 group-hover:border-accent-pink pb-1">
-              Access Your Account
+              Sign In
             </span>
           </Link>
         </div>

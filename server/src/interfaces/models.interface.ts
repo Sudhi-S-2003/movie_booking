@@ -71,6 +71,8 @@ export interface IUser {
   followerCount?: number;
   followingCount?: number;
   postCount?: number;
+  isOnline: boolean;
+  lastSeen: Date;
   createdAt: Date;
   updatedAt: Date;
 }

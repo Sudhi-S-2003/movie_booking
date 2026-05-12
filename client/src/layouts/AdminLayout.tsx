@@ -4,7 +4,7 @@ import { BarChart3, Film, MapPin, Users, Settings, LifeBuoy, MessageCircle, KeyR
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
 
-import { useAuthStore } from '../store/authStore.js';
+import { useLogout } from '../hooks/useLogout.js';
 
 const config: SidebarConfig = {
   brand: {
@@ -54,11 +54,11 @@ const config: SidebarConfig = {
 };
 
 export const AdminLayout: React.FC = () => {
-  const { logout } = useAuthStore();
+  const { logout, isLoading } = useLogout();
   
   return (
     <AppDashboardLayout
-      sidebar={<DashboardSidebar config={{ ...config, showLogout: true, onLogout: logout }} />}
+      sidebar={<DashboardSidebar config={{ ...config, showLogout: true, onLogout: logout, isLogoutLoading: isLoading }} />}
       searchPlaceholder="Search global network (Movies, Theatres, IDs)..."
     />
   );

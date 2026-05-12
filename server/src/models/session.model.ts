@@ -6,6 +6,7 @@ export interface ISession {
   ip: string;
   lastActive: Date;
   isValid: boolean;
+  isOnline: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +34,10 @@ const sessionSchema = new mongoose.Schema<ISession>(
     isValid: {
       type: Boolean,
       default: true,
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

@@ -29,10 +29,11 @@ export interface SidebarConfig {
   bottomItems?: SidebarNavItem[];
   showLogout?: boolean;
   onLogout?: () => void;
+  isLogoutLoading?: boolean;
   pillId?: string;
 }
 
-export const DashboardSidebar: React.FC<{ config: SidebarConfig }> = ({ config }) => {
+export const DashboardSidebar: React.FC<{ config: SidebarConfig }> = React.memo(({ config }) => {
   const pillId = config.pillId ?? 'dash-pill';
 
   const BrandIcon = config.brand.iconName
@@ -88,16 +89,27 @@ export const DashboardSidebar: React.FC<{ config: SidebarConfig }> = ({ config }
           {config.showLogout && config.onLogout && (
             <button
               onClick={config.onLogout}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all"
+              disabled={config.isLogoutLoading}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all ${
+                config.isLogoutLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               <div className="p-1.5 rounded-lg bg-white/5">
-                <LucideIcons.LogOut size={16} />
+                {config.isLogoutLoading ? (
+                  <LucideIcons.Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <LucideIcons.LogOut size={16} />
+                )}
               </div>
-              <span className="font-bold text-[9px] uppercase tracking-widest">Sign Out</span>
+              <span className="font-bold text-[9px] uppercase tracking-widest">
+                {config.isLogoutLoading ? 'Signing Out...' : 'Sign Out'}
+              </span>
             </button>
           )}
         </div>
       )}
     </div>
   );
-};
+});
+
+DashboardSidebar.displayName = 'DashboardSidebar';

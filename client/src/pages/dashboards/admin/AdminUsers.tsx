@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { usersApi } from "../../../services/api/index.js";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { createSocket } from '../../../services/socket/connection.js';
 import { Users, Search, Filter, Shield, Mail, Calendar } from 'lucide-react';
 import { SEO } from "../../../components/common/SEO.js";
 import { DashboardPage } from "../../../components/dashboard/DashboardPage.js";
@@ -10,6 +12,27 @@ import { PAGE_SIZE } from "../../../constants/pagination.js";
 export const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const socket = createSocket('/presence', true);
+    
+    socket.on('status_change', ({ userId, isOnline, lastSeen }) => {
+      // Optimistically update the query cache
+      queryClient.setQueryData(['admin', 'users', searchQuery, page], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          users: oldData.users.map((u: any) => 
+            u._id === userId ? { ...u, isOnline, lastSeen } : u
+          )
+        };
+      });
+    });
+
+    socket.connect();
+    return () => { socket.disconnect(); };
+  }, [queryClient, searchQuery, page]);
 
   const { data, isLoading: loading } = useQuery({
     queryKey: ['admin', 'users', searchQuery, page],
@@ -93,10 +116,24 @@ export const AdminUsers = () => {
                                     </div>
                                 </td>
                                 <td className="px-10 py-8">
-                                    <div className="flex items-center gap-3 text-green-500 bg-green-500/5 px-4 py-2 rounded-full border border-green-500/10 w-fit">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest">Active</span>
-                                    </div>
+                                    {user.isOnline ? (
+                                        <div className="flex items-center gap-3 text-green-500 bg-green-500/5 px-4 py-2 rounded-full border border-green-500/10 w-fit">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest">Online</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-3 text-gray-500 bg-white/5 px-4 py-2 rounded-full border border-white/10 w-fit">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-gray-600" />
+                                                <span className="text-[9px] font-black uppercase tracking-widest">Offline</span>
+                                            </div>
+                                            {user.lastSeen && (
+                                                <span className="text-[8px] font-bold text-gray-700 ml-1">
+                                                    {new Date(user.lastSeen).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </td>
                                 <td className="px-10 py-8">
                                     <div className="flex items-center gap-3">

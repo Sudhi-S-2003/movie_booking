@@ -2,11 +2,11 @@ import React from 'react';
 import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
-import { useAuthStore } from '../store/authStore.js';
+import { useLogout } from '../hooks/useLogout.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
 
 const useUserSidebarConfig = (): SidebarConfig => {
-  const { logout } = useAuthStore();
+  const { logout, isLoading } = useLogout();
 
   return {
     brand: {
@@ -52,6 +52,7 @@ const useUserSidebarConfig = (): SidebarConfig => {
     ],
     showLogout: true,
     onLogout: logout,
+    isLogoutLoading: isLoading,
     pillId: 'user-pill',
   };
 };

@@ -5,6 +5,8 @@ import app from './app.js';
 import { initSocket } from './socket/index.js';
 import { Movie } from './models/movie.model.js';
 import { Theatre } from './models/theatre.model.js';
+import { User } from './models/user.model.js';
+import { Session } from './models/session.model.js';
 
 const { PORT, MONGODB_URI } = env;
 
@@ -25,6 +27,13 @@ mongoose
         Theatre.syncIndexes()
       ]);
       console.log('🔍 Search Indexes Synchronized');
+      
+      // Reset online status on startup (clear stale data)
+      await Promise.all([
+        User.updateMany({}, { isOnline: false }),
+        Session.updateMany({}, { isOnline: false })
+      ]);
+      console.log('✨ Online Statuses Reset');
     } catch (indexError) {
       console.error('⚠️ Index sync warning:', indexError);
     }

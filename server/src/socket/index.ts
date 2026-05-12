@@ -8,6 +8,8 @@ import { registerHashtagHandlers } from './channels/hashtag.channel.js';
 import { registerChatMessagesHandlers } from './channels/chat-messages.channel.js';
 import { registerChatListHandlers } from './channels/chat-list.channel.js';
 import { registerNotificationHandlers } from './channels/notification-push.channel.js';
+import { registerPresenceHandlers } from './channels/presence.channel.js';
+import { socketAuthMiddleware } from './socketAuth.middleware.js';
 
 let io: Server;
 let bookingNamespace:         Namespace;
@@ -17,6 +19,7 @@ let hashtagNamespace:         Namespace;
 let chatMessagesNamespace:    Namespace;
 let chatListNamespace:        Namespace;
 let notificationNamespace:    Namespace;
+let presenceNamespace:        Namespace;
 
 export const initSocket = (server: HttpServer) => {
   io = new Server(server, {
@@ -60,6 +63,10 @@ export const initSocket = (server: HttpServer) => {
 
   notificationNamespace = io.of('/notification-push');
   setupNamespace(notificationNamespace, registerNotificationHandlers);
+
+  presenceNamespace = io.of('/presence');
+  presenceNamespace.use(socketAuthMiddleware);
+  setupNamespace(presenceNamespace, registerPresenceHandlers);
 
   return io;
 };

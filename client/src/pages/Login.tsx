@@ -17,7 +17,9 @@ export const Login = () => {
 
   const location = useLocation();
   const { setAuth } = useAuthStore();
-  const from = location.state?.from?.pathname || '/';
+  
+  // Use location state first (React Router standard), then fallback to localStorage
+  const from = location.state?.from?.pathname || localStorage.getItem('redirectPath') || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,10 @@ export const Login = () => {
         password: password
       });
       setAuth(user, token);
+      
+      // Clear the redirect path from localStorage after use
+      localStorage.removeItem('redirectPath');
+      
       window.location.href = from;
     } catch (err: any) {
       setError(err.message || 'Authentication failed');

@@ -8,6 +8,7 @@ export interface UserSession {
   lastActive: string;
   isValid: boolean;
   isCurrent?: boolean;
+  isOnline?: boolean;
   createdAt: string;
 }
 
@@ -28,4 +29,7 @@ export const authApi = {
 
   register: (payload: any) => 
     http.post<AuthResponse>('/auth/register', payload),
+    
+  logout: () => 
+    http.post<{ success: boolean; message: string }>('/auth/logout'),
 };

@@ -4,6 +4,7 @@ import { Search,  HelpCircle } from 'lucide-react';
 import { DashboardLayout } from './DashboardLayout.js';
 
 import { NotificationSetup } from '../components/notifications/NotificationSetup.js';
+import { usePresence } from '../hooks/usePresence.js';
 
 interface AppDashboardLayoutProps {
   sidebar: React.ReactNode;
@@ -16,6 +17,8 @@ export const AppDashboardLayout: React.FC<AppDashboardLayoutProps> = ({
   wrapper: Wrapper,
   searchPlaceholder = 'Search movies, theatres, IDs...',
 }) => {
+  usePresence();
+
   const content = (
     <DashboardLayout sidebar={sidebar}>
       {/* Top bar — leaves room for the hamburger (visible only below LG, fixed
