@@ -14,10 +14,12 @@ import { createHighlighter, type Highlighter } from 'shiki';
 
 interface CodeCanvasProps {
   isEditing: boolean;
+  editedCode: string;
   onCodeChange: (code: string) => void;
+  onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
 }
 
-export const CodeCanvas: React.FC<CodeCanvasProps> = ({ isEditing, onCodeChange }) => {
+export const CodeCanvas: React.FC<CodeCanvasProps> = ({ isEditing, editedCode, onCodeChange, onScroll }) => {
   const { fullCode, hasNextPage, loadMore, isFetchingNext } = useCodeShareStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -100,7 +102,7 @@ export const CodeCanvas: React.FC<CodeCanvasProps> = ({ isEditing, onCodeChange 
   useEffect(() => {
     if (isEditing && editorRef.current && !editorView.current) {
       const state = EditorState.create({
-        doc: fullCode,
+        doc: editedCode,
         extensions: [
           basicSetup,
           javascript(),
@@ -133,18 +135,18 @@ export const CodeCanvas: React.FC<CodeCanvasProps> = ({ isEditing, onCodeChange 
     };
   }, [isEditing]);
 
-  // Sync CodeMirror content if fullCode changes externally (e.g. initial load)
+  // Sync CodeMirror content if editedCode changes externally (e.g. restoration)
   useEffect(() => {
     if (editorView.current && isEditing) {
       const currentDoc = editorView.current.state.doc.toString();
-      if (currentDoc !== fullCode) {
+      if (currentDoc !== editedCode) {
         const transaction = editorView.current.state.update({
-          changes: { from: 0, to: currentDoc.length, insert: fullCode }
+          changes: { from: 0, to: currentDoc.length, insert: editedCode }
         });
         editorView.current.dispatch(transaction);
       }
     }
-  }, [fullCode, isEditing]);
+  }, [editedCode, isEditing]);
 
   const currentHash = typeof window !== 'undefined' ? window.location.hash : '';
 
@@ -152,6 +154,7 @@ export const CodeCanvas: React.FC<CodeCanvasProps> = ({ isEditing, onCodeChange 
     <div className="flex-1 flex flex-col overflow-hidden bg-[#080808] relative">
       <div
         ref={containerRef}
+        onScroll={onScroll}
         className={`flex-1 overflow-auto custom-scrollbar relative ${isEditing ? 'hidden' : 'block'}`}
       >
         <div

@@ -9,13 +9,23 @@ interface HeaderProps {
   isEditing: boolean;
   onEditToggle: () => void;
   onSave: () => void;
+  isVisible?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ isEditing, onEditToggle, onSave }) => {
+export const Header: React.FC<HeaderProps> = ({ isEditing, onEditToggle, onSave, isVisible = true }) => {
   const { isSaving, uploadProgress } = useCodeShareStore();
 
   return (
-    <header className="h-14 border-b border-white/[0.08] bg-[#080808]/80 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-50">
+    <motion.header 
+      initial={false}
+      animate={{ 
+        height: isVisible ? 56 : 0,
+        opacity: isVisible ? 1 : 0,
+        y: isVisible ? 0 : -20
+      }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="border-b border-white/[0.08] bg-[#080808]/80 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-50 overflow-hidden"
+    >
       {/* macOS Window Controls */}
       <div className="flex items-center gap-2">
         <div className="flex gap-1.5 px-2">
@@ -82,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({ isEditing, onEditToggle, onSave 
           <Share2 size={16} />
         </button>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

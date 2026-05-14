@@ -156,9 +156,16 @@ export const useCodeShareStore = create<CodeShareState>((set, get) => ({
       // Update local state instead of full re-init to keep the full code in memory
       set({ fullCode: newCode, isLoading: true });
       await get().init({ id, category, signature: signature!, expiresAt: expiresAt! });
-      // We re-init to get the new totalLength/meta, but init resets fullCode.
-      // So we must restore the fullCode if it was a large file.
-      set({ fullCode: newCode }); 
+      
+      // After re-init, we restore the fullCode we just saved.
+      // CRITICAL: We must set hasNextPage to false because we now have the COMPLETE code in memory.
+      // If we don't, loadMore might trigger and append duplicate chunks to our already complete fullCode.
+      set({ 
+        fullCode: newCode, 
+        hasNextPage: false, 
+        nextChunkId: undefined,
+        isLoading: false 
+      }); 
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to save changes');
     } finally {

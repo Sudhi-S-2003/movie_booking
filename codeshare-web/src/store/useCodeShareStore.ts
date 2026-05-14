@@ -27,6 +27,7 @@ interface CodeShareState {
   appendChunk: (data: CodeShareResponse) => void;
   loadMore: () => Promise<void>;
   eagerFetchAll: () => Promise<void>;
+  ensureFull: () => Promise<string>;
   save: (newCode: string) => Promise<void>;
   reset: () => void;
 }
@@ -108,6 +109,13 @@ export const useCodeShareStore = create<CodeShareState>((set, get) => ({
     }
   },
 
+  ensureFull: async () => {
+    while (get().hasNextPage) {
+      await get().loadMore();
+    }
+    return get().fullCode;
+  },
+
   save: async (newCode: string) => {
     const { id, category, signature, expiresAt } = get();
     if (!id || !category) return;
@@ -152,7 +160,11 @@ export const useCodeShareStore = create<CodeShareState>((set, get) => ({
         set({ uploadProgress: Math.round(((i + 1) / chunks.length) * 100) });
       }
       
-      set({ fullCode: newCode });
+      set({ 
+        fullCode: newCode,
+        hasNextPage: false,
+        nextChunkId: undefined
+      });
     } catch (err) {
       console.error('Failed to save code share', err);
     } finally {

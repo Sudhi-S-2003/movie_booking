@@ -1,7 +1,8 @@
-import React, { useRef, useMemo } from 'react';
-import { ChevronDown, Loader2 } from 'lucide-react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { motion } from 'framer-motion';
+import React, { useRef, useEffect, useMemo } from 'react';
+import CodeMirror, { EditorView, type Extension } from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { tags as t } from '@lezer/highlight';
+import { createTheme } from '@uiw/codemirror-themes';
 
 interface CodeShareEditorProps {
   fullCode: string;
@@ -11,7 +12,37 @@ interface CodeShareEditorProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;
+  onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
 }
+
+// Custom Vercel-like Theme (Zinc/Slate)
+const vercelTheme = createTheme({
+  theme: 'dark',
+  settings: {
+    background: 'transparent',
+    foreground: '#fafafa',
+    caret: '#fafafa',
+    selection: '#27272a',
+    selectionMatch: '#27272a',
+    lineHighlight: '#18181b',
+    gutterBackground: 'transparent',
+    gutterForeground: '#52525b',
+  },
+  styles: [
+    { tag: t.comment, color: '#71717a' },
+    { tag: t.variableName, color: '#fafafa' },
+    { tag: [t.string, t.special(t.brace)], color: '#a1a1aa' },
+    { tag: t.number, color: '#d4d4d8' },
+    { tag: t.keyword, color: '#ffffff', fontWeight: 'bold' },
+    { tag: t.operator, color: '#a1a1aa' },
+    { tag: t.className, color: '#fafafa' },
+    { tag: t.definition(t.typeName), color: '#fafafa' },
+    { tag: t.typeName, color: '#fafafa' },
+    { tag: t.angleBracket, color: '#71717a' },
+    { tag: t.tagName, color: '#fafafa' },
+    { tag: t.attributeName, color: '#a1a1aa' },
+  ],
+});
 
 export const CodeShareEditor: React.FC<CodeShareEditorProps> = ({
   fullCode,
@@ -20,125 +51,107 @@ export const CodeShareEditor: React.FC<CodeShareEditorProps> = ({
   onCodeChange,
   hasNextPage,
   isFetchingNextPage,
-  fetchNextPage
+  fetchNextPage,
+  onScroll
 }) => {
-  const parentRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const displayCode = isEditing ? editedCode : fullCode;
 
-  const lines = useMemo(() => {
-    const l = displayCode.split('\n');
-    // Always show an extra line at the bottom in edit mode for better UX
-    if (isEditing) l.push(''); 
-    return l;
-  }, [displayCode, isEditing]);
+  // Infinite Scroll with Intersection Observer
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage || isEditing) return;
 
-  const rowVirtualizer = useVirtualizer({
-    count: lines.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 24,
-    overscan: 15,
-  });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '400px', threshold: 0.1 }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, isEditing]);
+
+  const extensions = useMemo(() => {
+    const exts: Extension[] = [
+      javascript({ jsx: true, typescript: true }),
+      EditorView.lineWrapping,
+      vercelTheme,
+      EditorView.theme({
+        '&': { fontSize: '13px', height: '100%' },
+        '.cm-gutters': { border: 'none', backgroundColor: 'transparent', paddingRight: '1rem' },
+        '.cm-gutterElement': { padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' },
+        '.cm-content': { padding: '0 1.5rem', fontFamily: "'JetBrains Mono', 'Fira Code', monospace" },
+      }),
+    ];
+    return exts;
+  }, []);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#080808] relative group/editor">
-      <div
-        ref={parentRef}
-        className="flex-1 overflow-auto custom-scrollbar relative outline-none selection:bg-accent-blue/30"
+    <div className="flex-1 flex flex-col overflow-hidden bg-black relative">
+      <div 
+        onScroll={onScroll}
+        className="flex-1 overflow-auto custom-scrollbar relative scroll-smooth"
       >
-        <div
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            minHeight: '100%',
-            paddingBottom: isEditing ? '100px' : '0px',
-            width: '100%',
-            position: 'relative',
+        <CodeMirror
+          value={displayCode}
+          height="100%"
+          theme={vercelTheme}
+          extensions={extensions}
+          editable={isEditing}
+          readOnly={!isEditing}
+          onChange={(value) => onCodeChange(value)}
+          basicSetup={{
+            lineNumbers: true,
+            foldGutter: true,
+            dropCursor: true,
+            allowMultipleSelections: true,
+            indentOnInput: true,
+            syntaxHighlighting: true,
+            bracketMatching: true,
+            autocompletion: true,
+            rectangularSelection: true,
+            crosshairCursor: true,
+            highlightActiveLine: true,
+            highlightSelectionMatches: true,
+            closeBrackets: true,
           }}
-        >
-          {/* Virtualized Rows */}
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-            <div
-              key={virtualRow.index}
-              className="absolute top-0 left-0 w-full flex group/row transition-colors duration-150 hover:bg-white/[0.02]"
-              style={{
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
-              {/* Gutter */}
-              <div className={`w-14 shrink-0 flex items-center justify-center border-r border-white/[0.03] ${isEditing ? 'bg-[#0f0f0f]' : 'bg-[#0c0c0c]'} sticky left-0 z-10 select-none`}>
-                <span className={`text-[10px] font-mono transition-colors duration-300 ${isEditing ? 'text-accent-blue/60' : 'text-white/10 group-hover/row:text-white/30'}`}>
-                  {virtualRow.index + 1}
-                </span>
-              </div>
+        />
 
-              {/* Code Content (Read Mode) */}
-              {!isEditing && (
-                <div
-                  className="flex-1 px-8 font-mono text-[13px] md:text-sm leading-6 text-white/70 whitespace-pre"
-                  style={{
-                    fontFamily: "'JetBrains Mono', 'Fira Code', 'Ubuntu Mono', 'Menlo', 'Monaco', 'Courier New', monospace"
-                  }}
-                >
-                  {lines[virtualRow.index] || ' '}
+        {/* Infinite Scroll Sentinel */}
+        {!isEditing && (
+          <div ref={sentinelRef} className="h-20 w-full flex items-center justify-center">
+            {isFetchingNextPage && (
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-6 bg-zinc-800 animate-pulse rounded-full" />
+                  <div className="w-1.5 h-10 bg-zinc-700 animate-pulse rounded-full delay-75" />
+                  <div className="w-1.5 h-4 bg-zinc-800 animate-pulse rounded-full delay-150" />
                 </div>
-              )}
-            </div>
-          ))}
-
-          {/* Edit Layer */}
-          {isEditing && (
-            <textarea
-              autoFocus
-              value={editedCode}
-              onChange={(e) => onCodeChange(e.target.value)}
-              className="absolute inset-0 w-full h-full bg-transparent pr-8 py-0 font-mono text-[13px] md:text-sm leading-6 text-white/90 outline-none resize-none caret-accent-blue z-20 overflow-auto block whitespace-pre"
-              style={{
-                minHeight: `${rowVirtualizer.getTotalSize()}px`,
-                paddingLeft: '5.5rem',
-                paddingTop: '0px',
-                paddingBottom: '0px',
-                lineHeight: '24px',
-                fontFamily: "'JetBrains Mono', 'Fira Code', 'Ubuntu Mono', 'Menlo', 'Monaco', 'Courier New', monospace",
-              }}
-              spellCheck={false}
-            />
-          )}
-        </div>
-
-        {/* Load More Trigger */}
-        {!isEditing && hasNextPage && (
-          <div
-            className="flex justify-center py-24 relative z-10"
-            style={{
-              marginTop: `${Math.max(0, rowVirtualizer.getTotalSize() - (parentRef.current?.clientHeight || 0))}px`
-            }}
-          >
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="px-8 py-4 bg-[#0c0c0c] border border-white/[0.08] rounded-2xl flex items-center gap-4 hover:bg-white/[0.05] hover:border-white/[0.15] transition-all group/btn shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl disabled:opacity-50"
-            >
-              {isFetchingNextPage ? (
-                <Loader2 size={18} className="text-accent-blue animate-spin" />
-              ) : (
-                <ChevronDown size={18} className="text-white/40 group-hover/btn:text-accent-blue transition-colors" />
-              )}
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover/btn:text-white transition-colors">
-                  {isFetchingNextPage ? 'Retrieving Sequence...' : 'Retrieve Next Sequence'}
-                </span>
-                <span className="text-[9px] text-white/10 uppercase tracking-widest font-bold">Encrypted Chunk Transfer</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Fetching Next Sequence</span>
               </div>
-            </motion.button>
+            )}
+          </div>
+        )}
+
+        {/* Skeleton lines for initial load if needed (though usually fullCode is available) */}
+        {!displayCode && !isFetchingNextPage && (
+          <div className="p-8 space-y-4">
+            {[...Array(20)].map((_, i) => (
+              <div key={i} className="h-4 bg-zinc-900 rounded-md animate-pulse" style={{ width: `${Math.random() * 40 + 40}%` }} />
+            ))}
           </div>
         )}
       </div>
 
       {/* Decorative Gradients */}
-      <div className="absolute inset-y-0 left-0 w-[1px] bg-gradient-to-b from-transparent via-white/[0.05] to-transparent pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-[1px] bg-gradient-to-b from-transparent via-white/[0.05] to-transparent pointer-events-none" />
+      <div className="absolute inset-y-0 left-0 w-[1px] bg-zinc-800/50 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-[1px] bg-zinc-800/50 pointer-events-none" />
     </div>
   );
 };

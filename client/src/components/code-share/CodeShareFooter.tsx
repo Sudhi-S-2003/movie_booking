@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cpu, Terminal, ShieldCheck, Fingerprint } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 interface CodeShareFooterProps {
   isFetchingNextPage: boolean;
@@ -13,38 +13,38 @@ export const CodeShareFooter: React.FC<CodeShareFooterProps> = ({
   totalLength
 }) => {
   return (
-    <footer className="px-8 py-4 border-t border-white/[0.06] bg-[#0c0c0c]/60 backdrop-blur-3xl flex items-center justify-between">
-      <div className="flex items-center gap-8">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Cpu size={12} className="text-accent-blue/40" />
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">
-              {isFetchingNextPage ? 'Syncing...' : 'Stream Active'}
-            </span>
+    <footer className="px-6 py-2 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between text-[11px] font-medium">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
+          <div className={`w-1.5 h-1.5 rounded-full ${isFetchingNextPage ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+          <span className="text-zinc-400 uppercase tracking-tight">
+            {isFetchingNextPage ? 'Syncing...' : 'Connected'}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-4 text-zinc-500">
+          <div className="flex items-center gap-1.5">
+            <span className="text-zinc-400">{length.toLocaleString()}</span>
+            <span>/</span>
+            <span>{totalLength?.toLocaleString() || '--'} bytes</span>
           </div>
-          <div className="w-[1px] h-3 bg-white/5" />
-          <div className="flex items-center gap-2">
-            <Terminal size={12} className="text-white/10" />
-            <span className="text-[10px] font-bold text-white/30 tracking-widest font-mono">
-              {length.toLocaleString()} {totalLength ? `/ ${totalLength.toLocaleString()}` : ''} BYTES
-            </span>
+          
+          <div className="flex items-center gap-1.5">
+            <span className="text-zinc-400">{((length / (totalLength || 1)) * 100).toFixed(0)}%</span>
+            <span>loaded</span>
           </div>
         </div>
       </div>
 
-      <div className="hidden md:flex items-center gap-6">
-        <div className="flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
-          <ShieldCheck size={12} className="text-green-500" />
-          <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Encrypted</span>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+          <ShieldCheck size={12} />
+          <span className="text-[10px] font-bold uppercase tracking-wide">Secure</span>
         </div>
-        <div className="flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500">
-          <Fingerprint size={12} className="text-accent-blue" />
-          <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Verified Sequence</span>
+        
+        <div className="flex items-center gap-2 text-zinc-600">
+          <span>v1.2.0</span>
         </div>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="text-[9px] font-black text-white/10 uppercase tracking-[0.3em]">CodeShare v1.2.0</span>
       </div>
     </footer>
   );

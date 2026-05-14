@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MoreHorizontal, ChevronUp } from 'lucide-react';
 
 // Stores
 import { useCodeShareStore } from '../store/codeShareStore.js';
@@ -11,6 +12,8 @@ import { CodeShareEditor } from '../components/code-share/CodeShareEditor.js';
 import { CodeShareFooter } from '../components/code-share/CodeShareFooter.js';
 import { CodeShareLoading } from '../components/code-share/CodeShareLoading.js';
 import { CodeShareError } from '../components/code-share/CodeShareError.js';
+import { draftManager } from '../utils/draftManager.js';
+import { toast } from '../utils/toast.js';
 
 export const CodeShare = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +49,47 @@ export const CodeShare = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedCode, setEditedCode] = useState('');
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [showFloatingActions, setShowFloatingActions] = useState(false);
+  const lastScrollTop = useRef(0);
+  const editorScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    editorScrollRef.current = target;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+
+    // Show floating actions when near bottom (within 200px) OR when header is hidden and we've scrolled a bit
+    const isNearBottom = scrollTop + clientHeight > scrollHeight - 100;
+    const hasScrolledDown = scrollTop > 400;
+    setShowFloatingActions(isNearBottom || (hasScrolledDown && !isHeaderVisible));
+
+    // Header hide/show logic - stay visible if editing
+    if (isEditing) {
+      setIsHeaderVisible(true);
+    } else if (scrollTop > 150) {
+      if (scrollTop > lastScrollTop.current + 10) {
+        // Scrolling down - hide header
+        setIsHeaderVisible(false);
+      } else if (scrollTop < lastScrollTop.current - 20) {
+        // Scrolling up - show header
+        setIsHeaderVisible(true);
+      }
+    } else {
+      setIsHeaderVisible(true);
+    }
+
+    lastScrollTop.current = scrollTop;
+  }, [isHeaderVisible, isEditing]);
+
+  const scrollToTop = useCallback(() => {
+    if (editorScrollRef.current) {
+      editorScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      setIsHeaderVisible(true);
+    }
+  }, []);
 
   // Sync editedCode when entering edit mode or when fullCode changes while NOT editing
   useEffect(() => {
@@ -66,25 +110,53 @@ export const CodeShare = () => {
   const handleToggleEdit = useCallback(async () => {
     if (!isEditing) {
       try {
-      const full = await ensureFull();
-      setEditedCode(full);
-      setIsEditing(true);
+        const full = await ensureFull();
+        
+        // Check for local draft
+        if (id) {
+          const draft = await draftManager.getDraft(id);
+          if (draft && draft.code !== full) {
+            setEditedCode(draft.code);
+            setIsEditing(true);
+            toast.success('Restored unsaved changes from draft');
+            return;
+          }
+        }
+
+        setEditedCode(full);
+        setIsEditing(true);
       } catch (err) {
         setIsEditing(false);
       }
     } else {
       setIsEditing(false);
     }
-  }, [isEditing, ensureFull]);
+  }, [isEditing, ensureFull, id]);
 
   const handleSave = useCallback(async () => {
     try {
       await save(editedCode);
+      if (id) await draftManager.deleteDraft(id);
       setIsEditing(false);
     } catch (err) {
       // Error handled by store/toast
     }
-  }, [editedCode, save]);
+  }, [editedCode, save, id]);
+
+  // Debounced Auto-save Draft
+  useEffect(() => {
+    if (!isEditing || !id || !editedCode) return;
+
+    const timeout = setTimeout(async () => {
+      try {
+        await draftManager.saveDraft(id, editedCode);
+      } catch (err) {
+        console.warn('Failed to save draft', err);
+      }
+    }, 1000); // Save after 1s of inactivity
+
+    return () => clearTimeout(timeout);
+  }, [editedCode, isEditing, id]);
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -105,31 +177,41 @@ export const CodeShare = () => {
   if (!meta && !isLoading) return <CodeShareError message="Resource not found or access denied" />;
 
   return (
-    <div className={`min-h-screen bg-[#050505] text-white flex flex-col font-inter overflow-hidden relative selection:bg-accent-blue/30 transition-all duration-700 ${isFullscreen ? 'p-0' : 'p-4 sm:p-10'}`}>
+    <div className={`min-h-screen bg-black text-white flex flex-col font-inter overflow-hidden relative selection:bg-zinc-800 transition-all duration-500 ${isFullscreen ? 'p-0' : 'p-4 sm:p-8'}`}>
       {/* Background Ambience */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-accent-blue/5 blur-[120px] rounded-full -z-0 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-zinc-900/20 blur-[120px] rounded-full -z-0 pointer-events-none" />
       
       {/* Main Window */}
       <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className={`flex-1 w-full bg-[#0c0c0c] flex flex-col overflow-hidden relative z-10 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]
-          ${isFullscreen ? 'rounded-none border-none shadow-none' : 'max-w-7xl mx-auto rounded-[2.5rem] border border-white/[0.08] shadow-[0_0_100px_rgba(0,0,0,0.8)] h-[calc(100vh-5rem)]'}`}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`flex-1 w-full bg-zinc-950 flex flex-col overflow-hidden relative z-10 transition-all duration-500
+          ${isFullscreen ? 'rounded-none border-none' : 'max-w-6xl mx-auto rounded-xl border border-zinc-800 shadow-2xl h-[calc(100vh-4rem)]'}`}
       >
-        <CodeShareHeader 
-          title={meta?.title}
-          createdAt={meta?.createdAt}
-          fullCode={fullCode}
-          isEditing={isEditing}
-          onToggleEdit={handleToggleEdit}
-          onSave={handleSave}
-          isSaving={isSaving || isFetchingFull}
-          uploadProgress={uploadProgress}
-          copied={copied}
-          onCopy={handleCopy}
-          isFullscreen={isFullscreen}
-          onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
-        />
+        <motion.div
+          animate={{ 
+            height: isHeaderVisible ? 'auto' : 0,
+            opacity: isHeaderVisible ? 1 : 0,
+            y: isHeaderVisible ? 0 : -20
+          }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="overflow-hidden z-30 sticky top-0"
+        >
+          <CodeShareHeader 
+            title={meta?.title}
+            createdAt={meta?.createdAt}
+            fullCode={fullCode}
+            isEditing={isEditing}
+            onToggleEdit={handleToggleEdit}
+            onSave={handleSave}
+            isSaving={isSaving || isFetchingFull}
+            uploadProgress={uploadProgress}
+            copied={copied}
+            onCopy={handleCopy}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+          />
+        </motion.div>
 
         <div className="flex-1 relative overflow-hidden flex flex-col">
           <CodeShareEditor 
@@ -140,7 +222,53 @@ export const CodeShare = () => {
             hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNext}
             fetchNextPage={loadMore}
+            onScroll={handleScroll}
           />
+
+          <AnimatePresence>
+            {showFloatingActions && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (!isHeaderVisible) {
+                    setIsHeaderVisible(true);
+                  } else {
+                    scrollToTop();
+                  }
+                }}
+                className="absolute bottom-6 right-6 z-40 p-3 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-full shadow-2xl text-zinc-400 hover:text-white hover:border-zinc-700 transition-all group"
+                title={isHeaderVisible ? "Scroll to Top" : "Expand Header"}
+              >
+                <div className="relative">
+                  <AnimatePresence mode="wait">
+                    {!isHeaderVisible ? (
+                      <motion.div
+                        key="more"
+                        initial={{ opacity: 0, rotate: -90 }}
+                        animate={{ opacity: 1, rotate: 0 }}
+                        exit={{ opacity: 0, rotate: 90 }}
+                      >
+                        <MoreHorizontal size={20} />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="up"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                      >
+                        <ChevronUp size={20} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.button>
+            )}
+          </AnimatePresence>
           
           <AnimatePresence>
             {(isSaving || isFetchingFull) && (
@@ -148,39 +276,14 @@ export const CodeShare = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 bg-[#050505]/40 backdrop-blur-sm flex items-center justify-center"
+                className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center"
               >
                 <div className="flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 border-2 border-accent-blue/20 border-t-accent-blue rounded-full animate-spin" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent-blue animate-pulse">
-                    Synchronizing... {uploadProgress}%
+                  <div className="w-10 h-10 border-2 border-zinc-800 border-t-white rounded-full animate-spin" />
+                  <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400">
+                    {isSaving ? `Uploading... ${uploadProgress}%` : 'Retrieving Full Content...'}
                   </span>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          {/* Floating Action Toolbar (Edit Mode) */}
-          <AnimatePresence>
-            {isEditing && !isSaving && !isFetchingFull && (
-              <motion.div
-                initial={{ opacity: 0, y: 50, x: '-50%' }}
-                animate={{ opacity: 1, y: 0, x: '-50%' }}
-                exit={{ opacity: 0, y: 50, x: '-50%' }}
-                className="fixed bottom-24 left-1/2 z-50 flex items-center gap-2 p-2 bg-[#121212]/80 backdrop-blur-3xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-              >
-                <button
-                  onClick={handleToggleEdit}
-                  className="px-6 py-2.5 text-[11px] font-black text-white/40 hover:text-white/80 uppercase tracking-[0.2em] transition-colors"
-                >
-                  Discard
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-8 py-2.5 bg-accent-blue text-[11px] font-black text-[#050505] rounded-full uppercase tracking-[0.2em] hover:bg-white transition-all shadow-[0_0_20px_rgba(0,210,255,0.3)]"
-                >
-                  Deploy Changes
-                </button>
               </motion.div>
             )}
           </AnimatePresence>
