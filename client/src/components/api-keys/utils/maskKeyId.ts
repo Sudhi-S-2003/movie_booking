@@ -7,6 +7,7 @@ export const maskKeyId = (keyId: string): string => {
 /** Human label for an API key category. */
 export const CATEGORY_LABELS: Record<string, string> = {
   chat: 'Chat',
+  'code-share': 'Code Share',
 };
 
 /** "2h ago" / "Never used" style label for `lastUsedAt`. */

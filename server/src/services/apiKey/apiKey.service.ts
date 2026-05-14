@@ -118,9 +118,10 @@ export const revokeKey = async (userId: IdLike, keyDocId: IdLike): Promise<Seria
 // ─── Verify (for inbound API calls) ─────────────────────────────────────────
 
 export interface VerifyResult {
-  ok:     true;
-  userId: mongoose.Types.ObjectId;
-  keyId:  string;
+  ok:       true;
+  userId:   mongoose.Types.ObjectId;
+  keyId:    string;
+  category: ApiKeyCategory;
 }
 
 export type VerifyOutcome = VerifyResult | { ok: false; reason: 'not-found' | 'revoked' | 'bad-secret' };
@@ -140,5 +141,5 @@ export const verifyKey = async (keyId: string, secret: string): Promise<VerifyOu
   // Bump lastUsedAt; we don't block the response on this.
   ApiKey.updateOne({ _id: doc._id }, { $set: { lastUsedAt: new Date() } }).catch(() => {});
 
-  return { ok: true, userId: doc.userId, keyId: doc.keyId };
+  return { ok: true, userId: doc.userId, keyId: doc.keyId, category: doc.category };
 };

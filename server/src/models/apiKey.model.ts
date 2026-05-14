@@ -15,7 +15,7 @@
 
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type ApiKeyCategory = 'chat';
+export type ApiKeyCategory = 'chat' | 'code-share';
 
 export interface ApiKeyDoc extends Document {
   userId:      mongoose.Types.ObjectId;
@@ -35,7 +35,7 @@ const ApiKeySchema = new Schema<ApiKeyDoc>(
     name:       { type: String, required: true, trim: true, maxlength: 80 },
     category:   {
       type:     String,
-      enum:     ['chat'],
+      enum:     ['chat', 'code-share'],
       default:  'chat',
       required: true,
     },

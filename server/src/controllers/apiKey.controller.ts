@@ -18,7 +18,7 @@ import {
 } from '../services/apiKey/apiKey.service.js';
 import type { ApiKeyCategory } from '../models/apiKey.model.js';
 
-const ALLOWED_CATEGORIES: ReadonlyArray<ApiKeyCategory> = ['chat'];
+const ALLOWED_CATEGORIES: ReadonlyArray<ApiKeyCategory> = ['chat', 'code-share'];
 
 const isCategory = (raw: unknown): raw is ApiKeyCategory =>
   typeof raw === 'string' && (ALLOWED_CATEGORIES as ReadonlyArray<string>).includes(raw);

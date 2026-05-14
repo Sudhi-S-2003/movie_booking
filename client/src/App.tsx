@@ -54,7 +54,10 @@ import { ApiDocsTest } from './pages/ApiDocsTest.js';
 import { useRoleRedirect } from './hooks/useRoleRedirect.js';
 import PublicTicket from './pages/PublicTicket.js';
 import SessionsPage from './pages/dashboards/SessionsPage.js';
+import { CodeShare } from './pages/CodeShare.js';
+import { ApiDocsSignedService } from './pages/ApiDocsSignedService.js';
 import { ScrollToTop } from './components/common/ScrollToTop.js';
+import { ToastContainer } from './components/common/ToastContainer.js';
 
 
 import { SEO } from './components/common/SEO.js';
@@ -77,10 +80,11 @@ const App = () => {
       <NotificationProvider>
         <SubscriptionProvider>
           <BookingSessionProvider>
-
+            <ToastContainer />
             <Routes>
               { }
               <Route path="/chat/:conversationId" element={<ApiKeyChat />} />
+              <Route path="/code-share/:id" element={<CodeShare />} />
 
               <Route element={<MarketingLayoutWrapper />}>
                 <Route path="/" element={<Home />} />
@@ -114,6 +118,7 @@ const App = () => {
                 <Route path="/chat/invite/:token" element={<ChatInvite />} />
                 <Route path="/ticket/:id" element={<PublicTicket />} />
                 <Route path="/docs-test" element={<ApiDocsTest />} />
+                <Route path="/docs/signed-service" element={<ApiDocsSignedService />} />
               </Route>
 
               { }

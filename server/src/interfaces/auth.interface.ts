@@ -9,6 +9,8 @@ import type { IUser } from './models.interface.js';
  * (`.save()`, virtuals, etc.) without casting. Adding `_id` explicitly keeps
  * TypeScript happy since HydratedDocument's `_id` is `unknown` by default.
  */
+import type { ApiKeyCategory } from '../models/apiKey.model.js';
+
 export type AuthUser = HydratedDocument<IUser> & { _id: unknown };
 
 /**
@@ -40,6 +42,10 @@ declare global {
     interface Request {
       user?:         AuthUser;
       externalUser?: ExternalUserIdentity;
+      apiServiceId?: string;
+      apiServiceCategory?: ApiKeyCategory;
+      apiKeyCategory?:     ApiKeyCategory;
+      apiKeyId?:           string;
       sessionId?:    string;
     }
   }

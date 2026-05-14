@@ -26,6 +26,7 @@ import subscriptionRoutes from './routes/subscription.routes.js';
 import externalWebhookRoutes from './routes/external.webhook.routes.js';
 import integrationRoutes from './routes/integration.routes.js';
 import urlPreviewRoutes from './routes/urlPreview.routes.js';
+import apiServicePublicRoutes from './routes/apiService.public.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 
@@ -77,6 +78,7 @@ app.use('/api/keys', apiKeyRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/url/preview', urlPreviewRoutes);
+app.use('/api/public/api-service', apiServicePublicRoutes);
 
 // 404 handler
 app.use((_req, res, _next) => {

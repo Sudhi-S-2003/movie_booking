@@ -43,3 +43,28 @@ export const verifyIdSignature = (id: string, signature: string, timestamp: stri
   return expected === signature;
 };
 
+
+/**
+ * Generate an HMAC signature for an API service ID, category, and an expiration timestamp.
+ */
+export const signApiService = (serviceId: string, category: string, expiresAt: number): string => {
+  return createHmac('sha256', env.JWT_SECRET)
+    .update(`service:${category}:${serviceId}:${expiresAt}`)
+    .digest('hex');
+};
+
+/**
+ * Verify if a signature matches an API service ID, category, and hasn't expired.
+ */
+export const verifyApiServiceSignature = (
+  serviceId: string,
+  category: string,
+  signature: string,
+  expiresAt: number,
+): boolean => {
+  // Check clock
+  if (Date.now() > expiresAt) return false;
+
+  const expected = signApiService(serviceId, category, expiresAt);
+  return expected === signature;
+};
