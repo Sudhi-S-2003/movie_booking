@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-export interface PostDoc extends Document {
+export interface IPost {
   authorId:     mongoose.Types.ObjectId;
   title:        string;
   content:      string;
@@ -15,7 +15,9 @@ export interface PostDoc extends Document {
   updatedAt:    Date;
 }
 
-const PostSchema = new Schema<PostDoc>(
+export type PostDoc = mongoose.HydratedDocument<IPost>;
+
+const PostSchema = new Schema<IPost>(
   {
     authorId:     { type: Schema.Types.ObjectId, ref: 'User', required: true },
     title:        { type: String, required: true, trim: true },
@@ -38,4 +40,4 @@ PostSchema.index({ hashtags: 1, likeCount: -1 });
 // Full-text
 PostSchema.index({ title: 'text', content: 'text' });
 
-export const Post = mongoose.model<PostDoc>('Post', PostSchema);
+export const Post = mongoose.model<IPost>('Post', PostSchema);

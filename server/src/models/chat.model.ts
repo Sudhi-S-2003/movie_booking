@@ -17,7 +17,7 @@
 // pagination) but is decoupled so the two can evolve independently.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 // ─── Conversation ────────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ import mongoose, { Schema, Document } from 'mongoose';
  */
 export type ConversationType = 'direct' | 'group' | 'system' | 'api';
 
-export interface ConversationDoc extends Document {
+export interface IConversation {
   type:          ConversationType;
   title?:        string;            // group name (group/system only)
   avatarUrl?:    string;            // group avatar
@@ -66,7 +66,9 @@ export interface ConversationDoc extends Document {
   updatedAt:     Date;
 }
 
-const ConversationSchema = new Schema<ConversationDoc>(
+export type ConversationDoc = mongoose.HydratedDocument<IConversation>;
+
+const ConversationSchema = new Schema<IConversation>(
   {
     type: {
       type:     String,
@@ -158,7 +160,7 @@ export interface ChatEventPayload {
   description?: string;
 }
 
-export interface ChatMessageDoc extends Document {
+export interface IChatMessage {
   conversationId: mongoose.Types.ObjectId;
   senderId?:      mongoose.Types.ObjectId;  // null for system messages
   senderName:     string;
@@ -186,7 +188,9 @@ export interface ChatMessageDoc extends Document {
   updatedAt: Date;
 }
 
-const ChatMessageSchema = new Schema<ChatMessageDoc>(
+export type ChatMessageDoc = mongoose.HydratedDocument<IChatMessage>;
+
+const ChatMessageSchema = new Schema<IChatMessage>(
   {
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     senderId:       { type: Schema.Types.ObjectId, ref: 'User' },
@@ -394,7 +398,7 @@ ChatMessageSchema.index({ conversationId: 1, createdAt: 1, _id: 1 });
 // keep their single-document reads. Write-through keeps the two in sync; the
 // members endpoint treats this collection as the source of truth.
 
-interface ConversationParticipantDoc extends Document {
+export interface IConversationParticipant {
   conversationId: mongoose.Types.ObjectId;
   userId:         mongoose.Types.ObjectId;
   role:           'owner' | 'member';
@@ -402,7 +406,9 @@ interface ConversationParticipantDoc extends Document {
   joinedAt:       Date;
 }
 
-const ConversationParticipantSchema = new Schema<ConversationParticipantDoc>(
+export type ConversationParticipantDoc = mongoose.HydratedDocument<IConversationParticipant>;
+
+const ConversationParticipantSchema = new Schema<IConversationParticipant>(
   {
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     userId:         { type: Schema.Types.ObjectId, ref: 'User',         required: true },
@@ -432,7 +438,7 @@ ConversationParticipantSchema.index({ userId: 1 });
 // The optional `lastReadMessageId` is retained to power the "unread messages"
 // divider anchor.
 
-export interface ChatReadCursorDoc extends Document {
+export interface IChatReadCursor {
   userId?:           mongoose.Types.ObjectId; // unset for external guests
   externalUserName?: string;
   conversationId:    mongoose.Types.ObjectId;
@@ -440,7 +446,9 @@ export interface ChatReadCursorDoc extends Document {
   lastReadAt:        Date;
 }
 
-const ChatReadCursorSchema = new Schema<ChatReadCursorDoc>(
+export type ChatReadCursorDoc = mongoose.HydratedDocument<IChatReadCursor>;
+
+const ChatReadCursorSchema = new Schema<IChatReadCursor>(
   {
     userId:            { type: Schema.Types.ObjectId, ref: 'User' },
     externalUserName:  { type: String, trim: true },
@@ -463,10 +471,10 @@ ChatReadCursorSchema.index(
 
 // ─── Model exports ───────────────────────────────────────────────────────────
 
-export const Conversation  = mongoose.model<ConversationDoc>('Conversation', ConversationSchema);
-export const ChatMessage   = mongoose.model<ChatMessageDoc>('ChatMessage', ChatMessageSchema);
-export const ChatReadCursor = mongoose.model<ChatReadCursorDoc>('ChatReadCursor', ChatReadCursorSchema);
-export const ConversationParticipant = mongoose.model<ConversationParticipantDoc>(
+export const Conversation  = mongoose.model<IConversation>('Conversation', ConversationSchema);
+export const ChatMessage   = mongoose.model<IChatMessage>('ChatMessage', ChatMessageSchema);
+export const ChatReadCursor = mongoose.model<IChatReadCursor>('ChatReadCursor', ChatReadCursorSchema);
+export const ConversationParticipant = mongoose.model<IConversationParticipant>(
   'ConversationParticipant',
   ConversationParticipantSchema,
 );

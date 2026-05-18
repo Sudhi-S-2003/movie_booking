@@ -23,6 +23,9 @@ const UserSchema = new Schema<IUser>(
       enum: Object.values(AuthProvider), 
       default: AuthProvider.LOCAL 
     },
+    twoFactorSecret: { type: String, select: false },
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorBackupCodes: { type: [String], select: false },
     avatar: { type: String },
     googleId: { type: String },
     managedTheatres: [{ type: Schema.Types.ObjectId, ref: 'Theatre' }],

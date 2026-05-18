@@ -53,6 +53,9 @@ export interface IUser {
   password?: string;
   role: UserRole;
   authProvider: AuthProvider;
+  twoFactorSecret?: string;
+  twoFactorEnabled?: boolean;
+  twoFactorBackupCodes?: string[];
   avatar?: string;
   googleId?: string;
   /** Theatre IDs managed by TheatreOwner users. */

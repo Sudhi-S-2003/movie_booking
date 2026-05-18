@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-export interface CommentDoc extends Document {
+export interface IComment {
   postId:    mongoose.Types.ObjectId;
   userId:    mongoose.Types.ObjectId;
   text:      string;
@@ -11,7 +11,9 @@ export interface CommentDoc extends Document {
   updatedAt: Date;
 }
 
-const CommentSchema = new Schema<CommentDoc>(
+export type CommentDoc = mongoose.HydratedDocument<IComment>;
+
+const CommentSchema = new Schema<IComment>(
   {
     postId:    { type: Schema.Types.ObjectId, ref: 'Post', required: true },
     userId:    { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -26,4 +28,4 @@ const CommentSchema = new Schema<CommentDoc>(
 CommentSchema.index({ postId: 1, createdAt: -1 });
 CommentSchema.index({ parentId: 1, createdAt: 1 });
 
-export const Comment = mongoose.model<CommentDoc>('Comment', CommentSchema);
+export const Comment = mongoose.model<IComment>('Comment', CommentSchema);

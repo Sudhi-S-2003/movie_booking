@@ -8,10 +8,11 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
   MONGODB_URI: z.string().min(1).default('mongodb://localhost:27017/cinema-connect'),
   JWT_SECRET: z.string().min(1).default('secret'),
-  JWT_EXPIRES_IN: z.string().default('1d'),
+  JWT_EXPIRES_IN: z.string().default('15m'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   API_URL: z.string().url().default('http://localhost:5000'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
+  APP_NAME: z.string().default('CinemaConnect'),
   /**
    * Pre-shared secret for the `/webhooks/telinfy/signature` endpoint. If
    * unset, the signature route rejects every request with `secret_unset`.

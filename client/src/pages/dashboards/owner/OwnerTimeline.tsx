@@ -73,7 +73,7 @@ export const OwnerTimeline = () => {
       title="Timeline"
       accent="Schedule"
       accentColor="text-accent-purple"
-      badge="Pro v2.1"
+      badge="Scheduler Active"
       subtitle="Manage movie showtimes for your screens."
       headerActions={
         <button

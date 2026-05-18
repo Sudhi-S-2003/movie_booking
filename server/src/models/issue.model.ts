@@ -15,11 +15,11 @@
 // to answer every question we'd otherwise need a receipts table for.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 // ─── Issue ───────────────────────────────────────────────────────────────────
 
-export interface IssueDoc extends Document {
+export interface IIssue {
   userId?: mongoose.Types.ObjectId;
   isGuest: boolean;
   guestInfo?: {
@@ -43,7 +43,9 @@ export interface IssueDoc extends Document {
   updatedAt: Date;
 }
 
-const IssueSchema = new Schema<IssueDoc>(
+export type IssueDoc = mongoose.HydratedDocument<IIssue>;
+
+const IssueSchema = new Schema<IIssue>(
   {
     userId:  { type: Schema.Types.ObjectId, ref: 'User' },
     isGuest: { type: Boolean, default: false },
@@ -73,7 +75,7 @@ IssueSchema.index({ updatedAt: -1 }); // admin listing sort
 
 // ─── IssueMessage ────────────────────────────────────────────────────────────
 
-export interface IssueMessageDoc extends Document {
+export interface IIssueMessage {
   issueId:    mongoose.Types.ObjectId;
   senderId?:  mongoose.Types.ObjectId;
   senderName: string;
@@ -89,7 +91,9 @@ export interface IssueMessageDoc extends Document {
   updatedAt: Date;
 }
 
-const IssueMessageSchema = new Schema<IssueMessageDoc>(
+export type IssueMessageDoc = mongoose.HydratedDocument<IIssueMessage>;
+
+const IssueMessageSchema = new Schema<IIssueMessage>(
   {
     issueId:     { type: Schema.Types.ObjectId, ref: 'Issue', required: true },
     senderId:    { type: Schema.Types.ObjectId, ref: 'User' },
@@ -122,14 +126,16 @@ IssueMessageSchema.index({ issueId: 1, createdAt: 1, _id: 1 });
 
 // ─── IssueReadCursor ─────────────────────────────────────────────────────────
 
-export interface IssueReadCursorDoc extends Document {
+export interface IIssueReadCursor {
   userId:            mongoose.Types.ObjectId;
   issueId:           mongoose.Types.ObjectId;
   lastReadMessageId: mongoose.Types.ObjectId;
   lastReadAt:        Date;
 }
 
-const IssueReadCursorSchema = new Schema<IssueReadCursorDoc>(
+export type IssueReadCursorDoc = mongoose.HydratedDocument<IIssueReadCursor>;
+
+const IssueReadCursorSchema = new Schema<IIssueReadCursor>(
   {
     userId:            { type: Schema.Types.ObjectId, ref: 'User',         required: true },
     issueId:           { type: Schema.Types.ObjectId, ref: 'Issue',        required: true },
@@ -144,6 +150,6 @@ IssueReadCursorSchema.index({ userId: 1, issueId: 1 }, { unique: true });
 
 // ─── Model exports ───────────────────────────────────────────────────────────
 
-export const Issue           = mongoose.model<IssueDoc>('Issue', IssueSchema);
-export const IssueMessage    = mongoose.model<IssueMessageDoc>('IssueMessage', IssueMessageSchema);
-export const IssueReadCursor = mongoose.model<IssueReadCursorDoc>('IssueReadCursor', IssueReadCursorSchema);
+export const Issue           = mongoose.model<IIssue>('Issue', IssueSchema);
+export const IssueMessage    = mongoose.model<IIssueMessage>('IssueMessage', IssueMessageSchema);
+export const IssueReadCursor = mongoose.model<IIssueReadCursor>('IssueReadCursor', IssueReadCursorSchema);

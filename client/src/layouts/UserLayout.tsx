@@ -23,7 +23,6 @@ const useUserSidebarConfig = (): SidebarConfig => {
         items: [
           { icon: Ticket, label: 'My Tickets', to: '/user/bookings', colorClass: 'text-accent-blue' },
           { icon: BarChart3, label: 'Stats', to: '/user/stats', colorClass: 'text-accent-pink' },
-          { icon: ShieldCheck, label: 'Sessions', to: '/user/sessions', colorClass: 'text-emerald-400' },
         ],
       },
       {
@@ -38,7 +37,12 @@ const useUserSidebarConfig = (): SidebarConfig => {
           { icon: KeyRound, label: 'API Keys', to: '/user/api-keys', colorClass: 'text-emerald-400' },
           { icon: Puzzle, label: 'Integrations', to: '/user/integrations', colorClass: 'text-accent-purple' },
         ],
-
+      },
+      {
+        label: 'Security',
+        items: [
+          { icon: ShieldCheck, label: 'Security', to: '/user/security', colorClass: 'text-accent-pink' },
+        ],
       },
       {
         label: 'Help',

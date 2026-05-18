@@ -7,6 +7,7 @@ import { useLogout } from '../../hooks/useLogout.js';
 import { useBookingStore } from '../../store/bookingStore.js';
 import { useNavigate } from 'react-router-dom';
 import { CitySelector } from './CitySelector.js';
+import { safeSession } from '../../utils/storage.js';
 
 
 export const Navbar = memo(() => {
@@ -36,11 +37,11 @@ export const Navbar = memo(() => {
   };
 
   const handleAccessAccount = () => {
-    // Store current path in localStorage for redirect after login
+    // Store current path in sessionStorage for redirect after login
     const currentPath = window.location.pathname;
     // Don't store auth paths or root if not needed
     if (!['/login', '/register', '/logout'].includes(currentPath)) {
-      localStorage.setItem('redirectPath', currentPath);
+      safeSession.setItem('redirectPath', currentPath);
     }
   };
 

@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-export interface HashtagDoc extends Document {
+export interface IHashtag {
   name:          string;
   slug:          string;
   description?:  string;
@@ -15,7 +15,9 @@ export interface HashtagDoc extends Document {
   updatedAt:     Date;
 }
 
-const HashtagSchema = new Schema<HashtagDoc>(
+export type HashtagDoc = mongoose.HydratedDocument<IHashtag>;
+
+const HashtagSchema = new Schema<IHashtag>(
   {
     name:          { type: String, required: true, trim: true },
     slug:          { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -35,4 +37,4 @@ HashtagSchema.index({ trendingScore: -1 });
 HashtagSchema.index({ postCount: -1 });
 HashtagSchema.index({ name: 'text', description: 'text' });
 
-export const Hashtag = mongoose.model<HashtagDoc>('Hashtag', HashtagSchema);
+export const Hashtag = mongoose.model<IHashtag>('Hashtag', HashtagSchema);

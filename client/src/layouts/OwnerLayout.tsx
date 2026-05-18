@@ -21,7 +21,6 @@ const config: SidebarConfig = {
         { icon: BarChart3, label: 'Dashboard', to: '/owner/overview', colorClass: 'text-accent-pink' },
         { icon: LayoutIcon, label: 'Screens', to: '/owner/architecture', colorClass: 'text-accent-blue' },
         { icon: Clock, label: 'Showtimes', to: '/owner/timeline', colorClass: 'text-accent-purple' },
-        { icon: ShieldCheck, label: 'Sessions', to: '/owner/sessions', colorClass: 'text-emerald-400' },
       ],
     },
     {
@@ -38,7 +37,12 @@ const config: SidebarConfig = {
         { icon: Puzzle, label: 'Integrations', to: '/owner/integrations', colorClass: 'text-accent-purple' },
       ],
     },
-
+    {
+      label: 'Security',
+      items: [
+        { icon: ShieldCheck, label: 'Security', to: '/owner/security', colorClass: 'text-accent-pink' },
+      ],
+    },
   ],
   bottomItems: [
     { icon: Settings, label: 'Settings', to: '/owner/settings', colorClass: 'text-gray-400' },

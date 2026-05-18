@@ -13,11 +13,11 @@
 //                     rows but the history is preserved.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 export type ApiKeyCategory = 'chat' | 'code-share';
 
-export interface ApiKeyDoc extends Document {
+export interface IApiKey {
   userId:      mongoose.Types.ObjectId;
   name:        string;
   category:    ApiKeyCategory;
@@ -29,7 +29,9 @@ export interface ApiKeyDoc extends Document {
   updatedAt:   Date;
 }
 
-const ApiKeySchema = new Schema<ApiKeyDoc>(
+export type ApiKeyDoc = mongoose.HydratedDocument<IApiKey>;
+
+const ApiKeySchema = new Schema<IApiKey>(
   {
     userId:     { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name:       { type: String, required: true, trim: true, maxlength: 80 },
@@ -51,4 +53,4 @@ const ApiKeySchema = new Schema<ApiKeyDoc>(
 ApiKeySchema.index({ userId: 1, createdAt: -1 });
 // Fast lookup for verification — `keyId` is already unique globally.
 
-export const ApiKey = mongoose.model<ApiKeyDoc>('ApiKey', ApiKeySchema);
+export const ApiKey = mongoose.model<IApiKey>('ApiKey', ApiKeySchema);

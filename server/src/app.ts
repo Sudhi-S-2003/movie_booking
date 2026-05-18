@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { env } from './env.js';
 import authRoutes from './routes/auth.routes.js';
+import passkeyRoutes from './routes/passkey.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import movieRoutes from './routes/movie.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
@@ -60,6 +61,7 @@ app.get('/health', (_req, res) => {
 
 // Route Registration
 app.use('/api/auth', authRoutes);
+app.use('/api/auth/passkey', passkeyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/booking', bookingRoutes);

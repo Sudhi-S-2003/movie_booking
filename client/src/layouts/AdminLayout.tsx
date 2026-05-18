@@ -20,7 +20,6 @@ const config: SidebarConfig = {
       label: 'Analytics',
       items: [
         { icon: BarChart3, label: 'Dashboard', to: '/admin/overview', colorClass: 'text-accent-blue' },
-        { icon: ShieldCheck, label: 'Sessions', to: '/admin/sessions', colorClass: 'text-emerald-400' },
       ],
     },
     {
@@ -45,7 +44,12 @@ const config: SidebarConfig = {
         { icon: Puzzle, label: 'Integrations', to: '/admin/integrations', colorClass: 'text-accent-purple' },
       ],
     },
-
+    {
+      label: 'Security',
+      items: [
+        { icon: ShieldCheck, label: 'Security', to: '/admin/security', colorClass: 'text-accent-blue' },
+      ],
+    },
   ],
   bottomItems: [
     { icon: Settings, label: 'Settings', to: '/admin/settings', colorClass: 'text-gray-400' },

@@ -216,7 +216,7 @@ export const OwnerArchitecture = () => {
     <DashboardPage
       title="Architecture"
       accentColor="text-accent-pink"
-      badge="v3.0"
+      badge="Blueprint Active"
       subtitle="Design high-performance cinematic spaces with visual intelligence."
       icon={<Sparkles size={20} className="text-accent-blue" />}
     >

@@ -14,9 +14,9 @@
 // (`userId` set) or a signed-URL guest (`externalUserName` set) — never both.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-interface MessageReadDoc extends Document {
+export interface IMessageRead {
   conversationId:   mongoose.Types.ObjectId;
   messageId:        mongoose.Types.ObjectId;
   userId?:          mongoose.Types.ObjectId;
@@ -24,7 +24,9 @@ interface MessageReadDoc extends Document {
   readAt:           Date;
 }
 
-const MessageReadSchema = new Schema<MessageReadDoc>(
+export type MessageReadDoc = mongoose.HydratedDocument<IMessageRead>;
+
+const MessageReadSchema = new Schema<IMessageRead>(
   {
     conversationId:   { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     messageId:        { type: Schema.Types.ObjectId, ref: 'ChatMessage',  required: true },
@@ -48,4 +50,4 @@ MessageReadSchema.index(
 // Secondary index for aggregations (unread count corrections, etc.).
 MessageReadSchema.index({ conversationId: 1, readAt: 1 });
 
-export const MessageRead = mongoose.model<MessageReadDoc>('MessageRead', MessageReadSchema);
+export const MessageRead = mongoose.model<IMessageRead>('MessageRead', MessageReadSchema);

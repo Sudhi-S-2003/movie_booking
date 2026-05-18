@@ -5,6 +5,7 @@ import { ArrowLeft, Check, Plus, X, AlertCircle, Sparkles } from 'lucide-react';
 import { usersApi } from '../services/api/index.js';
 import type { UserProfile, SocialLink } from '../services/api/users.api.js';
 import { SEO } from '../components/common/SEO.js';
+import { useAuthStore } from '../store/authStore.js';
 
 const inputCls =
   'w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-accent-pink';
@@ -309,6 +310,33 @@ export const ProfileEdit = () => {
           >
             <Plus size={12} /> Add link
           </button>
+        </Section>
+
+        {/* Security / 2FA */}
+        <Section title="Security" subtitle="Protect your account with an extra layer of protection.">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white/[0.01] border border-white/5 rounded-2xl">
+            <div>
+              <h3 className="text-sm font-bold text-white">Two-Factor Authentication (2FA)</h3>
+              <p className="text-xs text-gray-500 mt-1">
+                {useAuthStore.getState().user?.twoFactorEnabled
+                  ? 'Enabled — secure verification required on login.'
+                  : 'Disabled — enhance your account security.'}
+              </p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/settings/2fa');
+              }}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                useAuthStore.getState().user?.twoFactorEnabled
+                  ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20'
+                  : 'bg-accent-blue/10 hover:bg-accent-blue/20 text-accent-blue border border-accent-blue/20'
+              }`}
+            >
+              {useAuthStore.getState().user?.twoFactorEnabled ? 'Disable' : 'Enable / Setup'}
+            </button>
+          </div>
         </Section>
 
         {saveError && (

@@ -24,10 +24,10 @@
 // from reality instead.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { LONGTEXT_PREVIEW_LIMIT } from './messageChunk.model.js';
 
-export interface LongtextUploadDoc extends Document {
+export interface ILongtextUpload {
   uploadId:          string;
   /** Present for the JWT flow. */
   userId?:           mongoose.Types.ObjectId;
@@ -42,7 +42,9 @@ export interface LongtextUploadDoc extends Document {
   createdAt:         Date;
 }
 
-const LongtextUploadSchema = new Schema<LongtextUploadDoc>(
+export type LongtextUploadDoc = mongoose.HydratedDocument<ILongtextUpload>;
+
+const LongtextUploadSchema = new Schema<ILongtextUpload>(
   {
     uploadId:         { type: String, required: true, unique: true },
     userId:           { type: Schema.Types.ObjectId, ref: 'User' },
@@ -73,7 +75,7 @@ LongtextUploadSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 });
 LongtextUploadSchema.index({ userId: 1, uploadId: 1 });
 LongtextUploadSchema.index({ externalUserName: 1, uploadId: 1 });
 
-export const LongtextUpload = mongoose.model<LongtextUploadDoc>(
+export const LongtextUpload = mongoose.model<ILongtextUpload>(
   'LongtextUpload',
   LongtextUploadSchema,
 );

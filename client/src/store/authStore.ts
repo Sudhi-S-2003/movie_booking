@@ -9,13 +9,16 @@ export interface User {
   avatar?: string;
   isOnline?: boolean;
   lastSeen?: string;
+  twoFactorEnabled?: boolean;
 }
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   token: string | null;
-  setAuth: (user: User, token: string) => void;
+  refreshToken: string | null;
+  setAuth: (user: User, token: string, refreshToken: string) => void;
+  setTokens: (token: string, refreshToken: string) => void;
   logout: () => void;
 }
 
@@ -25,8 +28,10 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       token: null,
-      setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      refreshToken: null,
+      setAuth: (user, token, refreshToken) => set({ user, token, refreshToken, isAuthenticated: true }),
+      setTokens: (token, refreshToken) => set({ token, refreshToken }),
+      logout: () => set({ user: null, token: null, refreshToken: null, isAuthenticated: false }),
     }),
     {
       name: 'cinema-connect-auth',

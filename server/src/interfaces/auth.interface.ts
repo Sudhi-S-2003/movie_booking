@@ -41,6 +41,7 @@ declare global {
   namespace Express {
     interface Request {
       user?:         AuthUser;
+      userId?:       string;
       externalUser?: ExternalUserIdentity;
       apiServiceId?: string;
       apiServiceCategory?: ApiKeyCategory;

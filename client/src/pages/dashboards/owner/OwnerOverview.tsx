@@ -29,7 +29,7 @@ export const OwnerOverview = () => {
       title="Overview"
       accent="Stats"
       accentColor="text-accent-pink"
-      badge="v2.0.4"
+      badge="Active Node"
       subtitle="Manage your theatres and screens."
       headerActions={<NotificationSetup />}
     >

@@ -70,6 +70,7 @@ export const isAuthenticated = async (
     Session.findByIdAndUpdate(session._id, { lastActive: new Date() }).catch(console.error);
 
     req.user = user;
+    req.userId = user._id.toString();
     req.sessionId = session._id.toString();
 
     // Defensive: seed a free subscription + buckets for legacy users that
@@ -113,6 +114,7 @@ export const optionalAuthenticate = async (
       const user = await User.findById(decoded.id);
       if (user) {
         req.user = user;
+        req.userId = user._id.toString();
         req.sessionId = session._id.toString();
         // Update last active
         Session.findByIdAndUpdate(session._id, { lastActive: new Date() }).catch(console.error);

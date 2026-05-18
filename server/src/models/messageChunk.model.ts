@@ -13,7 +13,7 @@
 // completed) are garbage-collected by the TTL index below.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 export const LONGTEXT_PREVIEW_LIMIT = 1000;
 export const LONGTEXT_CHUNK_LIMIT   = 10_000;
@@ -27,7 +27,7 @@ export const LONGTEXT_CHUNK_LIMIT   = 10_000;
  */
 export const LONGTEXT_MAX_CHUNKS   = 100;
 
-export interface MessageChunkDoc extends Document {
+export interface IMessageChunk {
   /** Present once the chunk belongs to a completed message. */
   messageId?:   mongoose.Types.ObjectId;
   /** Ephemeral grouping during the upload phase. Cleared on complete. */
@@ -40,7 +40,9 @@ export interface MessageChunkDoc extends Document {
   createdAt:    Date;
 }
 
-const MessageChunkSchema = new Schema<MessageChunkDoc>(
+export type MessageChunkDoc = mongoose.HydratedDocument<IMessageChunk>;
+
+const MessageChunkSchema = new Schema<IMessageChunk>(
   {
     messageId: { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
     uploadId:  { type: String, trim: true },
@@ -78,4 +80,4 @@ MessageChunkSchema.index(
   },
 );
 
-export const MessageChunk = mongoose.model<MessageChunkDoc>('MessageChunk', MessageChunkSchema);
+export const MessageChunk = mongoose.model<IMessageChunk>('MessageChunk', MessageChunkSchema);

@@ -17,6 +17,7 @@
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@lezer/highlight": "^1.2.3",
+    "@simplewebauthn/browser": "^9.0.1",
     "@tailwindcss/vite": "^4.2.4",
     "@tanstack/react-query": "^5.100.5",
     "@tanstack/react-virtual": "^3.13.24",

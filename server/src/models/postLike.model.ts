@@ -1,12 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-export interface PostLikeDoc extends Document {
+export interface IPostLike {
   userId:    mongoose.Types.ObjectId;
   postId:    mongoose.Types.ObjectId;
   createdAt: Date;
 }
 
-const PostLikeSchema = new Schema<PostLikeDoc>(
+export type PostLikeDoc = mongoose.HydratedDocument<IPostLike>;
+
+const PostLikeSchema = new Schema<IPostLike>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     postId: { type: Schema.Types.ObjectId, ref: 'Post', required: true },
@@ -17,4 +19,4 @@ const PostLikeSchema = new Schema<PostLikeDoc>(
 PostLikeSchema.index({ userId: 1, postId: 1 }, { unique: true });
 PostLikeSchema.index({ postId: 1 });
 
-export const PostLike = mongoose.model<PostLikeDoc>('PostLike', PostLikeSchema);
+export const PostLike = mongoose.model<IPostLike>('PostLike', PostLikeSchema);

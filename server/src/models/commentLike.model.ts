@@ -1,12 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-export interface CommentLikeDoc extends Document {
+export interface ICommentLike {
   userId:    mongoose.Types.ObjectId;
   commentId: mongoose.Types.ObjectId;
   createdAt: Date;
 }
 
-const CommentLikeSchema = new Schema<CommentLikeDoc>(
+export type CommentLikeDoc = mongoose.HydratedDocument<ICommentLike>;
+
+const CommentLikeSchema = new Schema<ICommentLike>(
   {
     userId:    { type: Schema.Types.ObjectId, ref: 'User', required: true },
     commentId: { type: Schema.Types.ObjectId, ref: 'Comment', required: true },
@@ -17,4 +19,4 @@ const CommentLikeSchema = new Schema<CommentLikeDoc>(
 CommentLikeSchema.index({ userId: 1, commentId: 1 }, { unique: true });
 CommentLikeSchema.index({ commentId: 1 });
 
-export const CommentLike = mongoose.model<CommentLikeDoc>('CommentLike', CommentLikeSchema);
+export const CommentLike = mongoose.model<ICommentLike>('CommentLike', CommentLikeSchema);

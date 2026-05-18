@@ -14,11 +14,11 @@
 // `userId` of the actor so the workflow is auditable.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 // ─── ConversationInvite ──────────────────────────────────────────────────────
 
-export interface ConversationInviteDoc extends Document {
+export interface IConversationInvite {
   conversationId: mongoose.Types.ObjectId;
   /** URL-safe random string. The indexed lookup key. */
   token:          string;
@@ -34,7 +34,9 @@ export interface ConversationInviteDoc extends Document {
   updatedAt:      Date;
 }
 
-const ConversationInviteSchema = new Schema<ConversationInviteDoc>(
+export type ConversationInviteDoc = mongoose.HydratedDocument<IConversationInvite>;
+
+const ConversationInviteSchema = new Schema<IConversationInvite>(
   {
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     token:          { type: String, required: true, unique: true },
@@ -54,7 +56,7 @@ ConversationInviteSchema.index({ conversationId: 1, createdAt: -1 });
 
 export type JoinRequestStatus = 'pending' | 'approved' | 'rejected';
 
-export interface ConversationJoinRequestDoc extends Document {
+export interface IConversationJoinRequest {
   conversationId: mongoose.Types.ObjectId;
   userId:         mongoose.Types.ObjectId;
   status:         JoinRequestStatus;
@@ -66,7 +68,9 @@ export interface ConversationJoinRequestDoc extends Document {
   updatedAt:      Date;
 }
 
-const ConversationJoinRequestSchema = new Schema<ConversationJoinRequestDoc>(
+export type ConversationJoinRequestDoc = mongoose.HydratedDocument<IConversationJoinRequest>;
+
+const ConversationJoinRequestSchema = new Schema<IConversationJoinRequest>(
   {
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     userId:         { type: Schema.Types.ObjectId, ref: 'User',         required: true },
@@ -95,12 +99,12 @@ ConversationJoinRequestSchema.index({ userId: 1, status: 1 });
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
-export const ConversationInvite = mongoose.model<ConversationInviteDoc>(
+export const ConversationInvite = mongoose.model<IConversationInvite>(
   'ConversationInvite',
   ConversationInviteSchema,
 );
 
-export const ConversationJoinRequest = mongoose.model<ConversationJoinRequestDoc>(
+export const ConversationJoinRequest = mongoose.model<IConversationJoinRequest>(
   'ConversationJoinRequest',
   ConversationJoinRequestSchema,
 );

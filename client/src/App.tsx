@@ -58,6 +58,11 @@ import { CodeShare } from './pages/CodeShare.js';
 import { ApiDocsSignedService } from './pages/ApiDocsSignedService.js';
 import { ScrollToTop } from './components/common/ScrollToTop.js';
 import { ToastContainer } from './components/common/ToastContainer.js';
+import { TwoFactorSetup } from './pages/TwoFactorSetup.js';
+import { LoginVerify2FA } from './pages/LoginVerify2FA.js';
+import { SecurityLayout } from './components/layout/SecurityLayout.js';
+import { TwoFactorManager } from './components/auth/TwoFactorManager.js';
+import { PasskeyManager } from './components/auth/PasskeyManager.js';
 
 
 import { SEO } from './components/common/SEO.js';
@@ -90,6 +95,7 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route element={<PublicRoute><AuthLayout /></PublicRoute>}>
                   <Route path="/login" element={<Login />} />
+                  <Route path="/login/verify-2fa" element={<LoginVerify2FA />} />
                   <Route path="/register" element={<Register />} />
                 </Route>
 
@@ -103,6 +109,7 @@ const App = () => {
                 <Route path="/post/:postId" element={<PostDetail />} />
                 <Route path="/user/:username" element={<UserDetails />} />
                 <Route path="/user/:username/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
+                <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorSetup /></ProtectedRoute>} />
                 <Route path="/booking/:showtimeId" element={<SeatBooking />} />
                 <Route path="/search" element={<Search />} />
 
@@ -143,7 +150,12 @@ const App = () => {
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
                 <Route path="integrations" element={<Integrations />} />
-                <Route path="sessions" element={<SessionsPage />} />
+                <Route path="security" element={<SecurityLayout />}>
+                  <Route index element={<Navigate to="2fa" replace />} />
+                  <Route path="2fa" element={<TwoFactorManager />} />
+                  <Route path="pass-key" element={<PasskeyManager />} />
+                  <Route path="sessions" element={<SessionsPage />} />
+                </Route>
                 <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Settings Module Coming Soon</div>} />
 
               </Route>
@@ -171,7 +183,12 @@ const App = () => {
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
                 <Route path="integrations" element={<Integrations />} />
-                <Route path="sessions" element={<SessionsPage />} />
+                <Route path="security" element={<SecurityLayout />}>
+                  <Route index element={<Navigate to="2fa" replace />} />
+                  <Route path="2fa" element={<TwoFactorManager />} />
+                  <Route path="pass-key" element={<PasskeyManager />} />
+                  <Route path="sessions" element={<SessionsPage />} />
+                </Route>
                 <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">System Settings Hub Coming Soon</div>} />
 
               </Route>
@@ -197,7 +214,12 @@ const App = () => {
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
                 <Route path="integrations" element={<Integrations />} />
-                <Route path="sessions" element={<SessionsPage />} />
+                <Route path="security" element={<SecurityLayout />}>
+                  <Route index element={<Navigate to="2fa" replace />} />
+                  <Route path="2fa" element={<TwoFactorManager />} />
+                  <Route path="pass-key" element={<PasskeyManager />} />
+                  <Route path="sessions" element={<SessionsPage />} />
+                </Route>
                 <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Account Settings Coming Soon</div>} />
 
               </Route>

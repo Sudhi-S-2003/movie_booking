@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-export interface CodeShareDoc extends Document {
+export interface ICodeShare {
   createdBy: mongoose.Types.ObjectId;
   title: string;
   totalLength: number;
@@ -11,7 +11,9 @@ export interface CodeShareDoc extends Document {
   updatedAt: Date;
 }
 
-const CodeShareSchema = new Schema<CodeShareDoc>(
+export type CodeShareDoc = mongoose.HydratedDocument<ICodeShare>;
+
+const CodeShareSchema = new Schema<ICodeShare>(
   {
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     title: { type: String, required: true, trim: true, maxlength: 100 },
@@ -26,4 +28,4 @@ const CodeShareSchema = new Schema<CodeShareDoc>(
 // Index for expiry
 CodeShareSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export const CodeShare = mongoose.model<CodeShareDoc>('CodeShare', CodeShareSchema);
+export const CodeShare = mongoose.model<ICodeShare>('CodeShare', CodeShareSchema);

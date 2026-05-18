@@ -16,6 +16,7 @@
     "test": "echo \"No tests\" && exit 0"
   },
   "dependencies": {
+    "@simplewebauthn/server": "^13.3.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.76.0",
     "cheerio": "^1.2.0",
@@ -28,7 +29,9 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.5.0",
     "morgan": "^1.10.1",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.8.3",
+    "speakeasy": "^2.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -39,6 +42,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.6.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/speakeasy": "^2.0.10",
     "cross-env": "^10.1.0",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",

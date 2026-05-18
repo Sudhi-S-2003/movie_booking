@@ -7,6 +7,7 @@ import { SEO } from '../components/common/SEO.js';
 import { PAGE_META } from '../constants/seo.constants.js';
 import { UsernameSuggestions } from '../components/auth/UsernameSuggestions.js';
 import { authApi } from '../services/api/auth.api.js';
+import { safeSession } from '../utils/storage.js';
 
 export const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -19,8 +20,8 @@ export const Register = () => {
   const location = useLocation();
   const { setAuth } = useAuthStore();
   
-  // Use location state first, then fallback to localStorage
-  const from = location.state?.from?.pathname || localStorage.getItem('redirectPath') || '/';
+  // Use location state first, then fallback to sessionStorage safely
+  const from = location.state?.from?.pathname || safeSession.getItem('redirectPath') || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +29,11 @@ export const Register = () => {
     setError('');
 
     try {
-      const { user, token } = await authApi.register(formData);
-      setAuth(user, token);
+      const { user, token, refreshToken } = await authApi.register(formData);
+      setAuth(user, token, refreshToken || '');
 
-      // Clear the redirect path from localStorage after use
-      localStorage.removeItem('redirectPath');
+      // Clear the redirect path from sessionStorage safely after use
+      safeSession.removeItem('redirectPath');
 
       window.location.href = from;
     } catch (err: any) {

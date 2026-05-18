@@ -7,6 +7,8 @@ export interface ISession {
   lastActive: Date;
   isValid: boolean;
   isOnline: boolean;
+  refreshToken?: string;
+  refreshTokenExpiresAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +40,15 @@ const sessionSchema = new mongoose.Schema<ISession>(
     isOnline: {
       type: Boolean,
       default: false,
+    },
+    refreshToken: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+    refreshTokenExpiresAt: {
+      type: Date,
     },
   },
   { timestamps: true }
