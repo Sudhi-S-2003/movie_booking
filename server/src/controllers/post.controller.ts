@@ -11,6 +11,7 @@ import { getHashtagNamespace } from '../socket/index.js';
 import { parsePage, buildPageEnvelope } from '../utils/pagination.js';
 import { hydrateAuthors } from '../utils/hydration.js';
 import { enqueueNotification } from '../queues/notification.queue.js';
+import { getClientIp } from '../utils/ip.util.js';
 
 // GET /api/hashtags/:slug/posts?sort=latest|top|most_commented
 export const listPostsForHashtag = async (req: AuthRequest, res: Response) => {
@@ -72,7 +73,7 @@ export const getPost = async (req: AuthRequest, res: Response) => {
     const postId = String(req.params.id);
     const viewerKey = req.user?._id
       ? `u:${req.user._id}:${postId}`
-      : `ip:${req.ip ?? 'unknown'}:${postId}`;
+      : `ip:${getClientIp(req)}:${postId}`;
 
     const lastView = recentViews.get(viewerKey);
     const shouldCount = !lastView || Date.now() - lastView > VIEW_COOLDOWN;

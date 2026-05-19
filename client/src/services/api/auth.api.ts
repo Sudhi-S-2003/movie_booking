@@ -33,6 +33,9 @@ export const authApi = {
   register: (payload: any) => 
     http.post<AuthResponse>('/auth/register', payload),
     
+  getCaptcha: () =>
+    http.get<{ success: boolean; captchaToken: string; captchaSvg: string }>('/auth/captcha'),
+    
   logout: () => 
     http.post<{ success: boolean; message: string }>('/auth/logout'),
 

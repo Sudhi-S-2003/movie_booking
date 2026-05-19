@@ -13,6 +13,8 @@ import { disconnectSessionSockets } from '../socket/index.js';
 import { notificationService } from '../services/notification.service.js';
 import { generateTotpSecret, verifyTotpToken, generateBackupCodes, hashBackupCodes, verifyAndConsumeBackupCode } from '../utils/totp.utils.js';
 import { generateRandomToken } from '../utils/token.utils.js';
+import { getClientIp } from '../utils/ip.util.js';
+import { generateCaptcha, createCaptchaToken, verifyCaptcha } from '../utils/captcha.utils.js';
 
 const generateToken = (id: string, role: string, sessionId: string) =>
   jwt.sign(
@@ -30,7 +32,11 @@ const generateTempToken = (id: string) =>
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, username, email, password, role } = req.body;
+    const { name, username, email, password, role, captchaText, captchaToken } = req.body;
+
+    if (!verifyCaptcha(captchaText, captchaToken)) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired captcha. Please try again.' });
+    }
 
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
@@ -66,7 +72,7 @@ export const register = async (req: Request, res: Response) => {
     const session = await Session.create({
       userId: user._id,
       userAgent: req.headers['user-agent'] || 'unknown',
-      ip: req.ip || 'unknown',
+      ip: getClientIp(req),
       refreshToken,
       refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
@@ -93,6 +99,12 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    const { captchaText, captchaToken } = req.body;
+
+    if (!verifyCaptcha(captchaText, captchaToken)) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired captcha. Please try again.' });
+    }
+
     const raw = (req.body?.identifier ?? req.body?.email ?? req.body?.username ?? '')
       .toString()
       .trim();
@@ -130,7 +142,7 @@ export const login = async (req: Request, res: Response) => {
     const session = await Session.create({
       userId: user._id,
       userAgent: req.headers['user-agent'] || 'unknown',
-      ip: req.ip || 'unknown',
+      ip: getClientIp(req),
       refreshToken,
       refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
@@ -157,6 +169,21 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (error: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(error) });
+  }
+};
+
+export const getCaptcha = async (_req: Request, res: Response) => {
+  try {
+    const { text, captchaSvg } = generateCaptcha();
+    const captchaToken = createCaptchaToken(text);
+
+    res.status(200).json({
+      success: true,
+      captchaToken,
+      captchaSvg,
+    });
+  } catch (error) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
   }
 };
@@ -376,7 +403,7 @@ export const complete2FALogin = async (req: Request, res: Response) => {
     const session = await Session.create({
       userId: user._id,
       userAgent: req.headers['user-agent'] || 'unknown',
-      ip: req.ip || 'unknown',
+      ip: getClientIp(req),
       refreshToken,
       refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });

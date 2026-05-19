@@ -10,6 +10,7 @@ import { registerChatListHandlers } from './channels/chat-list.channel.js';
 import { registerNotificationHandlers } from './channels/notification-push.channel.js';
 import { registerPresenceHandlers } from './channels/presence.channel.js';
 import { socketAuthMiddleware } from './socketAuth.middleware.js';
+import { globalSocketRateLimiter } from '../middleware/rateLimit.middleware.js';
 
 let io: Server;
 let bookingNamespace:         Namespace;
@@ -31,6 +32,9 @@ export const initSocket = (server: HttpServer) => {
   });
 
   const setupNamespace = (ns: Namespace, registerHandlers: (ns: Namespace) => void) => {
+    // Apply connection rate limiting to protect namespace socket resources
+    ns.use(globalSocketRateLimiter);
+
     ns.on('connection', (socket) => {
       if (socket.data.userId) {
         socket.join(`user:${socket.data.userId}`);

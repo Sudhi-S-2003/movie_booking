@@ -29,12 +29,17 @@ import integrationRoutes from './routes/integration.routes.js';
 import urlPreviewRoutes from './routes/urlPreview.routes.js';
 import apiServicePublicRoutes from './routes/apiService.public.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
+import { getClientIp } from './utils/ip.util.js';
+import { authRateLimiter, apiRateLimiter } from './middleware/rateLimit.middleware.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Enable trust proxy so that req.ip gets populated correctly when running behind reverse proxies
+app.set('trust proxy', true);
 
 // Middleware
 app.use(helmet());
@@ -55,13 +60,17 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Health Check
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'OK', message: 'CinemaConnect API is running' });
+app.get('/health', (req, res) => {
+  const ip = getClientIp(req);
+  res.status(200).json({ status: 'OK', message: 'CinemaConnect API is running', ip });
 });
 
+// Apply Global Rate Limiting to all /api endpoints (excluding external webhooks)
+app.use('/api', apiRateLimiter);
+
 // Route Registration
-app.use('/api/auth', authRoutes);
-app.use('/api/auth/passkey', passkeyRoutes);
+app.use('/api/auth', authRateLimiter, authRoutes);
+app.use('/api/auth/passkey', authRateLimiter, passkeyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/booking', bookingRoutes);

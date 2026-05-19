@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { register, login, logout, getMe, listSessions, revokeSession, refresh, setup2FA, verify2FA, disable2FA, complete2FALogin } from '../controllers/auth.controller.js';
+import { register, login, logout, getMe, listSessions, revokeSession, refresh, setup2FA, verify2FA, disable2FA, complete2FALogin, getCaptcha } from '../controllers/auth.controller.js';
 import { isAuthenticated } from '../middleware/auth.middleware.js';
 import { requireTempToken } from '../middleware/twoFactor.middleware.js';
 
 const router = Router();
 
+router.get('/captcha', getCaptcha);
 router.post('/register', register);
 router.post('/login', login);
 router.post('/refresh', refresh);

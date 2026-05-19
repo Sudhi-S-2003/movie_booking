@@ -14,6 +14,7 @@ import { getErrorMessage } from '../utils/error.utils.js';
 import { generateRandomToken } from '../utils/token.utils.js';
 import type { SignOptions } from 'jsonwebtoken';
 import type { JwtPayload } from '../interfaces/auth.interface.js';
+import { getClientIp } from '../utils/ip.util.js';
 
 const rpID = new URL(env.FRONTEND_URL).hostname;
 
@@ -231,7 +232,7 @@ export const verifyAuthentication = async (req: Request, res: Response) => {
     const session = await Session.create({
       userId: user._id,
       userAgent: req.headers['user-agent'] || 'unknown',
-      ip: req.ip || 'unknown',
+      ip: getClientIp(req),
       refreshToken,
       refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });

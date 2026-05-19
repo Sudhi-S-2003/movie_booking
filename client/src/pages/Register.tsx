@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
@@ -8,6 +8,7 @@ import { PAGE_META } from '../constants/seo.constants.js';
 import { UsernameSuggestions } from '../components/auth/UsernameSuggestions.js';
 import { authApi } from '../services/api/auth.api.js';
 import { safeSession } from '../utils/storage.js';
+import { Captcha, type CaptchaRef } from '../components/auth/Captcha.js';
 
 export const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -16,6 +17,10 @@ export const Register = () => {
   const [error, setError] = useState('');
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[] | null>(null);
 
+  // Captcha States
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaText, setCaptchaText] = useState('');
+  const captchaRef = useRef<CaptchaRef>(null);
 
   const location = useLocation();
   const { setAuth } = useAuthStore();
@@ -29,7 +34,11 @@ export const Register = () => {
     setError('');
 
     try {
-      const { user, token, refreshToken } = await authApi.register(formData);
+      const { user, token, refreshToken } = await authApi.register({
+        ...formData,
+        captchaText: captchaText.trim(),
+        captchaToken: captchaToken
+      });
       setAuth(user, token, refreshToken || '');
 
       // Clear the redirect path from sessionStorage safely after use
@@ -37,10 +46,11 @@ export const Register = () => {
 
       window.location.href = from;
     } catch (err: any) {
-      const message = err.message || 'Registration failed';
+      const message = err.response?.data?.message || err.message || 'Registration failed';
       const suggestions: string[] | undefined = err.fieldErrors?.username ? [err.fieldErrors.username] : undefined; 
       setError(message);
       if (suggestions !== undefined) setUsernameSuggestions(suggestions);
+      captchaRef.current?.refresh(); // Refresh captcha on failure
     } finally {
       setLoading(false);
     }
@@ -123,6 +133,14 @@ export const Register = () => {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
+
+        {/* Security Captcha */}
+        <Captcha
+          ref={captchaRef}
+          onTokenChange={setCaptchaToken}
+          value={captchaText}
+          onChange={setCaptchaText}
+        />
 
         {error && (
           <motion.div 

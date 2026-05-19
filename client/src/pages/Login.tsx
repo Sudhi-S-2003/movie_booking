@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Fingerprint } from 'lucide-react';
@@ -8,6 +8,7 @@ import { PAGE_META } from '../constants/seo.constants.js';
 import { authApi } from '../services/api/auth.api.js';
 import { safeSession } from '../utils/storage.js';
 import { passkeyService } from '../services/passkey.service.js';
+import { Captcha, type CaptchaRef } from '../components/auth/Captcha.js';
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +17,11 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+
+  // Captcha States
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaText, setCaptchaText] = useState('');
+  const captchaRef = useRef<CaptchaRef>(null);
 
   const location = useLocation();
   const { setAuth } = useAuthStore();
@@ -31,7 +37,9 @@ export const Login = () => {
     try {
       const res = await authApi.login({
         identifier: loginId.trim(),
-        password: password
+        password: password,
+        captchaText: captchaText.trim(),
+        captchaToken: captchaToken
       });
 
       if (res.requires2FA && res.tempToken) {
@@ -48,6 +56,7 @@ export const Login = () => {
       }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Authentication failed');
+      captchaRef.current?.refresh(); // Refresh captcha on failure
     } finally {
       setLoading(false);
     }
@@ -121,6 +130,14 @@ export const Login = () => {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+
+          {/* Security Captcha */}
+          <Captcha
+            ref={captchaRef}
+            onTokenChange={setCaptchaToken}
+            value={captchaText}
+            onChange={setCaptchaText}
+          />
 
           <div className="flex justify-end">
             <Link to="/forgot-password" className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-accent-pink transition-colors">
