@@ -13,7 +13,7 @@ export const passkeyService = {
     const optRes = await authApi.getPasskeyRegistrationOptions();
 
     // 2. Trigger browser authenticator popups
-    const attestationResponse = await startRegistration(optRes.options);
+    const attestationResponse = await startRegistration({ optionsJSON: optRes.options });
 
     // 3. Verify registration on the server
     await authApi.verifyPasskeyRegistration({
@@ -34,7 +34,7 @@ export const passkeyService = {
     const optRes = await authApi.getPasskeyAuthenticationOptions(email);
 
     // 2. Trigger browser WebAuthn biometrics login dialog
-    const assertionResponse = await startAuthentication(optRes.options);
+    const assertionResponse = await startAuthentication({ optionsJSON: optRes.options });
 
     // 3. Verify assertion on the server and return authenticated user
     return await authApi.verifyPasskeyAuthentication({

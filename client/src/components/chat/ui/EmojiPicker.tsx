@@ -1,6 +1,5 @@
 import { memo, useRef, useEffect, useCallback } from 'react';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
+import Picker, { Theme } from 'emoji-picker-react';
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
@@ -8,7 +7,7 @@ interface EmojiPickerProps {
 }
 
 /**
- * Emoji picker drawer — wraps @emoji-mart/react with dark theme
+ * Emoji picker drawer — wraps emoji-picker-react with dark theme
  * and click-outside / Escape-to-close behaviour.
  */
 export const EmojiPicker = memo(({ onSelect, onClose }: EmojiPickerProps) => {
@@ -40,8 +39,8 @@ export const EmojiPicker = memo(({ onSelect, onClose }: EmojiPickerProps) => {
   }, [onClose]);
 
   const handleSelect = useCallback(
-    (emoji: { native: string }) => {
-      onSelect(emoji.native);
+    (emojiObject: { emoji: string }) => {
+      onSelect(emojiObject.emoji);
     },
     [onSelect],
   );
@@ -59,16 +58,10 @@ export const EmojiPicker = memo(({ onSelect, onClose }: EmojiPickerProps) => {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <Picker
-        data={data}
-        onEmojiSelect={handleSelect}
-        theme="dark"
-        previewPosition="none"
-        skinTonePosition="search"
-        maxFrequentRows={2}
-        perLine={8}
-        emojiSize={22}
-        emojiButtonSize={32}
-        set="native"
+        onEmojiClick={handleSelect}
+        theme={Theme.DARK}
+        previewConfig={{ showPreview: false }}
+        lazyLoadEmojis={true}
       />
     </div>
   );
