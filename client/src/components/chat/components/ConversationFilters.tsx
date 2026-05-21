@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Search, X, ArrowDownAZ, ArrowUpAZ } from 'lucide-react';
+import { Search, X, ArrowDownAZ, ArrowUpAZ, ChevronDown } from 'lucide-react';
 import {
   TYPE_LABELS,
   SORT_BY_LABELS,
@@ -164,7 +164,7 @@ interface FilterSelectProps {
 const FilterSelect: React.FC<FilterSelectProps> = ({ label, value, onChange, options, active }) => (
   <label
     className={[
-      'inline-flex items-center gap-1.5 pl-2.5 pr-1 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-colors cursor-pointer',
+      'inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-colors cursor-pointer relative',
       active
         ? 'bg-accent-blue/15 border-accent-blue/40 text-accent-blue'
         : 'bg-white/[0.02] border-white/[0.06] text-white/60 hover:text-white hover:border-white/[0.12]',
@@ -174,13 +174,7 @@ const FilterSelect: React.FC<FilterSelectProps> = ({ label, value, onChange, opt
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="bg-transparent outline-none appearance-none pr-5 cursor-pointer text-[10px] font-semibold uppercase tracking-wide"
-      style={{
-        backgroundImage:
-          'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ffffff80\' stroke-width=\'2\'><polyline points=\'6 9 12 15 18 9\'/></svg>")',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'right center',
-      }}
+      className="bg-transparent outline-none appearance-none pr-4 cursor-pointer text-[10px] font-semibold uppercase tracking-wide"
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value} className="bg-[#0c0c0f] text-white normal-case">
@@ -188,5 +182,6 @@ const FilterSelect: React.FC<FilterSelectProps> = ({ label, value, onChange, opt
         </option>
       ))}
     </select>
+    <ChevronDown size={11} className="absolute right-2 text-white/50 pointer-events-none" />
   </label>
 );

@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../env.js';
+import sharp from 'sharp';
 
 export interface CaptchaData {
   text: string;
-  captchaSvg: string;
+  captchaImage: string;
 }
 
 export interface CaptchaOptions {
@@ -11,6 +12,7 @@ export interface CaptchaOptions {
   height?: number;
   length?: number;
   style?: 'straight' | 'rotated';
+  imageType?: 'png' | 'jpeg' | 'webp';
 }
 
 const CAPTCHA_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'; // Excluded confusing characters (O, 0, I, 1, l, o)
@@ -24,12 +26,13 @@ const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max 
  * Generates a clean, modern, and readable captcha with character rotation
  * and noise lines designed to disrupt basic optical OCR programs.
  */
-export const generateCaptcha = ({
+export const generateCaptcha = async ({
   width = 150,
   height = 50,
   length = randomInt(4, 5),
-  style = 'rotated'
-}: CaptchaOptions = {}): CaptchaData => {
+  style = 'rotated',
+  imageType = 'png'
+}: CaptchaOptions = {}): Promise<CaptchaData> => {
   let text = '';
   for (let i = 0; i < length; i++) {
     text += CAPTCHA_CHARS.charAt(randomInt(0, CAPTCHA_CHARS.length - 1));
@@ -78,9 +81,20 @@ export const generateCaptcha = ({
 
   svg += `</svg>`;
 
-  const base64Svg = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  let base64Image = '';
+  if (imageType === 'jpeg') {
+    const jpegBuffer = await sharp(Buffer.from(svg)).jpeg().toBuffer();
+    base64Image = `data:image/jpeg;base64,${jpegBuffer.toString('base64')}`;
+  } else if (imageType === 'webp') {
+    const webpBuffer = await sharp(Buffer.from(svg)).webp().toBuffer();
+    base64Image = `data:image/webp;base64,${webpBuffer.toString('base64')}`;
+  } else {
+    // Default to png
+    const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
+    base64Image = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+  }
 
-  return { text, captchaSvg: base64Svg };
+  return { text, captchaImage: base64Image };
 };
 
 /**

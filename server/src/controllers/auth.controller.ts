@@ -175,13 +175,13 @@ export const login = async (req: Request, res: Response) => {
 
 export const getCaptcha = async (_req: Request, res: Response) => {
   try {
-    const { text, captchaSvg } = generateCaptcha();
+    const { text, captchaImage } = await generateCaptcha();
     const captchaToken = createCaptchaToken(text);
 
     res.status(200).json({
       success: true,
       captchaToken,
-      captchaSvg,
+      captchaImage,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });

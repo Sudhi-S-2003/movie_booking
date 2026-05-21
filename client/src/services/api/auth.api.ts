@@ -34,7 +34,7 @@ export const authApi = {
     http.post<AuthResponse>('/auth/register', payload),
     
   getCaptcha: () =>
-    http.get<{ success: boolean; captchaToken: string; captchaSvg: string }>('/auth/captcha'),
+    http.get<{ success: boolean; captchaToken: string; captchaImage: string }>('/auth/captcha'),
     
   logout: () => 
     http.post<{ success: boolean; message: string }>('/auth/logout'),

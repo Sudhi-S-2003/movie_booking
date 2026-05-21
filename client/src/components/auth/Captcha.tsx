@@ -15,13 +15,13 @@ interface CaptchaProps {
 }
 
 export const Captcha = memo(({ onTokenChange, value, onChange, ref }: CaptchaProps) => {
-  const [captchaSvg, setCaptchaSvg] = useState('');
+  const [captchaImage, setCaptchaImage] = useState('');
 
   const fetchCaptcha = async () => {
     try {
       const res = await authApi.getCaptcha();
-      if (res.captchaSvg) {
-        setCaptchaSvg(res.captchaSvg);
+      if (res.captchaImage) {
+        setCaptchaImage(res.captchaImage);
         onTokenChange(res.captchaToken);
         onChange(''); // clear text on refresh
       }
@@ -39,7 +39,7 @@ export const Captcha = memo(({ onTokenChange, value, onChange, ref }: CaptchaPro
     refresh: fetchCaptcha
   }));
 
-  if (!captchaSvg) return null;
+  if (!captchaImage) return null;
 
   return (
     <motion.div 
@@ -56,7 +56,7 @@ export const Captcha = memo(({ onTokenChange, value, onChange, ref }: CaptchaPro
 
       <div className="flex items-center gap-3 bg-[#141416]/40 border border-white/5 rounded-[22px] p-2.5">
         <img 
-          src={captchaSvg} 
+          src={captchaImage} 
           alt="Security Check"
           className="rounded-[14px] bg-[#0a0f1d] border border-white/5 select-none cursor-pointer active:scale-98 transition-transform"
           title="Click to change verification code"
