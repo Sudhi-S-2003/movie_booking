@@ -42,6 +42,13 @@ import { Hashtag } from './pages/Hashtag.js';
 import { PostDetail } from './pages/PostDetail.js';
 import { Chat } from './pages/Chat.js';
 import { ChatMembers } from './pages/ChatMembers.js';
+import { ChatAssignAgent } from './pages/ChatAssignAgent.js';
+import { OwnerTeams } from './pages/dashboards/owner/OwnerTeams.js';
+import { AdminTeams } from './pages/dashboards/admin/AdminTeams.js';
+import { UserTeams } from './pages/dashboards/user/UserTeams.js';
+import { OwnerTeamManagement } from './pages/dashboards/owner/OwnerTeamManagement.js';
+import { AdminTeamManagement } from './pages/dashboards/admin/AdminTeamManagement.js';
+import { UserTeamManagement } from './pages/dashboards/user/UserTeamManagement.js';
 import { ChatJoinRequests } from './pages/ChatJoinRequests.js';
 import { PublicChat } from './pages/PublicChat.js';
 import { ChatInvite } from './pages/ChatInvite.js';
@@ -147,6 +154,9 @@ const App = () => {
                 <Route path="chat/:conversationId" element={<Chat />} />
                 <Route path="chat/:conversationId/members" element={<ChatMembers />} />
                 <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
+                <Route path="chat/:conversationId/assign" element={<ChatAssignAgent />} />
+                <Route path="teams" element={<OwnerTeams />} />
+                <Route path="teams/:id/managemnent" element={<OwnerTeamManagement />} />
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
                 <Route path="integrations" element={<Integrations />} />
@@ -180,6 +190,9 @@ const App = () => {
                 <Route path="chat/:conversationId" element={<Chat />} />
                 <Route path="chat/:conversationId/members" element={<ChatMembers />} />
                 <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
+                <Route path="chat/:conversationId/assign" element={<ChatAssignAgent />} />
+                <Route path="teams" element={<AdminTeams />} />
+                <Route path="teams/:id/managemnent" element={<AdminTeamManagement />} />
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
                 <Route path="integrations" element={<Integrations />} />
@@ -211,6 +224,9 @@ const App = () => {
                 <Route path="chat/:conversationId" element={<Chat />} />
                 <Route path="chat/:conversationId/members" element={<ChatMembers />} />
                 <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
+                <Route path="chat/:conversationId/assign" element={<ChatAssignAgent />} />
+                <Route path="teams" element={<UserTeams />} />
+                <Route path="teams/:id/managemnent" element={<UserTeamManagement />} />
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
                 <Route path="integrations" element={<Integrations />} />

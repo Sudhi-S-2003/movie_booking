@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, Film, MapPin, Users, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle, ShieldCheck } from 'lucide-react';
+import { BarChart3, Film, MapPin, Users, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle, ShieldCheck, Network } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
@@ -33,6 +33,7 @@ const config: SidebarConfig = {
       label: 'Operations',
       items: [
         { icon: Users, label: 'Users', to: '/admin/users', colorClass: 'text-accent-blue' },
+        { icon: Network, label: 'Teams', to: '/admin/teams', colorClass: 'text-accent-purple' },
         { icon: MessageCircle, label: 'Messages', to: '/admin/chat', colorClass: 'text-emerald-400' },
         { icon: LifeBuoy, label: 'Support', to: '/admin/issues', colorClass: 'text-accent-pink' },
       ],

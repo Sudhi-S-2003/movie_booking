@@ -53,10 +53,10 @@ export interface ChatParticipant {
  * rows and for detail-fetched direct chats (those populate `.participants`
  * the long way via `populateMembers`).
  */
-export interface DirectPeer {
-  _id:       string;
-  name:      string;
-  username:  string;
+export interface Conversation {
+  // userId:       string;
+  userName:      string;
+  userEmail:  string;
   avatar?:   string;
 }
 
@@ -65,7 +65,7 @@ export interface Conversation {
   type:              ConversationType;
 
   /** Only set on direct (1:1) conversations coming from the list endpoint. */
-  peer?:             DirectPeer;
+  conversation:             Conversation;
   participantCount:  number;
   title?:            string;
   avatarUrl?:        string;
@@ -79,6 +79,13 @@ export interface Conversation {
   externalUser?:     { name: string; email: string };
   createdAt:         string;
   updatedAt:         string;
+  conversationAssign?: {
+    _id: string;
+    name: string;
+    publicName: string;
+    type: 'agent' | 'team';
+  } | null;
+  isDirectParentUser?: boolean;
 }
 
 export interface ChatMessage {

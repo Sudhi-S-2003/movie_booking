@@ -24,15 +24,13 @@ import {
   listMembers,
   isParticipant,
   forEachParticipant,
-  populateMembers,
-  attachDirectPeer,
-  getUserConversationIds,
 } from '../services/chat/conversationParticipants.service.js';
 import {
   createDirectConversation,
   createGroupConversation,
 } from '../services/chat/conversationCreator.service.js';
 import { User } from '../models/user.model.js';
+import { Team, TeamMember } from '../models/team.model.js';
 import { requireAuthUser } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { parsePage, buildPageEnvelope, PAGINATION } from '../utils/pagination.js';
@@ -57,6 +55,24 @@ import { guardTokens } from '../services/subscription/tokenGuard.js';
 import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
 import { withOptionalTransaction, withSession } from '../utils/transaction.util.js';
 import type { ChatMessageDoc } from '../models/chat.model.js';
+import conversationService from '../services/chat/conversation.service.js';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Helper to get a fully decorated single conversation using the aggregation pipeline.
+ */
+const getDecoratedConversation = async (
+  conversationId: mongoose.Types.ObjectId,
+  viewerId: mongoose.Types.ObjectId,
+) => {
+  const pipeline = conversationService.buildSingleConversationPipeline({
+    conversationId,
+    viewerId,
+  });
+  const result = await Conversation.aggregate(pipeline);
+  return result[0] || null;
+};
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -68,105 +84,90 @@ import type { ChatMessageDoc } from '../models/chat.model.js';
  * pages the Conversation collection by `lastMessageAt`. Participants on each
  * returned conversation are hydrated via a single bulk lookup.
  */
-export const getConversations = async (req: Request, res: Response) => {
+
+export const getConversations = async (
+  req: Request,
+  res: Response,
+) => {
   try {
     const user = requireAuthUser(req);
-    const userId = user._id;
+
+    const viewerId = new mongoose.Types.ObjectId(
+      String(user._id)
+    );
+
     const { page, limit, skip } = parsePage(req, 20);
 
-    const convIds = await getUserConversationIds(userId);
-    if (convIds.length === 0) {
-      return res.json({
-        success: true,
-        conversations: [],
-        pagination: buildPageEnvelope(0, { page, limit, skip }),
+    const q =
+      typeof req.query.q === 'string'
+        ? req.query.q.trim()
+        : '';
+
+    const typeParam =
+      typeof req.query.type === 'string'
+        ? req.query.type
+        : '';
+
+    const allowedTypes = [
+      'direct',
+      'group',
+      'system',
+      'api',
+    ] as const;
+
+    const typeFilter =
+      allowedTypes.includes(typeParam as any)
+        ? typeParam
+        : '';
+
+    const sortBy =
+      typeof req.query.sortBy === 'string'
+        ? (req.query.sortBy as
+          | 'activity'
+          | 'created'
+          | 'name')
+        : 'activity';
+
+    const dir: 1 | -1 =
+      req.query.sortOrder === 'asc'
+        ? 1
+        : -1;
+
+    const pipeline =
+      conversationService.buildAggregationPipeline({
+        viewerId,
+        q,
+        typeFilter,
+        sortBy,
+        dir,
+        skip,
+        limit,
       });
-    }
 
-    // Optional query params: q, type, sortBy, sortOrder.
-    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
-    const typeParam = typeof req.query.type === 'string' ? req.query.type : '';
-    const allowedTypes = ['direct', 'group', 'system', 'api'] as const;
-    const typeFilter = (allowedTypes as readonly string[]).includes(typeParam)
-      ? typeParam
-      : '';
+    const result =
+      await ConversationParticipant.aggregate(pipeline);
 
-    const sortByParam    = typeof req.query.sortBy === 'string' ? req.query.sortBy : 'activity';
-    const sortOrderParam = req.query.sortOrder === 'asc' ? 'asc' : 'desc';
-    const sortField: Record<string, 'activity' | 'created' | 'name'> = {
-      activity: 'activity', created: 'created', name: 'name',
-    };
-    const sortBy = sortField[sortByParam] ?? 'activity';
-    const dir: 1 | -1 = sortOrderParam === 'asc' ? 1 : -1;
+    const rows = result[0]?.rows || [];
 
-    const sortSpec: Record<string, 1 | -1> =
-      sortBy === 'name'
-        ? { title: dir, _id: dir }
-        : sortBy === 'created'
-          ? { createdAt: dir, _id: dir }
-          : { lastMessageAt: dir, updatedAt: dir, _id: dir };
+    const total =
+      result[0]?.total?.[0]?.count || 0;
 
-    const filter: Record<string, unknown> = { _id: { $in: convIds }, isActive: true };
-    if (typeFilter) filter.type = typeFilter;
-    if (q) {
-      // Escape regex metachars to avoid injection / invalid-regex errors.
-      const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const rx = new RegExp(safe, 'i');
-
-      // Search across four surfaces so the UX matches user expectations:
-      //   1. conversation.title                     — groups, named chats
-      //   2. conversation.externalUser.name/email   — guest/api conversations
-      //   3. peer (registered user) name / username — direct chats whose
-      //      `title` is empty and rendered from the opposite participant
-      const userMatches = await User
-        .find({ $or: [{ name: rx }, { username: rx }] }, { _id: 1 })
-        .limit(500)
-        .lean();
-      const matchedUserIds = userMatches.map((u) => u._id);
-
-      let peerConvIds: mongoose.Types.ObjectId[] = [];
-      if (matchedUserIds.length > 0) {
-        const peerRows = await ConversationParticipant
-          .find(
-            { userId: { $in: matchedUserIds }, conversationId: { $in: convIds } },
-            { conversationId: 1, _id: 0 },
-          )
-          .lean();
-        peerConvIds = peerRows.map((r) => r.conversationId as mongoose.Types.ObjectId);
-      }
-
-      filter.$or = [
-        { title: rx },
-        { 'externalUser.name':  rx },
-        { 'externalUser.email': rx },
-        ...(peerConvIds.length > 0 ? [{ _id: { $in: peerConvIds } }] : []),
-      ];
-    }
-
-    const [rows, total] = await Promise.all([
-      Conversation.find(filter)
-        .sort(sortSpec)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Conversation.countDocuments(filter),
-    ]);
-
-    // For direct conversations, fill in `title` + `avatarUrl` from the
-    // opposite user so the sidebar can render every row type uniformly
-    // without shipping a `participants` array. Groups/system pass through.
-    const conversations = await attachDirectPeer(rows, userId);
-
-    res.json({
+    return res.json({
       success: true,
-      conversations,
-      pagination: buildPageEnvelope(total, { page, limit, skip }),
+      conversations: rows,
+      pagination: buildPageEnvelope(total, {
+        page,
+        limit,
+        skip,
+      }),
     });
   } catch (e: unknown) {
-    res.status(500).json({ success: false, message: getErrorMessage(e) });
+    return res.status(500).json({
+      success: false,
+      message: getErrorMessage(e),
+    });
   }
 };
-
 /**
  * POST /api/chat/conversations
  * Create a new conversation. For `direct`, finds existing or creates one.
@@ -203,8 +204,13 @@ export const createConversation = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'publicName is only user-settable on group conversations' });
     }
 
-    // Ensure creator is always in participants
-    const allParticipants = [...new Set([String(userId), ...participantIds])];
+    const viewerId = new mongoose.Types.ObjectId(String(userId));
+    const allParticipants = Array.from(
+      new Set([
+        String(userId),
+        ...participantIds.map((id) => String(id)),
+      ])
+    );
 
     if (type === 'direct') {
       if (allParticipants.length !== 2) {
@@ -218,13 +224,15 @@ export const createConversation = async (req: Request, res: Response) => {
         createdBy: userId,
       });
 
-      const populated = await populateMembers(direct);
+      const decorated = await getDecoratedConversation(direct._id, viewerId);
       if (existing) {
-        return res.json({ success: true, conversation: populated, existing: true });
+        return res.json({ success: true, conversation: decorated, existing: true });
       }
 
-      broadcastNewConversation(allParticipants, String(userId), populated);
-      return res.status(201).json({ success: true, conversation: populated });
+      if (decorated) {
+        broadcastNewConversation(allParticipants, String(userId), decorated);
+      }
+      return res.status(201).json({ success: true, conversation: decorated });
     }
 
     if (type === 'group') {
@@ -242,9 +250,11 @@ export const createConversation = async (req: Request, res: Response) => {
         return res.status(409).json({ success: false, message: 'Public name is already taken' });
       }
 
-      const populated = await populateMembers(result.conversation);
-      broadcastNewConversation(allParticipants, String(userId), populated);
-      return res.status(201).json({ success: true, conversation: populated });
+      const decorated = await getDecoratedConversation(result.conversation._id, viewerId);
+      if (decorated) {
+        broadcastNewConversation(allParticipants, String(userId), decorated);
+      }
+      return res.status(201).json({ success: true, conversation: decorated });
     }
 
     return res.status(400).json({ success: false, message: 'Invalid conversation type' });
@@ -257,25 +267,62 @@ export const createConversation = async (req: Request, res: Response) => {
  * GET /api/chat/conversations/:id
  * Get a single conversation with participants populated.
  */
-export const getConversation = async (req: Request, res: Response) => {
+export const getConversation = async (
+  req: Request,
+  res: Response,
+) => {
   try {
     const user = requireAuthUser(req);
-    const userId = user._id;
-    const conversationId = req.params.id as string;
+    const viewerId = new mongoose.Types.ObjectId(
+      String(user._id),
+    );
 
-    if (!(await isParticipant(conversationId, userId))) {
-      return res.status(404).json({ success: false, message: 'Conversation not found' });
+    const conversationId =
+      new mongoose.Types.ObjectId(
+        String(req.params.id),
+      );
+
+    const isMember = await isParticipant(
+      conversationId.toString(),
+      viewerId,
+    );
+
+    if (!isMember) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found',
+      });
     }
 
-    const conversation = await Conversation.findById(conversationId).lean();
+    const pipeline =
+      conversationService.buildSingleConversationPipeline(
+        {
+          conversationId,
+          viewerId,
+        },
+      );
+
+    const result =
+      await Conversation.aggregate(pipeline);
+
+    const conversation = result[0];
+
     if (!conversation) {
-      return res.status(404).json({ success: false, message: 'Conversation not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found',
+      });
     }
 
-    const populated = await populateMembers(conversation);
-    res.json({ success: true, conversation: populated });
+    return res.json({
+      success: true,
+      conversation,
+    });
   } catch (e: unknown) {
-    res.status(500).json({ success: false, message: getErrorMessage(e) });
+    return res.status(500).json({
+      success: false,
+      message: getErrorMessage(e),
+    });
   }
 };
 
@@ -361,7 +408,8 @@ export const updateConversation = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'Conversation not found or not a group' });
     }
 
-    const populated = await populateMembers(conversation);
+    const viewerId = new mongoose.Types.ObjectId(String(userId));
+    const populated = await getDecoratedConversation(conversation._id, viewerId);
     res.json({ success: true, conversation: populated });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
@@ -402,8 +450,9 @@ export const addParticipants = async (req: Request, res: Response) => {
       },
     );
 
+    const viewerId = new mongoose.Types.ObjectId(String(userId));
     const fresh = await Conversation.findById(conversation._id).lean();
-    const populated = fresh ? await populateMembers(fresh) : null;
+    const populated = fresh ? await getDecoratedConversation(fresh._id, viewerId) : null;
 
     // Notify newly added participants with the populated doc.
     if (populated) {
@@ -456,8 +505,9 @@ export const removeParticipant = async (req: Request, res: Response) => {
       await refreshed.save();
     }
 
+    const viewerId = new mongoose.Types.ObjectId(String(currentUserId));
     const finalLean = await Conversation.findById(conversation._id).lean();
-    const populated = finalLean ? await populateMembers(finalLean) : null;
+    const populated = finalLean ? await getDecoratedConversation(finalLean._id, viewerId) : null;
 
     res.json({ success: true, conversation: populated });
   } catch (e: unknown) {
@@ -618,19 +668,19 @@ export const sendMessage = async (req: Request, res: Response) => {
           senderId: userId,
           senderName: user.name,
           contentType: normalized.contentType,
-          text:        normalized.text,
+          text: normalized.text,
           attachments: normalized.attachments,
-          isSystem:    false,
-          ...(normalized.emoji    !== undefined && { emoji:    normalized.emoji }),
-          ...(normalized.contact  !== undefined && { contact:  normalized.contact }),
+          isSystem: false,
+          ...(normalized.emoji !== undefined && { emoji: normalized.emoji }),
+          ...(normalized.contact !== undefined && { contact: normalized.contact }),
           ...(normalized.location !== undefined && { location: normalized.location }),
-          ...(normalized.date     !== undefined && { date:     normalized.date }),
-          ...(normalized.event    !== undefined && { event:    normalized.event }),
+          ...(normalized.date !== undefined && { date: normalized.date }),
+          ...(normalized.event !== undefined && { event: normalized.event }),
           ...(normalized.replyTo && {
             replyTo: {
-              messageId:  normalized.replyTo.messageId,
+              messageId: normalized.replyTo.messageId,
               senderName: normalized.replyTo.senderName,
-              text:       normalized.replyTo.text,
+              text: normalized.replyTo.text,
             },
           }),
         }],
@@ -708,9 +758,9 @@ export const sendMessage = async (req: Request, res: Response) => {
     // Without this, reopening the conversation would show stale "unread" state
     // and the delivery-status aggregation would miss the sender as a reader.
     markSentMessageRead({
-      userId:           String(userId),
+      userId: String(userId),
       conversationId,
-      messageId:        message._id,
+      messageId: message._id,
       messageCreatedAt: message.createdAt,
     }).catch(() => {/* fire-and-forget */ });
 
@@ -854,27 +904,31 @@ export const getUnreadCounts = async (req: Request, res: Response) => {
     const userId = user._id;
     const userObjId = new mongoose.Types.ObjectId(String(userId));
 
-    const memberConvIds = await getUserConversationIds(userId);
-    if (memberConvIds.length === 0) {
-      return res.json({ success: true, counts: {}, lastReadMap: {} });
-    }
-
     // Narrow to conversations still active AND cap to the 200 most recently
-    // active. Power users in thousands of chats still get accurate badges on
-    // the ones they care about — the long tail is ignored for this endpoint
-    // since the MongoDB query planner degrades past ~hundreds of $or clauses.
+    // active using ConversationParticipant aggregate.
     const UNREAD_CONV_CAP = 200;
-    const activeConvs = await Conversation.find(
-      { _id: { $in: memberConvIds }, isActive: true },
-      { _id: 1 },
-    )
-      .sort({ lastMessageAt: -1, updatedAt: -1 })
-      .limit(UNREAD_CONV_CAP)
-      .lean();
+    const activeConvs = await ConversationParticipant.aggregate<{ _id: mongoose.Types.ObjectId }>([
+      { $match: { userId: userObjId } },
+      {
+        $lookup: {
+          from: 'conversations',
+          localField: 'conversationId',
+          foreignField: '_id',
+          as: 'conv',
+        },
+      },
+      { $unwind: '$conv' },
+      { $match: { 'conv.isActive': true } },
+      { $replaceRoot: { newRoot: '$conv' } },
+      { $project: { _id: 1, lastMessageAt: 1, updatedAt: 1 } },
+      { $sort: { lastMessageAt: -1, updatedAt: -1 } },
+      { $limit: UNREAD_CONV_CAP },
+    ]);
+
     if (activeConvs.length === 0) {
       return res.json({ success: true, counts: {}, lastReadMap: {} });
     }
-    const convIds = activeConvs.map((c) => c._id as mongoose.Types.ObjectId);
+    const convIds = activeConvs.map((c) => c._id);
 
     // This user's read cursor for each active conversation.
     const cursors = await ChatReadCursor.find(
@@ -909,7 +963,7 @@ export const getUnreadCounts = async (req: Request, res: Response) => {
       { $match: { $or: orClauses } },
       {
         $group: {
-          _id:   '$conversationId',
+          _id: '$conversationId',
           count: { $sum: 1 },
         },
       },
@@ -975,3 +1029,361 @@ export const searchUsers = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
   }
 };
+
+// ── Teams & Agent Assignment ───────────────────────────────────────────────
+
+/**
+ * POST /api/chat/conversations/:id/assign-agent
+ * Assign an agent (team of type 'agent') to a conversation.
+ * Body: { agentId: string }
+ */
+export const assignAgentToConversation = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const userId = user._id;
+    const conversationId = req.params.id as string;
+    const { agentId } = req.body;
+
+    if (!agentId) {
+      return res.status(400).json({ success: false, message: 'agentId is required' });
+    }
+
+    if (!(await isParticipant(conversationId, userId))) {
+      return res.status(403).json({ success: false, message: 'Not a participant of this conversation' });
+    }
+
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ success: false, message: 'Conversation not found' });
+    }
+
+    // Find the active team/agent
+    const orConditions: Array<Record<string, unknown>> = [];
+    if (mongoose.isValidObjectId(agentId)) {
+      orConditions.push({ _id: new mongoose.Types.ObjectId(agentId) });
+    }
+    orConditions.push({ publicName: String(agentId).toLowerCase() });
+
+    const team = await Team.findOne({
+      $or: orConditions,
+      type: 'agent',
+      isActive: true,
+    });
+
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Agent/Team not found or inactive' });
+    }
+
+    // Get all active team members
+    const members = await TeamMember.find({ teamId: team._id, isActive: true }).lean();
+    if (members.length === 0) {
+      return res.status(400).json({ success: false, message: 'This agent team has no active members' });
+    }
+
+    const memberUserIds = members.map((m) => m.memberId);
+
+    // Sync participants with parentId set to the Team's ID
+    await syncParticipants(conversation._id, memberUserIds, {
+      addedBy: userId,
+      parentId: team._id,
+    });
+
+    const viewerId = new mongoose.Types.ObjectId(String(userId));
+    const users = await User.find({ _id: { $in: memberUserIds } }, { name: 1, email: 1, username: 1 }).lean();
+
+    conversation.assignedTeam = {
+      _id: team._id,
+      name: team.name,
+      publicName: team.publicName,
+      type: team.type,
+    };
+    conversation.assignedTeamMembers = users.map((u) => ({
+      userId: new mongoose.Types.ObjectId(String(u._id)),
+      name: u.name,
+      email: u.email,
+      username: u.username,
+    }));
+
+    await conversation.save();
+
+    const populated = await getDecoratedConversation(conversation._id, viewerId);
+
+    res.json({
+      success: true,
+      message: 'Agent assigned to conversation successfully',
+      conversation: populated,
+    });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/**
+ * POST /api/chat/teams
+ * Create a new team/agent.
+ * Body: { name, publicName, type }
+ */
+export const createTeam = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const { name, publicName, type } = req.body;
+
+    if (!name || !publicName || !type) {
+      return res.status(400).json({ success: false, message: 'name, publicName, and type are required' });
+    }
+
+    if (!['agent', 'team'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'Invalid team type' });
+    }
+
+    // Check if publicName is already taken
+    const existing = await Team.findOne({ publicName: publicName.toLowerCase() });
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'Team publicName is already taken' });
+    }
+
+    const team = await Team.create({
+      ownerId: user._id,
+      name,
+      publicName: publicName.toLowerCase(),
+      type,
+    });
+
+    // Automatically add the owner as an active member of the team
+    await TeamMember.create({
+      memberId: user._id,
+      teamId: team._id,
+      isActive: true,
+    });
+
+    res.status(201).json({ success: true, team });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/**
+ * GET /api/chat/teams
+ * Get all teams where the user is an owner or a member.
+ */
+export const getMyTeams = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const userId = user._id;
+
+    // Find teams where user is owner
+    const ownedTeams = await Team.find({ ownerId: userId, isActive: true }).lean();
+
+    // Find teams where user is a member
+    const memberRecords = await TeamMember.find({ memberId: userId, isActive: true }).lean();
+    const teamIds = memberRecords.map((mr) => mr.teamId);
+
+    const memberTeams = await Team.find({
+      _id: { $in: teamIds },
+      ownerId: { $ne: userId },
+      isActive: true,
+    }).lean();
+
+    res.json({
+      success: true,
+      teams: {
+        owned: ownedTeams,
+        joined: memberTeams,
+      },
+    });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/**
+ * POST /api/chat/teams/:id/members
+ * Add a member to a team.
+ * Body: { memberId: string }
+ */
+export const addTeamMember = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const teamId = req.params.id;
+    const { memberId } = req.body;
+
+    if (!memberId) {
+      return res.status(400).json({ success: false, message: 'memberId is required' });
+    }
+
+    const team = await Team.findOne({ _id: teamId, isActive: true });
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+
+    if (team.ownerId.toString() !== user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Only team owner can add members' });
+    }
+
+    // Check if target user exists
+    const targetUser = await User.findById(memberId);
+    if (!targetUser) {
+      return res.status(404).json({ success: false, message: 'Member user not found' });
+    }
+
+    // Idempotently create or activate membership
+    const updated = await TeamMember.findOneAndUpdate(
+      { teamId: team._id, memberId: targetUser._id },
+      { isActive: true, joinedAt: new Date() },
+      { upsert: true, new: true },
+    );
+
+    res.json({ success: true, member: updated });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/**
+ * DELETE /api/chat/teams/:id/members/:memberId
+ * Remove a member from a team.
+ */
+export const removeTeamMember = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const teamId = req.params.id;
+    const targetMemberId = req.params.memberId;
+
+    const team = await Team.findOne({ _id: teamId, isActive: true });
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+
+    const isOwner = team.ownerId.toString() === user._id.toString();
+    const isSelf = user._id.toString() === targetMemberId;
+
+    if (!isOwner && !isSelf) {
+      return res.status(403).json({ success: false, message: 'Only team owner or the member themselves can leave/remove' });
+    }
+
+    // Soft remove: set isActive to false
+    const updated = await TeamMember.findOneAndUpdate(
+      { teamId: team._id, memberId: new mongoose.Types.ObjectId(String(targetMemberId)) },
+      { isActive: false },
+      { new: true },
+    );
+
+    res.json({ success: true, member: updated });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/**
+ * GET /api/chat/teams/:id/members
+ * Get all active members of a team populated with user details (paginated).
+ */
+export const getTeamMembers = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const teamId = req.params.id;
+    const { page, limit, skip } = parsePage(req, 15);
+
+    const team = await Team.findOne({ _id: teamId, isActive: true });
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+
+    // Verify user is owner or member
+    const isOwner = team.ownerId.toString() === user._id.toString();
+    const isMember = await TeamMember.exists({ teamId: team._id, memberId: user._id, isActive: true });
+
+    if (!isOwner && !isMember) {
+      return res.status(403).json({ success: false, message: 'Access denied to this team' });
+    }
+
+    const filter = { teamId: team._id, isActive: true };
+
+    const [members, total] = await Promise.all([
+      TeamMember.find(filter)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      TeamMember.countDocuments(filter),
+    ]);
+
+    const memberUserIds = members.map((m) => m.memberId);
+    const users = await User.find({ _id: { $in: memberUserIds } }, { name: 1, email: 1, username: 1, avatar: 1 }).lean();
+
+    const result = members.map((m) => {
+      const u = users.find((usr) => usr._id.toString() === m.memberId.toString());
+      return {
+        _id: m._id,
+        memberId: m.memberId,
+        isActive: m.isActive,
+        joinedAt: m.joinedAt,
+        user: u ? {
+          _id: u._id,
+          name: u.name,
+          username: u.username,
+          email: u.email,
+          avatar: u.avatar,
+        } : null,
+      };
+    });
+
+    res.json({
+      success: true,
+      members: result,
+      pagination: buildPageEnvelope(total, { page, limit, skip }),
+    });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/**
+ * POST /api/chat/conversations/:id/unassign-agent
+ * Unassign agent from a conversation, clearing assignedTeam and removing synced participants.
+ */
+export const unassignAgentFromConversation = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const userId = user._id;
+    const conversationId = req.params.id as string;
+
+    if (!(await isParticipant(conversationId, userId))) {
+      return res.status(403).json({ success: false, message: 'Not a participant of this conversation' });
+    }
+
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ success: false, message: 'Conversation not found' });
+    }
+
+    const teamId = conversation.assignedTeam?._id;
+    if (teamId) {
+      // Remove all participants who were synced with this parentId
+      await ConversationParticipant.deleteMany({
+        conversationId: conversation._id,
+        parentId: teamId,
+      });
+
+      // Update denormalized participant count
+      const count = await ConversationParticipant.countDocuments({ conversationId: conversation._id });
+      conversation.participantCount = count;
+    }
+
+    conversation.assignedTeam = undefined as any;
+    conversation.assignedTeamMembers = undefined as any;
+
+    await conversation.save();
+
+    const viewerId = new mongoose.Types.ObjectId(String(userId));
+    const populated = await getDecoratedConversation(conversation._id, viewerId);
+
+    res.json({
+      success: true,
+      message: 'Agent unassigned from conversation successfully',
+      conversation: populated,
+    });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+

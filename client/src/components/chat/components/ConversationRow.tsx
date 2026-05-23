@@ -23,8 +23,9 @@ export const ConversationRow = memo(({
   //   • direct → opposite participant's name (computed in `attachDirectPeer`)
   //   • group  → saved group title
   //   • system → saved notification title
-  const displayName = conversation.title
-    ?? (conversation.type === 'system' ? 'Notification' : 'Chat');
+  // const displayName = conversation.title
+  //   ?? (conversation.type === 'system' ? 'Notification' : 'Chat');
+  const displayName = conversation.conversation?.userName || conversation.title || 'Chat';
 
   const preview = conversation.lastMessageText
     ? conversation.lastMessageText.slice(0, PREVIEW_MAX_LENGTH)

@@ -5,18 +5,13 @@
 //
 // Public surface:
 //   • recordReads              — bulk upsert read records for a set of messages
-//   • getReadStatusForMessages — resolve 'sent' | 'read' per messageId for a
-//                                given viewer (read ⇔ any OTHER identity has
-//                                a MessageRead for that message).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import mongoose from 'mongoose';
 import { MessageRead } from '../../models/messageRead.model.js';
+import { ChatMessage, Conversation, ConversationParticipant } from '../../models/chat.model.js';
 
-interface ReaderIdentity {
-  userId?:           string;
-  externalUserName?: string;
-}
+
 
 const MAX_BATCH = 200;
 
@@ -51,18 +46,7 @@ export const recordReads = async (args: {
     ? { userId: new mongoose.Types.ObjectId(userId) }
     : { externalUserName };
 
-  // Find which messageIds already have a record for this identity so we can
-  // report back the set of NEWLY marked ones.
-  const existing = await MessageRead.find(
-    { messageId: { $in: clean }, ...identityFilter },
-    { messageId: 1, _id: 0 },
-  ).lean();
-  const existingIds = new Set(existing.map((r) => r.messageId.toString()));
-
-  const freshIds = clean.filter((id) => !existingIds.has(id.toString()));
-  if (freshIds.length === 0) return { insertedIds: [] };
-
-  const ops = freshIds.map((messageId) => ({
+  const ops = clean.map((messageId) => ({
     updateOne: {
       filter: { messageId, ...identityFilter },
       update: {
@@ -77,52 +61,74 @@ export const recordReads = async (args: {
     },
   }));
 
+  let upsertedIds: Record<number, any> = {};
   try {
-    await MessageRead.bulkWrite(ops, { ordered: false });
+    const result = await MessageRead.bulkWrite(ops as any, { ordered: false });
+    upsertedIds = result.upsertedIds || {};
   } catch (err: unknown) {
     // Ignore duplicate-key races; other writers won and that's fine.
-    const e = err as { code?: number; writeErrors?: Array<{ code?: number }> };
+    const e = err as {
+      code?: number;
+      writeErrors?: Array<{ code?: number }>;
+      result?: { upsertedIds?: Record<number, any> };
+    };
     const onlyDup = (e.code === 11000)
       || (Array.isArray(e.writeErrors) && e.writeErrors.every((w) => w.code === 11000));
     if (!onlyDup) throw err;
+
+    if (e.result && e.result.upsertedIds) {
+      upsertedIds = e.result.upsertedIds;
+    }
+  }
+
+  const upsertedIndices = Object.keys(upsertedIds).map(Number);
+  const freshIds = upsertedIndices.map((idx) => clean[idx]).filter((id): id is mongoose.Types.ObjectId => !!id);
+  if (freshIds.length === 0) return { insertedIds: [] };
+
+  // Update ChatMessage deliveryStatus to 'read' if appropriate.
+  try {
+    if (freshIds.length > 0) {
+      const freshObjectIds = freshIds.map((id) => new mongoose.Types.ObjectId(id));
+      if (userId) {
+        // Find the conversation to check directParentParticipant.
+        const conversation = await Conversation.findById(conversationId).lean();
+        const isDirectParticipant = conversation?.directParentParticipant?.some(
+          (p: any) => p.userId.toString() === userId
+        ) ?? false;
+
+        // Check if this participant has a parentId (team/agent membership).
+        const participant = await ConversationParticipant.findOne({
+          conversationId: convObjId,
+          userId: new mongoose.Types.ObjectId(userId),
+        }).lean();
+        const hasParentId = !!participant?.parentId;
+
+        if (isDirectParticipant || hasParentId) {
+          await ChatMessage.updateMany(
+            {
+              _id: { $in: freshObjectIds },
+              senderId: { $ne: new mongoose.Types.ObjectId(userId) },
+            },
+            { $set: { deliveryStatus: 'read' } }
+          );
+        }
+      } else if (externalUserName) {
+        // If reader is a guest, set deliveryStatus to 'read' for any messages sent by registered users (senderId is not null).
+        await ChatMessage.updateMany(
+          {
+            _id: { $in: freshObjectIds },
+            senderId: { $ne: null },
+          },
+          { $set: { deliveryStatus: 'read' } }
+        );
+      }
+    }
+  } catch (err: unknown) {
+    // Don't fail the read recording if status update fails.
+    console.error('Failed to update chat message delivery status:', err);
   }
 
   return { insertedIds: freshIds.map((id) => id.toString()) };
 };
 
-/**
- * For each messageId, resolve whether *any OTHER* reader has recorded a read.
- * Returns a map keyed by messageId string → 'sent' | 'read'.
- *
- * The viewer's own read records don't count — "read" means someone else
- * has seen the message.
- */
-export const getReadStatusForMessages = async (
-  messageIds: mongoose.Types.ObjectId[] | string[],
-  viewer:     ReaderIdentity,
-): Promise<Map<string, 'sent' | 'read'>> => {
-  const result = new Map<string, 'sent' | 'read'>();
-  if (messageIds.length === 0) return result;
 
-  const ids = messageIds.map((id) =>
-    typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id,
-  );
-  for (const id of ids) result.set(id.toString(), 'sent');
-
-  const viewerExclusion: Record<string, unknown> = {};
-  if (viewer.userId) {
-    viewerExclusion.userId = { $ne: new mongoose.Types.ObjectId(viewer.userId) };
-  } else if (viewer.externalUserName) {
-    viewerExclusion.externalUserName = { $ne: viewer.externalUserName };
-  }
-
-  const rows = await MessageRead.find(
-    { messageId: { $in: ids }, ...viewerExclusion },
-    { messageId: 1, _id: 0 },
-  ).lean();
-
-  for (const row of rows) {
-    result.set(row.messageId.toString(), 'read');
-  }
-  return result;
-};

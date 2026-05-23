@@ -8,9 +8,7 @@ import {
   Conversation,
   ChatMessage,
   ChatReadCursor,
-  ConversationParticipant,
 } from '../models/chat.model.js';
-import { User } from '../models/user.model.js';
 import {
   forEachParticipant,
 } from '../services/chat/conversationParticipants.service.js';
@@ -39,6 +37,7 @@ import { validateIncomingMessage, buildPreviewText } from '../services/chat/cont
 import { getSummary as getSubscriptionSummary } from '../services/subscription/subscription.service.js';
 import { withOptionalTransaction, withSession } from '../utils/transaction.util.js';
 import type { ChatMessageDoc } from '../models/chat.model.js';
+import apiConversationService from '../services/chat/api.conversation.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -118,47 +117,59 @@ export const getSignedChatConversation = async (req: Request, res: Response) => 
  * GET /api/chat/conversations/:id
  * Get conversation details for a guest using a signed URL.
  */
-export const getGuestConversation = async (req: Request, res: Response) => {
+export const getGuestConversation = async (
+  req: Request,
+  res: Response,
+) => {
   try {
     const identity = req.externalUser;
-    if (!identity) return res.status(401).json({ success: false, message: 'Not authenticated' });
 
-    const conversationId = req.params.id as string;
-    const conversationDoc = await Conversation.findById(conversationId).lean();
-
-    if (!conversationDoc || !conversationDoc.isActive) {
-      return res.status(404).json({ success: false, message: 'Conversation not found or inactive' });
+    if (!identity) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authenticated',
+      });
+    }
+    if (req.params.id && !mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid conversation ID',
+      });
     }
 
-    // Hydrate the registered "Peer" (the staff/owner on the other side)
-    const participants = await ConversationParticipant.find({ conversationId: conversationDoc._id }).lean();
-    const peerMember = participants.find(p => p.userId); // Registered user has a userId
+    const conversationId = new mongoose.Types.ObjectId(
+      req.params.id as string
+    );
 
-    let peer = null;
-    if (peerMember) {
-      const peerUser = await User.findById(peerMember.userId).select('name username avatar').lean();
-      if (peerUser) {
-        peer = {
-          _id: peerUser._id,
-          name: peerUser.name,
-          username: peerUser.username,
-          avatar: peerUser.avatar,
-        };
-      }
+    const pipeline =
+      apiConversationService.buildGuestConversationPipeline(
+        conversationId
+      );
+
+    const result =
+      await Conversation.aggregate(pipeline);
+
+    const conversation = result[0];
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message:
+          'Conversation not found or inactive',
+      });
     }
 
-    res.json({
+    return res.json({
       success: true,
-      conversation: {
-        ...conversationDoc,
-        peer,
-      },
+      conversation,
     });
   } catch (e: unknown) {
-    res.status(500).json({ success: false, message: getErrorMessage(e) });
+    return res.status(500).json({
+      success: false,
+      message: getErrorMessage(e),
+    });
   }
 };
-
 /**
  * GET /api/chat/conversations/:id/messages
  * Specifically for external guests accessing via signed URL.
@@ -275,20 +286,20 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
         senderId: null, // Always null for external guests
         senderName: identity.name,
         contentType: normalized.contentType,
-        text:        normalized.text,
+        text: normalized.text,
         attachments: normalized.attachments,
-        isSystem:    false,
+        isSystem: false,
       };
-      if (normalized.emoji    !== undefined) messageDoc.emoji    = normalized.emoji;
-      if (normalized.contact  !== undefined) messageDoc.contact  = normalized.contact;
+      if (normalized.emoji !== undefined) messageDoc.emoji = normalized.emoji;
+      if (normalized.contact !== undefined) messageDoc.contact = normalized.contact;
       if (normalized.location !== undefined) messageDoc.location = normalized.location;
-      if (normalized.date     !== undefined) messageDoc.date     = normalized.date;
-      if (normalized.event    !== undefined) messageDoc.event    = normalized.event;
+      if (normalized.date !== undefined) messageDoc.date = normalized.date;
+      if (normalized.event !== undefined) messageDoc.event = normalized.event;
       if (normalized.replyTo) {
         messageDoc.replyTo = {
-          messageId:  normalized.replyTo.messageId,
+          messageId: normalized.replyTo.messageId,
           senderName: normalized.replyTo.senderName,
-          text:       normalized.replyTo.text,
+          text: normalized.replyTo.text,
         };
       }
       const [createdMessage] = await ChatMessage.create([messageDoc], withSession(session));
@@ -353,7 +364,7 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
     markSentMessageRead({
       externalUserName: identity.name,
       conversationId,
-      messageId:        message._id,
+      messageId: message._id,
       messageCreatedAt: message.createdAt,
     }).catch(() => { });
 
@@ -486,14 +497,14 @@ export const getGuestSubscription = async (req: Request, res: Response) => {
     res.json({
       success: true,
       subscription: {
-        plan:         summary.sub.plan,
+        plan: summary.sub.plan,
         billingCycle: summary.sub.billingCycle ?? null,
-        status:       summary.sub.status,
-        startsAt:     summary.sub.startsAt,
-        expiresAt:    summary.sub.expiresAt ?? null,
-        customMonthlyLimit:   summary.sub.customMonthlyLimit   ?? null,
+        status: summary.sub.status,
+        startsAt: summary.sub.startsAt,
+        expiresAt: summary.sub.expiresAt ?? null,
+        customMonthlyLimit: summary.sub.customMonthlyLimit ?? null,
         customDurationMonths: summary.sub.customDurationMonths ?? null,
-        purchasesCount:       summary.sub.purchasesCount ?? 0,
+        purchasesCount: summary.sub.purchasesCount ?? 0,
       },
       remaining: summary.remaining,
     });

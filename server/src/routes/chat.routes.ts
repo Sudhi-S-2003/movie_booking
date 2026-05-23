@@ -14,6 +14,13 @@ import {
   markMessagesRead,
   getUnreadCounts,
   searchUsers,
+  assignAgentToConversation,
+  createTeam,
+  getMyTeams,
+  addTeamMember,
+  removeTeamMember,
+  getTeamMembers,
+  unassignAgentFromConversation,
 } from '../controllers/chat.controller.js';
 import {
   getPublicConversation,
@@ -92,5 +99,16 @@ router.get('/unread-counts', getUnreadCounts);
 
 // User search (for starting new chats)
 router.get('/users/search', searchUsers);
+
+// Teams
+router.post('/teams', createTeam);
+router.get('/teams', getMyTeams);
+router.get('/teams/:id/members', getTeamMembers);
+router.post('/teams/:id/members', addTeamMember);
+router.delete('/teams/:id/members/:memberId', removeTeamMember);
+
+// Agent Assignment
+router.post('/conversations/:id/assign-agent', assignAgentToConversation);
+router.post('/conversations/:id/unassign-agent', unassignAgentFromConversation);
 
 export default router;

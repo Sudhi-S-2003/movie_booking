@@ -27,3 +27,6 @@ export type {
 export type { PaidPlan } from './subscription.api.js';
 export { authApi } from './auth.api.js';
 export type { UserSession } from './auth.api.js';
+export { teamsApi } from './teams.api.js';
+export type { Team, TeamMember, MyTeamsResponse, TeamMembersResponse } from './teams.api.js';
+

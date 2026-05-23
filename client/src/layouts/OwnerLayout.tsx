@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, Layout as LayoutIcon, Clock, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle, ShieldCheck } from 'lucide-react';
+import { BarChart3, Layout as LayoutIcon, Clock, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle, ShieldCheck, Users } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { OwnerProvider } from '../pages/dashboards/owner/context/OwnerContext.js';
@@ -27,6 +27,7 @@ const config: SidebarConfig = {
       label: 'Communication',
       items: [
         { icon: MessageCircle, label: 'Messages', to: '/owner/chat', colorClass: 'text-emerald-400' },
+        { icon: Users, label: 'Teams', to: '/owner/teams', colorClass: 'text-accent-pink' },
         { icon: LifeBuoy, label: 'Support', to: '/owner/support', colorClass: 'text-accent-blue' },
       ],
     },

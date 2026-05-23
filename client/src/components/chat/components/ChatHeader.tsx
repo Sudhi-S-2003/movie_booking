@@ -5,12 +5,15 @@ import { ChatAvatar } from '../ui/ChatAvatar.js';
 import { TokenUsageBadge } from './TokenUsageBadge.js';
 import { useAuthStore } from '../../../store/authStore.js';
 import type { Conversation } from '../types.js';
+import { teamsApi } from '../../../services/api/teams.api.js';
+import { useChat } from '../context/ChatContext.js';
+import { toast } from '../../../utils/toast.js';
 
 interface ChatHeaderProps {
-  conversation:  Conversation;
+  conversation: Conversation;
   currentUserId?: string;
-  typingUsers:   Array<{ userId: string; name: string }>;
-  onBack:        () => void;
+  typingUsers: Array<{ userId: string; name: string }>;
+  onBack: () => void;
 }
 
 export const ChatHeader = memo(({
@@ -19,36 +22,72 @@ export const ChatHeader = memo(({
   typingUsers,
   onBack,
 }: ChatHeaderProps) => {
+  const { selectConversation, refreshConversations } = useChat();
+  const { user } = useAuthStore();
+
+  const assignAgentPath = useMemo(() => {
+    const role = (user?.role ?? 'user').toString().toLowerCase();
+    const prefix = role === 'admin' ? '/admin'
+      : role === 'theatre_owner' ? '/owner'
+        : '/user';
+    return `${prefix}/chat/${conversation._id}/assign`;
+  }, [user, conversation._id]);
+
+  const handleUnassignAgent = async () => {
+    if (!window.confirm('Are you sure you want to unassign the agent team from this conversation?')) {
+      return;
+    }
+
+    try {
+      const res = await teamsApi.unassignAgent(conversation._id);
+      if (res.conversation) {
+        toast.success('Agent team unassigned successfully');
+        selectConversation(res.conversation);
+        refreshConversations();
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to unassign agent team');
+    }
+  };
   // For direct chats, prefer the lightweight `peer` handle attached by the
   // list endpoint; fall back to scanning `participants` when the detail
   // endpoint hydrated it instead. Groups/system rows use the stored title.
-  const directPeer = useMemo(() => {
-    if (conversation.type !== 'direct' && conversation.type !== 'api') return null;
-    if (conversation.peer) return conversation.peer;
-    return null;
-  }, [conversation]);
+  // const directPeer = useMemo(() => {
+  //   if (conversation.type !== 'direct' && conversation.type !== 'api') return null;
+  //   if (conversation.peer) return conversation.peer;
+  //   return null;
+  // }, [conversation]);
 
-  const displayName = useMemo(() => {
-    if (conversation.type === 'system') return conversation.title ?? 'Notification';
-    if (conversation.type === 'group')  return conversation.title ?? 'Group Chat';
-    return directPeer?.name ?? conversation.title ?? 'Chat';
-  }, [conversation, directPeer]);
-
+  // const displayName = useMemo(() => {
+  //   if (conversation.type === 'system') return conversation.title ?? 'Notification';
+  //   if (conversation.type === 'group')  return conversation.title ?? 'Group Chat';
+  //   return directPeer?.name ?? conversation.title ?? 'Chat';
+  // }, [conversation, directPeer]);
+  const displayName = conversation.conversation?.userName || conversation.title || 'Chat';
   const subtitle = useMemo(() => {
     if (typingUsers.length > 0) {
       return typingUsers.length === 1
         ? `${typingUsers[0]!.name} is typing...`
         : 'Several people typing...';
     }
-    if (conversation.type === 'group')  return `${conversation.participantCount} members`;
-    if (conversation.type === 'system') return 'System notifications';
-    return directPeer ? `@${directPeer.username}` : '';
-  }, [conversation, directPeer, typingUsers]);
+
+    return conversation.conversation?.userEmail || '';
+  }, [typingUsers, conversation]);
+
+  // const subtitle = useMemo(() => {
+  //   if (typingUsers.length > 0) {
+  //     return typingUsers.length === 1
+  //       ? `${typingUsers[0]!.name} is typing...`
+  //       : 'Several people typing...';
+  //   }
+  //   if (conversation.type === 'group')  return `${conversation.participantCount} members`;
+  //   if (conversation.type === 'system') return 'System notifications';
+  //   return directPeer ? `@${directPeer.username}` : '';
+  // }, [conversation, directPeer, typingUsers]);
 
   const isSystem = conversation.type === 'system';
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuthStore();
 
   /**
    * Base chat path for the current role — drops the `:conversationId`
@@ -66,7 +105,7 @@ export const ChatHeader = memo(({
     const role = (user?.role ?? 'user').toString().toLowerCase();
     const prefix = role === 'admin' ? '/admin'
       : role === 'theatre_owner' ? '/owner'
-      : '/user';
+        : '/user';
     return `${prefix}/chat/${conversation._id}/members`;
   }, [user, conversation._id]);
 
@@ -81,10 +120,10 @@ export const ChatHeader = memo(({
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
     window.addEventListener('mousedown', onDown);
-    window.addEventListener('keydown',   onKey);
+    window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('mousedown', onDown);
-      window.removeEventListener('keydown',   onKey);
+      window.removeEventListener('keydown', onKey);
     };
   }, [menuOpen]);
 
@@ -109,12 +148,20 @@ export const ChatHeader = memo(({
       <ChatAvatar conversation={conversation} currentUserId={currentUserId} size="md" />
 
       <div className="flex-1 min-w-0">
-        <h3 className="text-[12px] font-bold text-white truncate">
-          {displayName}
+        <h3 className="text-[12px] font-bold text-white flex items-center gap-2 truncate">
+          <span className="truncate">{displayName}</span>
+          {conversation.conversationAssign && (
+            <span className={`text-[9px] shrink-0 uppercase tracking-wider px-1.5 py-0.5 rounded-full font-black ${
+              conversation.conversationAssign.type === 'agent'
+                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+            }`}>
+              Assigned: {conversation.conversationAssign.name}
+            </span>
+          )}
         </h3>
-        <p className={`text-[9px] font-medium truncate ${
-          typingUsers.length > 0 ? 'text-accent-blue' : 'text-white/30'
-        }`}>
+        <p className={`text-[9px] font-medium truncate ${typingUsers.length > 0 ? 'text-accent-blue' : 'text-white/30'
+          }`}>
           {subtitle}
         </p>
       </div>
@@ -148,11 +195,10 @@ export const ChatHeader = memo(({
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               aria-label="More actions"
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                menuOpen
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${menuOpen
                   ? 'bg-white/[0.1] text-white'
                   : 'text-white/30 hover:text-white/60 hover:bg-white/[0.06]'
-              }`}
+                }`}
             >
               <MoreVertical size={15} />
             </button>
@@ -174,13 +220,40 @@ export const ChatHeader = memo(({
                 <div className="h-px bg-white/[0.06] mx-2" />
 
                 {/* Actions */}
-                <div className="p-1.5">
+                <div className="p-1.5 space-y-1">
                   <MenuAction
                     icon={<X size={14} />}
                     label="Close chat"
                     hint="Go back to the conversation list"
                     onClick={handleCloseChat}
                   />
+
+                  {conversation.isDirectParentUser && (
+                    <>
+                      <div className="h-px bg-white/[0.06] my-1" />
+                      <MenuAction
+                        icon={<Users size={14} />}
+                        label="Assign Agent Team"
+                        hint="Assign an agent team to handle this chat"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          navigate(assignAgentPath);
+                        }}
+                      />
+                      {conversation.conversationAssign && (
+                        <MenuAction
+                          icon={<X size={14} />}
+                          label="Unassign Agent"
+                          hint="Remove the assigned agent team"
+                          tone="danger"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            handleUnassignAgent();
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -202,21 +275,20 @@ ChatHeader.displayName = 'ChatHeader';
 const MenuAction = ({
   icon, label, hint, onClick, tone = 'default',
 }: {
-  icon:   React.ReactNode;
-  label:  string;
-  hint?:  string;
+  icon: React.ReactNode;
+  label: string;
+  hint?: string;
   onClick: () => void;
-  tone?:  'default' | 'danger';
+  tone?: 'default' | 'danger';
 }) => (
   <button
     role="menuitem"
     type="button"
     onClick={onClick}
-    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-      tone === 'danger'
+    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${tone === 'danger'
         ? 'hover:bg-rose-500/10 text-rose-200 hover:text-rose-100'
         : 'hover:bg-white/[0.06] text-white/80 hover:text-white'
-    }`}
+      }`}
   >
     <span className={`mt-0.5 shrink-0 ${tone === 'danger' ? 'text-rose-300' : 'text-white/40'}`}>
       {icon}

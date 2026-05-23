@@ -34,19 +34,19 @@ import mongoose, { Schema } from 'mongoose';
 export type ConversationType = 'direct' | 'group' | 'system' | 'api';
 
 export interface IConversation {
-  type:          ConversationType;
-  title?:        string;            // group name (group/system only)
-  avatarUrl?:    string;            // group avatar
-  createdBy?:    mongoose.Types.ObjectId;
+  type: ConversationType;
+  title?: string;            // group name (group/system only)
+  avatarUrl?: string;            // group avatar
+  createdBy?: mongoose.Types.ObjectId;
   /**
    * Human-friendly unique identifier for public sharing (similar to a slug).
    * When set, the conversation is resolvable at `/chat/g/:publicName`. Only
    * meaningful for group conversations; direct/system conversations never
    * expose one.
    */
-  publicName?:       string;
+  publicName?: string;
   externalUser?: {
-    name:  string;
+    name: string;
     email: string;
   };
   /**
@@ -55,15 +55,33 @@ export interface IConversation {
    * membership mutation via `conversationParticipants.service.ts`, so hot
    * read paths (read-consensus, receipts) can avoid an extra round-trip.
    */
-  participantCount:  number;
-  lastMessageId?:    mongoose.Types.ObjectId;
-  lastMessageAt?:    Date;
-  lastMessageText?:  string;        // preview snippet
+  directParentParticipant?: {
+    userId: mongoose.Types.ObjectId;
+    name: string,
+    email: string,
+    username: string,
+  }[]; // for direct conversations, the two participants (userIds) are listed here for fast lookup
+  assignedTeam?: {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+    publicName: string;
+    type: 'agent' | 'team';
+  };
+  assignedTeamMembers?: {
+    userId: mongoose.Types.ObjectId;
+    name: string;
+    email: string;
+    username: string;
+  }[];
+  participantCount: number;
+  lastMessageId?: mongoose.Types.ObjectId;
+  lastMessageAt?: Date;
+  lastMessageText?: string;        // preview snippet
   lastMessageSender?: string;       // sender name for preview
-  messageCount:  number;
-  isActive:      boolean;           // soft-close for system conversations
-  createdAt:     Date;
-  updatedAt:     Date;
+  messageCount: number;
+  isActive: boolean;           // soft-close for system conversations
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type ConversationDoc = mongoose.HydratedDocument<IConversation>;
@@ -71,35 +89,56 @@ export type ConversationDoc = mongoose.HydratedDocument<IConversation>;
 const ConversationSchema = new Schema<IConversation>(
   {
     type: {
-      type:     String,
-      enum:     ['direct', 'group', 'system', 'api'],
+      type: String,
+      enum: ['direct', 'group', 'system', 'api'],
       required: true,
     },
-    title:     { type: String, trim: true },
+    title: { type: String, trim: true },
     avatarUrl: { type: String },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
 
     publicName: {
-      type:      String,
-      trim:      true,
+      type: String,
+      trim: true,
       lowercase: true,
-      required:  true, // every conversation carries a slug (auto-generated for direct/system)
+      required: true, // every conversation carries a slug (auto-generated for direct/system)
     },
     externalUser: {
-      _id:   false,
-      name:  { type: String, trim: true },
+      _id: false,
+      name: { type: String, trim: true },
       email: { type: String, trim: true, lowercase: true },
     },
     participantCount: { type: Number, default: 0, min: 0 },
 
+    directParentParticipant: [{
+      userId: { type: Schema.Types.ObjectId, ref: 'User' },
+      name: { type: String, trim: true },
+      email: { type: String, trim: true, lowercase: true },
+      username: { type: String, trim: true },
+    }],
+
+    assignedTeam: {
+      _id: { type: Schema.Types.ObjectId, ref: 'Team' },
+      name: { type: String, trim: true },
+      publicName: { type: String, lowercase: true, trim: true },
+      type: { type: String, enum: ['agent', 'team'] },
+    },
+
+    assignedTeamMembers: [{
+      userId: { type: Schema.Types.ObjectId, ref: 'User' },
+      name: { type: String, trim: true },
+      email: { type: String, trim: true, lowercase: true },
+      username: { type: String, trim: true },
+    }],
+
     // Denormalized last-message fields for fast list rendering.
-    lastMessageId:     { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
-    lastMessageAt:     { type: Date },
-    lastMessageText:   { type: String },
+    lastMessageId: { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
+    lastMessageAt: { type: Date },
+    lastMessageText: { type: String },
     lastMessageSender: { type: String },
 
     messageCount: { type: Number, default: 0 },
-    isActive:     { type: Boolean, default: true },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
@@ -136,54 +175,55 @@ export type ChatContentType =
   | 'longtext';
 
 export interface ChatContactPayload {
-  name?:        string;
-  phone:        string;
-  countryCode:  string;
+  name?: string;
+  phone: string;
+  countryCode: string;
 }
 
 export interface ChatLocationPayload {
-  lat:    number;
-  lng:    number;
+  lat: number;
+  lng: number;
   label?: string;
 }
 
 export interface ChatDatePayload {
-  iso:    string;
+  iso: string;
   label?: string;
 }
 
 export interface ChatEventPayload {
-  title:        string;
-  startsAt:     string;
-  endsAt?:      string;
-  location?:    string;
+  title: string;
+  startsAt: string;
+  endsAt?: string;
+  location?: string;
   description?: string;
 }
 
 export interface IChatMessage {
   conversationId: mongoose.Types.ObjectId;
-  senderId?:      mongoose.Types.ObjectId;  // null for system messages
-  senderName:     string;
-  contentType:    ChatContentType;
-  text:           string;
-  attachments:    string[];
-  emoji?:         string;
-  contact?:       ChatContactPayload;
-  location?:      ChatLocationPayload;
-  date?:          ChatDatePayload;
-  event?:         ChatEventPayload;
+  senderId?: mongoose.Types.ObjectId;  // null for system messages
+  senderName: string;
+  contentType: ChatContentType;
+  text: string;
+  attachments: string[];
+  emoji?: string;
+  contact?: ChatContactPayload;
+  location?: ChatLocationPayload;
+  date?: ChatDatePayload;
+  event?: ChatEventPayload;
   /** longtext: pointer to the first chunk (index 0). */
-  startChunkId?:  mongoose.Types.ObjectId;
+  startChunkId?: mongoose.Types.ObjectId;
   /** longtext: pointer to the last chunk (so the client knows when to stop). */
-  endChunkId?:    mongoose.Types.ObjectId;
+  endChunkId?: mongoose.Types.ObjectId;
   /** longtext: total length of preview + all chunks (chars). */
-  fullLength?:    number;
+  fullLength?: number;
   replyTo?: {
-    messageId:  mongoose.Types.ObjectId;
+    messageId: mongoose.Types.ObjectId;
     senderName: string;
-    text:       string;
+    text: string;
   };
-  isSystem:  boolean;                       // true for auto-generated messages
+  isSystem: boolean;                       // true for auto-generated messages
+  deliveryStatus?: 'sent' | 'read';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -193,17 +233,17 @@ export type ChatMessageDoc = mongoose.HydratedDocument<IChatMessage>;
 const ChatMessageSchema = new Schema<IChatMessage>(
   {
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
-    senderId:       { type: Schema.Types.ObjectId, ref: 'User' },
-    senderName:     { type: String, required: true },
+    senderId: { type: Schema.Types.ObjectId, ref: 'User' },
+    senderName: { type: String, required: true },
     contentType: {
-      type:    String,
-      enum:    ['text', 'emoji', 'contact', 'location', 'image', 'file', 'system', 'date', 'event', 'longtext'],
+      type: String,
+      enum: ['text', 'emoji', 'contact', 'location', 'image', 'file', 'system', 'date', 'event', 'longtext'],
       default: 'text',
     },
     // `text` stays required so any code path that reads `.text` for preview
     // gets a sensible fallback. For non-text types we synthesize one server-side.
-    text:           { type: String, required: true },
-    attachments:    [{ type: String }],
+    text: { type: String, required: true },
+    attachments: [{ type: String }],
 
     emoji: {
       type: String,
@@ -238,44 +278,45 @@ const ChatMessageSchema = new Schema<IChatMessage>(
     },
 
     contact: {
-      _id:         false,
-      name:        { type: String, trim: true },
-      phone:       { type: String, trim: true },
+      _id: false,
+      name: { type: String, trim: true },
+      phone: { type: String, trim: true },
       countryCode: { type: String, trim: true },
     },
 
     location: {
-      _id:   false,
-      lat:   { type: Number },
-      lng:   { type: Number },
+      _id: false,
+      lat: { type: Number },
+      lng: { type: Number },
       label: { type: String, trim: true },
     },
 
     date: {
-      _id:   false,
-      iso:   { type: String, trim: true },
+      _id: false,
+      iso: { type: String, trim: true },
       label: { type: String, trim: true },
     },
 
     event: {
-      _id:         false,
-      title:       { type: String, trim: true },
-      startsAt:    { type: String, trim: true },
-      endsAt:      { type: String, trim: true },
-      location:    { type: String, trim: true },
+      _id: false,
+      title: { type: String, trim: true },
+      startsAt: { type: String, trim: true },
+      endsAt: { type: String, trim: true },
+      location: { type: String, trim: true },
       description: { type: String, trim: true },
     },
 
     startChunkId: { type: Schema.Types.ObjectId, ref: 'MessageChunk' },
-    endChunkId:   { type: Schema.Types.ObjectId, ref: 'MessageChunk' },
-    fullLength:   { type: Number, min: 0 },
+    endChunkId: { type: Schema.Types.ObjectId, ref: 'MessageChunk' },
+    fullLength: { type: Number, min: 0 },
 
     replyTo: {
-      messageId:  { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
+      messageId: { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
       senderName: { type: String },
-      text:       { type: String },
+      text: { type: String },
     },
     isSystem: { type: Boolean, default: false },
+    deliveryStatus: { type: String, enum: ['sent', 'read'], default: 'sent' },
   },
   { timestamps: true },
 );
@@ -361,8 +402,8 @@ ChatMessageSchema.pre('validate', function chatContentTypeValidator(this: ChatMe
     if (doc.startChunkId || doc.endChunkId || typeof doc.fullLength === 'number') {
       // Drop silently — same pattern as contact/location subdocs above.
       doc.set('startChunkId', undefined);
-      doc.set('endChunkId',   undefined);
-      doc.set('fullLength',   undefined);
+      doc.set('endChunkId', undefined);
+      doc.set('fullLength', undefined);
     }
   }
 
@@ -400,10 +441,11 @@ ChatMessageSchema.index({ conversationId: 1, createdAt: 1, _id: 1 });
 
 export interface IConversationParticipant {
   conversationId: mongoose.Types.ObjectId;
-  userId:         mongoose.Types.ObjectId;
-  role:           'owner' | 'member';
-  addedBy?:       mongoose.Types.ObjectId;
-  joinedAt:       Date;
+  userId: mongoose.Types.ObjectId;
+  role: 'owner' | 'member';
+  addedBy?: mongoose.Types.ObjectId;
+  parentId?: mongoose.Types.ObjectId;
+  joinedAt: Date;
 }
 
 export type ConversationParticipantDoc = mongoose.HydratedDocument<IConversationParticipant>;
@@ -411,10 +453,11 @@ export type ConversationParticipantDoc = mongoose.HydratedDocument<IConversation
 const ConversationParticipantSchema = new Schema<IConversationParticipant>(
   {
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
-    userId:         { type: Schema.Types.ObjectId, ref: 'User',         required: true },
-    role:           { type: String, enum: ['owner', 'member'], default: 'member' },
-    addedBy:        { type: Schema.Types.ObjectId, ref: 'User' },
-    joinedAt:       { type: Date,   default: Date.now },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    role: { type: String, enum: ['owner', 'member'], default: 'member' },
+    addedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    parentId: { type: Schema.Types.ObjectId, ref: 'Team' },
+    joinedAt: { type: Date, default: Date.now },
   },
   { timestamps: false },
 );
@@ -439,22 +482,22 @@ ConversationParticipantSchema.index({ userId: 1 });
 // divider anchor.
 
 export interface IChatReadCursor {
-  userId?:           mongoose.Types.ObjectId; // unset for external guests
+  userId?: mongoose.Types.ObjectId; // unset for external guests
   externalUserName?: string;
-  conversationId:    mongoose.Types.ObjectId;
+  conversationId: mongoose.Types.ObjectId;
   lastReadMessageId?: mongoose.Types.ObjectId;
-  lastReadAt:        Date;
+  lastReadAt: Date;
 }
 
 export type ChatReadCursorDoc = mongoose.HydratedDocument<IChatReadCursor>;
 
 const ChatReadCursorSchema = new Schema<IChatReadCursor>(
   {
-    userId:            { type: Schema.Types.ObjectId, ref: 'User' },
-    externalUserName:  { type: String, trim: true },
-    conversationId:    { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    externalUserName: { type: String, trim: true },
+    conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     lastReadMessageId: { type: Schema.Types.ObjectId, ref: 'ChatMessage' },
-    lastReadAt:        { type: Date, default: Date.now, required: true },
+    lastReadAt: { type: Date, default: Date.now, required: true },
   },
   { timestamps: false },
 );
@@ -471,8 +514,8 @@ ChatReadCursorSchema.index(
 
 // ─── Model exports ───────────────────────────────────────────────────────────
 
-export const Conversation  = mongoose.model<IConversation>('Conversation', ConversationSchema);
-export const ChatMessage   = mongoose.model<IChatMessage>('ChatMessage', ChatMessageSchema);
+export const Conversation = mongoose.model<IConversation>('Conversation', ConversationSchema);
+export const ChatMessage = mongoose.model<IChatMessage>('ChatMessage', ChatMessageSchema);
 export const ChatReadCursor = mongoose.model<IChatReadCursor>('ChatReadCursor', ChatReadCursorSchema);
 export const ConversationParticipant = mongoose.model<IConversationParticipant>(
   'ConversationParticipant',

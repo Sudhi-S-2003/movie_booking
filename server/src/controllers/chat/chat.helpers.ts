@@ -10,7 +10,6 @@ import mongoose from 'mongoose';
 import type { ChatMessageDoc } from '../../models/chat.model.js';
 import { getChatListNamespace } from '../../socket/index.js';
 import { emitNewConversation } from '../../socket/channels/chat-list.channel.js';
-import { getReadStatusForMessages } from '../../services/chat/messageRead.service.js';
 
 /** Lean representation of a `ChatMessageDoc` after `.lean()`. */
 type LeanChatMessage = mongoose.FlattenMaps<ChatMessageDoc> & {
@@ -49,15 +48,10 @@ export const decorateMessages = async (
     return false;
   };
 
-  const ownIds = messages.filter(isOwnMessage).map((m) => m._id);
-  const statusMap = ownIds.length > 0
-    ? await getReadStatusForMessages(ownIds, viewer)
-    : new Map<string, 'sent' | 'read'>();
-
   return messages.map((m) => {
     const isYou = isOwnMessage(m);
     const base: DecoratedChatMessage = isYou
-      ? { ...m, isYou, deliveryStatus: statusMap.get(m._id.toString()) ?? 'sent' }
+      ? { ...m, isYou, deliveryStatus: m.deliveryStatus ?? 'sent' }
       : { ...m, isYou };
     return base;
   });

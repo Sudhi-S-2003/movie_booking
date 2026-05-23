@@ -56,7 +56,9 @@ interface SyncParticipantsOpts {
   /** Creator of the conversation — gets `role: 'owner'` on insert. */
   creatorId?: IdLike;
   /** User who added these members — stored on new rows only. */
-  addedBy?:   IdLike;
+  addedBy?: IdLike;
+  /** Parent ID (e.g. Team ID) for these participants */
+  parentId?: IdLike;
 }
 
 /**
@@ -68,20 +70,26 @@ interface SyncParticipantsOpts {
  */
 export const syncParticipants = async (
   conversationId: IdLike,
-  userIds:       ReadonlyArray<IdLike>,
+  userIds: ReadonlyArray<IdLike>,
   opts: SyncParticipantsOpts = {},
 ): Promise<void> => {
   if (userIds.length === 0) return;
 
-  const convId     = toObjectId(conversationId);
+  const convId = toObjectId(conversationId);
   const creatorStr = opts.creatorId ? String(opts.creatorId) : null;
-  const addedById  = opts.addedBy   ? toObjectId(opts.addedBy) : null;
-  const now        = new Date();
+  const addedById = opts.addedBy ? toObjectId(opts.addedBy) : null;
+  const parentIdObj = opts.parentId ? toObjectId(opts.parentId) : null;
+  const now = new Date();
 
   const ops = userIds.map((uid) => {
-    const uidObj  = toObjectId(uid);
+    const uidObj = toObjectId(uid);
     const isOwner = creatorStr !== null && String(uid) === creatorStr;
     const role: 'owner' | 'member' = isOwner ? 'owner' : 'member';
+
+    const setFields: Record<string, any> = {};
+    if (parentIdObj) {
+      setFields.parentId = parentIdObj;
+    }
 
     return {
       updateOne: {
@@ -89,11 +97,12 @@ export const syncParticipants = async (
         update: {
           $setOnInsert: {
             conversationId: convId,
-            userId:         uidObj,
+            userId: uidObj,
             role,
             ...(addedById && { addedBy: addedById }),
-            joinedAt:       now,
+            joinedAt: now,
           },
+          ...(Object.keys(setFields).length > 0 && { $set: setFields }),
         },
         upsert: true,
       },
@@ -108,12 +117,12 @@ export const syncParticipants = async (
 /** Delete the membership row for a single user leaving a conversation. */
 export const removeParticipantRow = async (
   conversationId: IdLike,
-  userId:         IdLike,
+  userId: IdLike,
 ): Promise<void> => {
   const convId = toObjectId(conversationId);
   const result = await ConversationParticipant.deleteOne({
     conversationId: convId,
-    userId:         toObjectId(userId),
+    userId: toObjectId(userId),
   });
   if (result.deletedCount > 0) {
     await refreshParticipantCount(convId);
@@ -124,7 +133,7 @@ export const removeParticipantRow = async (
 export const isParticipant = async (conversationId: IdLike, userId: IdLike): Promise<boolean> => {
   const exists = await ConversationParticipant.exists({
     conversationId: toObjectId(conversationId),
-    userId:         toObjectId(userId),
+    userId: toObjectId(userId),
   });
   return exists !== null;
 };
@@ -158,19 +167,7 @@ export const forEachParticipant = async (
  * problem on the server AND the client. Clients paginate via
  * `GET /chat/conversations/:id/members` when they need the full list.
  */
-const PARTICIPANT_PREVIEW_LIMIT = 50;
 
-interface PopulatedParticipant {
-  _id:      mongoose.Types.ObjectId;
-  name:     string;
-  username: string;
-  avatar?:  string | undefined;
-}
-
-interface PopulateOptions {
-  /** Max participants to hydrate (default: PARTICIPANT_PREVIEW_LIMIT). */
-  limit?: number;
-}
 
 /**
  * Attach `.participants` to a single lean conversation so the response shape
@@ -180,248 +177,110 @@ interface PopulateOptions {
  *
  * Capped at `limit` users to keep payloads bounded on large groups.
  */
-export const populateMembers = async <T extends { _id: unknown }>(
-  conversation: T,
-  opts: PopulateOptions = {},
-): Promise<T & { participants: PopulatedParticipant[] }> => {
-  const limit = opts.limit ?? PARTICIPANT_PREVIEW_LIMIT;
+// (removed populateMembers and getUserConversationIds)
 
-  const rows = await ConversationParticipant.find(
-    { conversationId: conversation._id as mongoose.Types.ObjectId | string },
-    { userId: 1, role: 1, joinedAt: 1, _id: 0 },
-  )
-    // owner first, then join order — matches the paginated members endpoint.
-    .sort({ role: 1, joinedAt: 1 })
-    .limit(limit)
-    .lean();
+  // ── Reads ───────────────────────────────────────────────────────────────────
 
-  const userIds = rows.map((r) => r.userId as mongoose.Types.ObjectId);
-
-  const UserModel = mongoose.model('User');
-  const users = userIds.length
-    ? await UserModel.find(
-        { _id: { $in: userIds } },
-        { name: 1, username: 1, avatar: 1 },
-      ).lean<PopulatedParticipant[]>()
-    : [];
-
-  // Preserve the cursor order rather than whatever the $in returns.
-  const userById = new Map(users.map((u) => [String(u._id), u]));
-  const ordered = userIds
-    .map((uid) => userById.get(String(uid)))
-    .filter((u): u is PopulatedParticipant => Boolean(u));
-
-  return { ...conversation, participants: ordered };
-};
-
-interface DirectPeer {
-  _id:      mongoose.Types.ObjectId;
-  name:     string;
-  username: string;
-  avatar?:  string | undefined;
-}
-
-/**
- * Enrich direct (1:1) conversation rows with:
- *   • `title`     ← opposite participant's name (if not already set)
- *   • `avatarUrl` ← opposite participant's avatar (if not already set)
- *   • `peer`      ← `{ _id, name, username, avatar }` — lightweight handle
- *                   consumers can use for `@username` / profile links without
- *                   shipping a full participants array.
- *
- * Group and system rows pass through unchanged.
- *
- * Cost: two queries per page regardless of size:
- *   1. membership rows for the direct conversations on this page
- *   2. user lookup for the union of peer ids
- */
-export const attachDirectPeer = async <T extends { _id: any; type: string; title?: string; avatarUrl?: string; externalUser?: { name: string; email: string } }>(
-  rows: T[],
-  viewerId: IdLike,
-): Promise<Array<T & { peer?: DirectPeer }>> => {
-  const directRows = rows.filter((r) => r.type === 'direct');
-  const viewerStr = String(viewerId);
-
-  // 1. Process 'direct' rows (require DB lookup into User model)
-  const peerIdByConv = new Map<string, string>();
-  const peerById = new Map<string, DirectPeer>();
-
-  if (directRows.length > 0) {
-    const directConvIds = directRows.map((r) => r._id as mongoose.Types.ObjectId | string);
-    const memberships = await ConversationParticipant.find(
-      { conversationId: { $in: directConvIds } },
-      { conversationId: 1, userId: 1, _id: 0 },
-    ).lean();
-
-    for (const m of memberships) {
-      if (String(m.userId) === viewerStr) continue;
-      peerIdByConv.set(String(m.conversationId), String(m.userId));
-    }
-
-    const peerIds = Array.from(new Set(peerIdByConv.values()))
-      .map((id) => new mongoose.Types.ObjectId(id));
-
-    const UserModel = mongoose.model('User');
-    const peers = peerIds.length
-      ? await UserModel.find(
-          { _id: { $in: peerIds } },
-          { name: 1, username: 1, avatar: 1 },
-        ).lean<DirectPeer[]>()
-      : [];
-    
-    for (const p of peers) peerById.set(String(p._id), p);
+  interface ListedMember {
+    _id: string;
+    name: string;
+    username: string;
+    avatar: string | undefined;
+    bio: string | undefined;
+    role: 'owner' | 'member';
+    joinedAt: Date;
+    isCreator: boolean;
+    isYou: boolean;
   }
 
-  // 2. Map all rows, synthesizing peers for 'api' type on the fly
-  return rows.map((r) => {
-    // Case A: Standard direct chat
-    if (r.type === 'direct') {
-      const peerId = peerIdByConv.get(String(r._id));
-      const peer   = peerId ? peerById.get(peerId) : null;
-      if (!peer) return r;
-      return {
-        ...r,
-        title:     r.title     ?? peer.name,
-        avatarUrl: r.avatarUrl ?? peer.avatar,
-        peer,
-      };
-    }
+  interface ListMembersArgs {
+    conversationId: IdLike;
+    currentUserId: IdLike;
+    creatorId: IdLike | null | undefined;
+    page: PageParams;
+  }
 
-    // Case B: API-driven chat with inline external user info
-    if (r.type === 'api' && r.externalUser) {
-      const peer: DirectPeer = {
-        // Use the conversation ID as the peer ID for stability in UI keys
-        _id:      toObjectId(r._id),
-        name:     r.externalUser.name,
-        username: r.externalUser.email,
-        avatar:   undefined,
-      };
-      return {
-        ...r,
-        title:     r.title     ?? peer.name,
-        avatarUrl: r.avatarUrl ?? peer.avatar,
-        peer,
-      };
-    }
+  interface ListMembersResult {
+    members: ListedMember[];
+    pagination: PageEnvelope;
+  }
 
-    return r;
-  });
-};
+  /**
+   * Paginated roster for a conversation. Owner-first, then by join time,
+   * with `_id` as the deterministic tiebreaker.
+   *
+   * Uses the `{ conversationId, joinedAt }` index for an IXSCAN-backed sort
+   * plus a bounded `$lookup` into `users` for display fields.
+   */
+  export const listMembers = async ({
+    conversationId,
+    currentUserId,
+    creatorId,
+    page,
+  }: ListMembersArgs): Promise<ListMembersResult> => {
+    const convObjId = toObjectId(conversationId);
+    const currentStr = String(currentUserId);
+    const creatorStr = creatorId ? String(creatorId) : null;
 
-/**
- * Return the set of conversationIds that the given user is a member of.
- * Used by the conversation list and unread-count aggregations.
- */
-export const getUserConversationIds = async (userId: IdLike): Promise<mongoose.Types.ObjectId[]> => {
-  const rows = await ConversationParticipant.find(
-    { userId: toObjectId(userId) },
-    { conversationId: 1, _id: 0 },
-  ).lean();
-  return rows.map((r) => r.conversationId as mongoose.Types.ObjectId);
-};
-
-// ── Reads ───────────────────────────────────────────────────────────────────
-
-interface ListedMember {
-  _id:       string;
-  name:      string;
-  username:  string;
-  avatar:    string | undefined;
-  bio:       string | undefined;
-  role:      'owner' | 'member';
-  joinedAt:  Date;
-  isCreator: boolean;
-  isYou:     boolean;
-}
-
-interface ListMembersArgs {
-  conversationId: IdLike;
-  currentUserId:  IdLike;
-  creatorId:      IdLike | null | undefined;
-  page:           PageParams;
-}
-
-interface ListMembersResult {
-  members:    ListedMember[];
-  pagination: PageEnvelope;
-}
-
-/**
- * Paginated roster for a conversation. Owner-first, then by join time,
- * with `_id` as the deterministic tiebreaker.
- *
- * Uses the `{ conversationId, joinedAt }` index for an IXSCAN-backed sort
- * plus a bounded `$lookup` into `users` for display fields.
- */
-export const listMembers = async ({
-  conversationId,
-  currentUserId,
-  creatorId,
-  page,
-}: ListMembersArgs): Promise<ListMembersResult> => {
-  const convObjId = toObjectId(conversationId);
-  const currentStr = String(currentUserId);
-  const creatorStr = creatorId ? String(creatorId) : null;
-
-  const [total, rows] = await Promise.all([
-    ConversationParticipant.countDocuments({ conversationId: convObjId }),
-    ConversationParticipant.aggregate<{
-      _id:      mongoose.Types.ObjectId;
-      name:     string;
-      username: string;
-      avatar?:  string;
-      bio?:     string;
-      role:     'owner' | 'member';
-      joinedAt: Date;
-    }>([
-      { $match: { conversationId: convObjId } },
-      { $addFields: { ownerRank: { $cond: [{ $eq: ['$role', 'owner'] }, 0, 1] } } },
-      { $sort: { ownerRank: 1, joinedAt: 1, _id: 1 } },
-      { $skip:  page.skip },
-      { $limit: page.limit },
-      {
-        $lookup: {
-          from:         'users',
-          localField:   'userId',
-          foreignField: '_id',
-          as:           'user',
-          pipeline: [{ $project: { name: 1, username: 1, avatar: 1, bio: 1 } }],
+    const [total, rows] = await Promise.all([
+      ConversationParticipant.countDocuments({ conversationId: convObjId }),
+      ConversationParticipant.aggregate<{
+        _id: mongoose.Types.ObjectId;
+        name: string;
+        username: string;
+        avatar?: string;
+        bio?: string;
+        role: 'owner' | 'member';
+        joinedAt: Date;
+      }>([
+        { $match: { conversationId: convObjId } },
+        { $addFields: { ownerRank: { $cond: [{ $eq: ['$role', 'owner'] }, 0, 1] } } },
+        { $sort: { ownerRank: 1, joinedAt: 1, _id: 1 } },
+        { $skip: page.skip },
+        { $limit: page.limit },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'user',
+            pipeline: [{ $project: { name: 1, username: 1, avatar: 1, bio: 1 } }],
+          },
         },
-      },
-      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
-      {
-        $project: {
-          _id:      '$user._id',
-          name:     '$user.name',
-          username: '$user.username',
-          avatar:   '$user.avatar',
-          bio:      '$user.bio',
-          role:     1,
-          joinedAt: 1,
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            _id: '$user._id',
+            name: '$user.name',
+            username: '$user.username',
+            avatar: '$user.avatar',
+            bio: '$user.bio',
+            role: 1,
+            joinedAt: 1,
+          },
         },
-      },
-    ]),
-  ]);
+      ]),
+    ]);
 
-  const members: ListedMember[] = rows
-    .filter((r) => r._id) // drop rows whose user was deleted
-    .map((r) => {
-      const idStr = r._id.toString();
-      return {
-        _id:       idStr,
-        name:      r.name,
-        username:  r.username,
-        avatar:    r.avatar,
-        bio:       r.bio,
-        role:      r.role,
-        joinedAt:  r.joinedAt,
-        isCreator: creatorStr !== null && idStr === creatorStr,
-        isYou:     idStr === currentStr,
-      };
-    });
+    const members: ListedMember[] = rows
+      .filter((r) => r._id) // drop rows whose user was deleted
+      .map((r) => {
+        const idStr = r._id.toString();
+        return {
+          _id: idStr,
+          name: r.name,
+          username: r.username,
+          avatar: r.avatar,
+          bio: r.bio,
+          role: r.role,
+          joinedAt: r.joinedAt,
+          isCreator: creatorStr !== null && idStr === creatorStr,
+          isYou: idStr === currentStr,
+        };
+      });
 
-  return {
-    members,
-    pagination: buildPageEnvelope(total, page),
+    return {
+      members,
+      pagination: buildPageEnvelope(total, page),
+    };
   };
-};
