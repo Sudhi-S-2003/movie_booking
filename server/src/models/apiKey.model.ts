@@ -14,8 +14,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import mongoose, { Schema } from 'mongoose';
+import { ApiServiceCategory } from '../constants/enums.js';
 
-export type ApiKeyCategory = 'chat' | 'code-share';
+export type ApiKeyCategory = ApiServiceCategory;
 
 export interface IApiKey {
   userId:      mongoose.Types.ObjectId;
@@ -37,8 +38,8 @@ const ApiKeySchema = new Schema<IApiKey>(
     name:       { type: String, required: true, trim: true, maxlength: 80 },
     category:   {
       type:     String,
-      enum:     ['chat', 'code-share'],
-      default:  'chat',
+      enum:     Object.values(ApiServiceCategory),
+      default:  ApiServiceCategory.CHAT,
       required: true,
     },
     keyId:      { type: String, required: true, unique: true },

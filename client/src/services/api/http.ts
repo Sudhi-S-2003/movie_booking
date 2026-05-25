@@ -44,6 +44,7 @@ export interface RequestOptions {
   params?: Record<string, unknown>;
   headers?: Record<string, string>;
   signal?: AbortSignal;
+  onDownloadProgress?: (progressEvent: any) => void;
 }
 
 const axiosClient: AxiosInstance = axios.create({
@@ -164,6 +165,7 @@ const cleanConfig = (opts?: RequestOptions): AxiosRequestConfig => {
   if (opts.params !== undefined) config.params = opts.params;
   if (opts.headers !== undefined) config.headers = opts.headers;
   if (opts.signal !== undefined) config.signal = opts.signal;
+  if (opts.onDownloadProgress !== undefined) config.onDownloadProgress = opts.onDownloadProgress;
   return config;
 };
 

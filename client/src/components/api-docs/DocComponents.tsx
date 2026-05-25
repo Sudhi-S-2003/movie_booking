@@ -1,5 +1,6 @@
 import React from 'react';
-import { Terminal, Copy, Check, Info } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Terminal, Copy, Check, Info, ArrowLeft } from 'lucide-react';
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -176,5 +177,24 @@ export const DocSection: React.FC<{
       </div>
       {children}
     </section>
+  );
+};
+
+export const ApiDocsBackButton: React.FC<{ className?: string }> = ({ className = "" }) => {
+  const location = useLocation();
+  const keysPath = location.pathname.includes('/api-docs') 
+    ? location.pathname.substring(0, location.pathname.indexOf('/api-docs')) 
+    : null;
+
+  if (keysPath === null) return null;
+
+  return (
+    <Link 
+      to={`${keysPath}/api-keys`}
+      className={`inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/40 hover:text-white transition-all group ${className}`}
+    >
+      <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" />
+      Back to API Credentials
+    </Link>
   );
 };

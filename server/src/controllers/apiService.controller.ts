@@ -1,7 +1,9 @@
 import type { Request, Response } from 'express';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { handleCodeShareAction, createCodeShare } from '../services/codeShare/codeShare.service.js';
+import { handleCodeShareV2Action, createCodeShareV2 } from '../services/codeShare/codeShareV2.service.js';
 import { generateSignedUrlData } from '../utils/apiService.util.js';
+import { ApiServiceCategory } from '../constants/enums.js';
 
 
 /**
@@ -50,7 +52,7 @@ export const createApiServiceResource = async (req: Request, res: Response) => {
 
     const category = result.category;
 
-    if (category === 'code-share') {
+    if (category === ApiServiceCategory.CODE_SHARE) {
       if (!req.apiKeyId) return res.status(401).json({ success: false, message: 'API key required to create' });
       
       const { title, code, expiresAt, expiryMinutes } = req.body;
@@ -66,6 +68,38 @@ export const createApiServiceResource = async (req: Request, res: Response) => {
         code: code || '',
         expiresAt: computedExpiresAt
       });
+
+      const resourceId = String(data._id);
+      const signedData = generateSignedUrlData(resourceId, category, req.body.expiryMinutes);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Resource created',
+        data: { resourceId, ...signedData },
+      });
+    }
+
+    if (category === ApiServiceCategory.CODE_SHARE_V2) {
+      if (!req.apiKeyId) return res.status(401).json({ success: false, message: 'API key required to create' });
+      
+      const { title, files, expiresAt, expiryMinutes } = req.body;
+      if (!title) return res.status(400).json({ success: false, message: 'Title required' });
+      if (!files || !Array.isArray(files)) return res.status(400).json({ success: false, message: 'Files array required' });
+
+      let computedExpiresAt = expiresAt ? new Date(expiresAt) : undefined;
+      if (!computedExpiresAt && expiryMinutes) {
+        computedExpiresAt = new Date(Date.now() + expiryMinutes * 60000);
+      }
+
+      const createData: any = {
+        title,
+        files,
+      };
+      if (computedExpiresAt) {
+        createData.expiresAt = computedExpiresAt;
+      }
+
+      const data: any = await createCodeShareV2(String(req.user?._id), createData);
 
       const resourceId = String(data._id);
       const signedData = generateSignedUrlData(resourceId, category, req.body.expiryMinutes);
@@ -105,8 +139,25 @@ export const getApiServiceResource = async (req: Request, res: Response) => {
 
     const action = (req.query?.action || req.body?.action || 'read') as string;
 
-    if (category === 'code-share') {
+    if (category === ApiServiceCategory.CODE_SHARE) {
       const result = await handleCodeShareAction({
+        resourceId,
+        action,
+        body: req.body || {},
+        query: req.query || {},
+        userId: String(req.user?._id || ''),
+        apiKeyId: req.apiKeyId,
+      } as any);
+
+      return res.json({
+        success: true,
+        message: result.message || 'Success',
+        data: result.data,
+      });
+    }
+
+    if (category === ApiServiceCategory.CODE_SHARE_V2) {
+      const result = await handleCodeShareV2Action({
         resourceId,
         action,
         body: req.body || {},

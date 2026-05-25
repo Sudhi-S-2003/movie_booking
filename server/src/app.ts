@@ -29,9 +29,11 @@ import integrationRoutes from './routes/integration.routes.js';
 import urlPreviewRoutes from './routes/urlPreview.routes.js';
 import apiServicePublicRoutes from './routes/apiService.public.routes.js';
 import imageRoutes from './routes/image.routes.js';
-import { errorHandler } from './middleware/error.middleware.js';
+import shareRoutes from "./routes/share/share.routes.js"
+// import { errorHandler } from './middleware/error.middleware.js';
 import { getClientIp } from './utils/ip.util.js';
 import { authRateLimiter, apiRateLimiter } from './middleware/rateLimit.middleware.js';
+import errorMiddleware from './middleware/error.middleware.v1.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,9 +58,9 @@ app.use(express.static(path.join(__dirname, '../public')));
 // clobbered by a preceding `express.json` that already drained the stream.
 app.use('/api/webhooks', externalWebhookRoutes);
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Health Check
 app.get('/health', (req, res) => {
@@ -92,6 +94,7 @@ app.use('/api/integrations', integrationRoutes);
 app.use('/api/url/preview', urlPreviewRoutes);
 app.use('/api/public/api-service', apiServicePublicRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/share',shareRoutes)
 
 // 404 handler
 app.use((_req, res, _next) => {
@@ -99,6 +102,7 @@ app.use((_req, res, _next) => {
 });
 
 // Global Error Handler
-app.use(errorHandler);
+// app.use(errorHandler);
+app.use(errorMiddleware);
 
 export default app;

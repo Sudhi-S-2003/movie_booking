@@ -1,11 +1,7 @@
 import React from 'react';
 import { Key, Terminal } from 'lucide-react';
 
-interface SignatureGuideProps {
-  category: string;
-}
-
-export const SignatureGuide: React.FC<SignatureGuideProps> = ({ category }) => {
+export const SignatureGuide: React.FC = () => {
   return (
     <section>
       <div className="flex items-center gap-3 mb-6">
@@ -14,7 +10,7 @@ export const SignatureGuide: React.FC<SignatureGuideProps> = ({ category }) => {
       </div>
       <p className="text-sm text-white/50 mb-8 leading-relaxed">
         Before redirecting a user to a protected resource, you must generate a signature. 
-        Use your API Key and Secret to call the signing endpoint for the <code className="text-accent-blue">{category}</code> category.
+        Use your API Key and Secret to call the signing endpoint for the <code className="text-accent-blue">chat</code> category.
       </p>
       
       <div className="bg-[#0c0c0c] border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl mb-8">
@@ -28,7 +24,7 @@ export const SignatureGuide: React.FC<SignatureGuideProps> = ({ category }) => {
           <pre className="font-mono text-xs text-white/80 overflow-x-auto leading-6">
 {`// Request Body
 {
-  "resourceId": "resource_uuid_here",
+  "resourceId": "conversation_uuid_here",
   "expiryMinutes": 60
 }
 
@@ -36,7 +32,7 @@ export const SignatureGuide: React.FC<SignatureGuideProps> = ({ category }) => {
 {
   "success": true,
   "data": {
-    "signedUrl": "https://yourapp.com/${category}/resource_uuid?signature=...",
+    "signedUrl": "https://yourapp.com/chat/conversation_uuid?signature=...",
     "expiresAt": 1715527800000,
     "signature": "8a2f..."
   }
@@ -56,7 +52,7 @@ export const SignatureGuide: React.FC<SignatureGuideProps> = ({ category }) => {
   -H "x-api-key: YOUR_API_KEY" \\
   -H "x-api-secret: YOUR_API_SECRET" \\
   -d '{
-    "resourceId": "YOUR_RESOURCE_ID",
+    "resourceId": "YOUR_CONVERSATION_ID",
     "expiryMinutes": 60
   }'`}
         </pre>

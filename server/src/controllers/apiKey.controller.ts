@@ -17,8 +17,9 @@ import {
   revokeKey,
 } from '../services/apiKey/apiKey.service.js';
 import type { ApiKeyCategory } from '../models/apiKey.model.js';
+import { ApiServiceCategory } from '../constants/enums.js';
 
-const ALLOWED_CATEGORIES: ReadonlyArray<ApiKeyCategory> = ['chat', 'code-share'];
+const ALLOWED_CATEGORIES: ReadonlyArray<ApiKeyCategory> = Object.values(ApiServiceCategory);
 
 const isCategory = (raw: unknown): raw is ApiKeyCategory =>
   typeof raw === 'string' && (ALLOWED_CATEGORIES as ReadonlyArray<string>).includes(raw);

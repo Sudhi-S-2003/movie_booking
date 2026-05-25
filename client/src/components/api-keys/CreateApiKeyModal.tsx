@@ -10,7 +10,7 @@ interface CreateApiKeyModalProps {
   onCreate: (body: { name: string; category: ApiKeyCategory }) => Promise<void>;
 }
 
-const CATEGORIES: ApiKeyCategory[] = ['chat', 'code-share'];
+const CATEGORIES: ApiKeyCategory[] = ['chat', 'code-share', 'code-share-v2'];
 
 /**
  * Create form. On successful create, the parent hook exposes the freshly

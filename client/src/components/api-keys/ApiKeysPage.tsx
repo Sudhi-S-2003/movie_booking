@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { Key, KeyRound, Plus, Book } from 'lucide-react';
 import { SEO } from '../../components/common/SEO.js';
 import { DashboardPage } from '../dashboard/DashboardPage.js';
@@ -8,6 +7,7 @@ import { useApiKeys } from './hooks/useApiKeys.js';
 import { ApiKeyRow } from './ApiKeyRow.js';
 import { CreateApiKeyModal } from './CreateApiKeyModal.js';
 import { RevealSecretModal } from './RevealSecretModal.js';
+import { ApiDocsSelectorModal } from './ApiDocsSelectorModal.js';
 import { SITE_CONFIG } from '../../config/site.config.js';
 
 /**
@@ -26,8 +26,7 @@ export const ApiKeysPage = () => {
   } = useApiKeys();
 
   const [createOpen, setCreateOpen] = useState(false);
-  const location = useLocation();
-  const docsPath = location.pathname.replace('/api-keys', '/api-docs');
+  const [selectorOpen, setSelectorOpen] = useState(false);
 
   return (
     <>
@@ -38,12 +37,12 @@ export const ApiKeysPage = () => {
         subtitle="Credentials for programmatic access"
         headerActions={
           <div className="flex items-center gap-3">
-            <Link
-              to={docsPath}
+            <button
+              onClick={() => setSelectorOpen(true)}
               className="px-6 py-3 bg-white/5 border border-white/10 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 hover:text-white transition-all underline underline-offset-4 decoration-white/20"
             >
               <Book size={14} /> View API Docs
-            </Link>
+            </button>
             <button
               onClick={() => setCreateOpen(true)}
               className="px-6 py-3 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-accent-blue/15 transition-all"
@@ -123,6 +122,11 @@ export const ApiKeysPage = () => {
       <RevealSecretModal
         created={lastCreated}
         onClose={clearLastCreated}
+      />
+
+      <ApiDocsSelectorModal
+        open={selectorOpen}
+        onClose={() => setSelectorOpen(false)}
       />
     </>
   );

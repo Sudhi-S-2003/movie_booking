@@ -3,7 +3,7 @@ import type { Pagination } from '../../types/api.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type ApiKeyCategory = 'chat' | 'code-share';
+export type ApiKeyCategory = 'chat' | 'code-share' | 'code-share-v2';
 
 export interface ApiKeyRecord {
   _id:        string;
@@ -35,7 +35,8 @@ interface CreateBody {
 
 export const CATEGORY_LABELS: Record<string, string> = {
   chat: 'Chat',
-  'code-share': 'Code Share',
+  'code-share': 'Code Share (V1)',
+  'code-share-v2': 'Code Share (V2)',
   api: 'API',
 };
 

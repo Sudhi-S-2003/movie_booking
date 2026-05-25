@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Book, Key, User, Terminal, Mail, MessageSquare, Code as CodeIcon } from 'lucide-react';
+import { ApiDocsBackButton } from './DocComponents.js';
 import { GettingStarted } from './GettingStarted';
 import { ManagementApi } from './ManagementApi';
 import { GuestApi } from './GuestApi';
@@ -133,14 +134,17 @@ export const ApiDocsPage = () => {
       {/* Main Content Area */}
       <main className="min-w-0">
         <div className="max-w-4xl space-y-32 pb-20">
-          <header className="space-y-4">
-            <h1 className="text-4xl lg:text-6xl font-black text-white tracking-tightest">
-              API Guide
-            </h1>
-            <p className="text-lg text-gray-400 max-w-2xl font-medium">
-              Everything you need to integrate our movie booking system.
-            </p>
-          </header>
+          <div className="space-y-8">
+            <ApiDocsBackButton />
+            <header className="space-y-4">
+              <h1 className="text-4xl lg:text-6xl font-black text-white tracking-tightest">
+                API Guide
+              </h1>
+              <p className="text-lg text-gray-400 max-w-2xl font-medium">
+                Everything you need to integrate our movie booking system.
+              </p>
+            </header>
+          </div>
 
           <div className="space-y-32">
             <GettingStarted />

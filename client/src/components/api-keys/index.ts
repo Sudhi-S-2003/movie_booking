@@ -3,3 +3,4 @@ export { ApiKeyRow }          from './ApiKeyRow.js';
 export { CreateApiKeyModal }  from './CreateApiKeyModal.js';
 export { RevealSecretModal }  from './RevealSecretModal.js';
 export { useApiKeys }         from './hooks/useApiKeys.js';
+export { ApiDocsSelectorModal } from './ApiDocsSelectorModal.js';

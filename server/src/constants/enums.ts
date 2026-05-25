@@ -88,3 +88,11 @@ export const SYSTEM_ACCOUNT = {
   NAME:     'CinemaConnect',
   ROLE:     UserRole.ADMIN,
 } as const;
+
+export const ApiServiceCategory = {
+  CHAT: 'chat',
+  CODE_SHARE: 'code-share',
+  CODE_SHARE_V2: 'code-share-v2',
+} as const;
+export type ApiServiceCategory = (typeof ApiServiceCategory)[keyof typeof ApiServiceCategory];
+

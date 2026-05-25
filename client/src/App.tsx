@@ -50,11 +50,15 @@ import { ApiKeyChat } from './pages/ApiKeyChat.js';
 import { Subscription } from './pages/Subscription.js';
 import { Integrations } from './pages/Integrations.js';
 import { ApiDocs } from './pages/ApiDocs.js';
+import { CodeShareDocsPage } from './pages/CodeShareDocsPage.js';
+import { CodeShareV2DocsPage } from './pages/CodeShareV2DocsPage.js';
+import { ChatDocsPage } from './pages/ChatDocsPage.js';
 import { ApiDocsTest } from './pages/ApiDocsTest.js';
 import { useRoleRedirect } from './hooks/useRoleRedirect.js';
 import PublicTicket from './pages/PublicTicket.js';
 import SessionsPage from './pages/dashboards/SessionsPage.js';
 import { CodeShare } from './pages/CodeShare.js';
+import { CodeShareV2 } from './pages/CodeShareV2.js';
 import { ApiDocsSignedService } from './pages/ApiDocsSignedService.js';
 import { ScrollToTop } from './components/common/ScrollToTop.js';
 import { ToastContainer } from './components/common/ToastContainer.js';
@@ -90,6 +94,7 @@ const App = () => {
               { }
               <Route path="/chat/:conversationId" element={<ApiKeyChat />} />
               <Route path="/code-share/:id" element={<CodeShare />} />
+              <Route path="/code-share-v2/:id" element={<CodeShareV2 />} />
 
               <Route element={<MarketingLayoutWrapper />}>
                 <Route path="/" element={<Home />} />
@@ -149,6 +154,9 @@ const App = () => {
                 <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
+                <Route path="api-docs/code-share" element={<CodeShareDocsPage />} />
+                <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
+                <Route path="api-docs/chat" element={<ChatDocsPage />} />
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
@@ -182,6 +190,9 @@ const App = () => {
                 <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
+                <Route path="api-docs/code-share" element={<CodeShareDocsPage />} />
+                <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
+                <Route path="api-docs/chat" element={<ChatDocsPage />} />
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
@@ -213,6 +224,9 @@ const App = () => {
                 <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
                 <Route path="api-keys" element={<ApiKeys />} />
                 <Route path="api-docs" element={<ApiDocs />} />
+                <Route path="api-docs/code-share" element={<CodeShareDocsPage />} />
+                <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
+                <Route path="api-docs/chat" element={<ChatDocsPage />} />
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />

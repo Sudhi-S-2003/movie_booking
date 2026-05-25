@@ -43,8 +43,8 @@
 }
 
 @layer base {
-  body {
-    @apply bg-background text-white antialiased font-sans selection:bg-accent-pink/30 selection:text-white;
+  html, body {
+    @apply bg-background text-white antialiased font-sans selection:bg-accent-pink/30 selection:text-white h-full overflow-hidden;
   }
 }
 
@@ -116,4 +116,23 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #1c1c21 inset !important;
   transition: background-color 5000s ease-in-out 0s;
   caret-color: white;
+}
+
+/* Force CodeMirror to occupy 100% parent height and scroll internally */
+.w-codemirror,
+.react-codemirror2,
+.cm-theme,
+.cm-editor {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
+.cm-scroller {
+  flex: 1 1 0% !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+  /* Ensure scrollbar has decent color visibility on dark background */
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent !important;
 }

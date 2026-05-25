@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Shield, Lock, ArrowRight, Info, ExternalLink, ChevronDown, Code2, MessageSquare } from 'lucide-react';
-import { SignatureGuide } from '../components/api-docs/signed-service/SignatureGuide.js';
-import { CodeShareLifecycle } from '../components/api-docs/signed-service/CodeShareLifecycle.js';
-import { ChatLifecycle } from '../components/api-docs/signed-service/ChatLifecycle.js';
-import { BackendApiReference } from '../components/api-docs/signed-service/BackendApiReference.js';
+import { SignatureGuide as CodeShareSignatureGuide } from '../components/api-docs/code-share/SignatureGuide.js';
+import { SignatureGuide as ChatSignatureGuide } from '../components/api-docs/chat/SignatureGuide.js';
+import { CodeShareLifecycle } from '../components/api-docs/code-share/CodeShareLifecycle.js';
+import { ChatLifecycle } from '../components/api-docs/chat/ChatLifecycle.js';
+import { BackendApiReference } from '../components/api-docs/code-share/BackendApiReference.js';
+import { BackendChatApiReference } from '../components/api-docs/chat/BackendChatApiReference.js';
 
 const CATEGORIES = [
   { id: 'code-share', label: 'Code Share', icon: Code2, desc: 'Secure snippet sharing' },
@@ -116,7 +118,7 @@ export const ApiDocsSignedService = () => {
 
         {/* Dynamic Content */}
         <div className="space-y-24 min-h-[600px]">
-          <SignatureGuide category={activeCategory.id} />
+          {activeCategory.id === 'code-share' ? <CodeShareSignatureGuide /> : <ChatSignatureGuide />}
           
           <AnimatePresence mode="wait">
             <motion.div
@@ -132,7 +134,7 @@ export const ApiDocsSignedService = () => {
           </AnimatePresence>
 
           <div className="pt-24 border-t border-white/[0.05]">
-            <BackendApiReference />
+            {activeCategory.id === 'code-share' ? <BackendApiReference /> : <BackendChatApiReference />}
           </div>
         </div>
 
