@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Zap, Crown, Building2, Lock, Loader2, CheckCircle2,
-  AlertCircle, X, ArrowRight, Gift, Tag,
+  AlertCircle, X, ArrowRight, Gift, Tag, Calendar, RotateCcw,
 } from 'lucide-react';
 import {
   subscriptionApi,
@@ -119,12 +119,19 @@ interface PaidCheckoutTarget {
   discountPct:  number;
 }
 
-interface EnterpriseCheckoutTarget {
-  monthlyLimit:   number;
-  durationMonths: number;
-  priceDisplay:   number;
-  discountPct:    number;
-}
+
+// ── Booster products ──────────────────────────────────────────────────────
+
+const BOOSTER_PRODUCTS = {
+  sparks_sm:  { id: 'sparks_sm',  name: '50K Chat Sparks',    tokenType: 'chat'  as const, amount: 50_000,    price: 199 },
+  sparks_md:  { id: 'sparks_md',  name: '200K Chat Sparks',   tokenType: 'chat'  as const, amount: 200_000,   price: 599 },
+  sparks_lg:  { id: 'sparks_lg',  name: '1M Chat Sparks',     tokenType: 'chat'  as const, amount: 1_000_000, price: 1999 },
+  credits_sm: { id: 'credits_sm', name: '25K Nexus Credits',  tokenType: 'nexus' as const, amount: 25_000,    price: 299 },
+  credits_md: { id: 'credits_md', name: '100K Nexus Credits', tokenType: 'nexus' as const, amount: 100_000,   price: 899 },
+  credits_lg: { id: 'credits_lg', name: '500K Nexus Credits', tokenType: 'nexus' as const, amount: 500_000,   price: 2499 },
+} as const;
+
+type BoosterProduct = typeof BOOSTER_PRODUCTS[keyof typeof BOOSTER_PRODUCTS];
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
@@ -135,9 +142,11 @@ export const Subscription = () => {
   const [viewer,   setViewer]   = useState<PlanCatalogViewer | null>(null);
   const [target,   setTarget]   = useState<PaidCheckoutTarget | null>(null);
   const [entForm,  setEntForm]  = useState<boolean>(false);
-  const [entTarget, setEntTarget] = useState<EnterpriseCheckoutTarget | null>(null);
+
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
+  const [boosterTarget, setBoosterTarget] = useState<BoosterProduct | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     subscriptionApi.getPlans()
@@ -154,6 +163,19 @@ export const Subscription = () => {
   const doRefresh = async () => {
     setRefreshing(true);
     try { await refresh(); } finally { setRefreshing(false); }
+  };
+
+  const handleCancel = async () => {
+    if (!window.confirm('Cancel auto-renew? Your plan stays active until expiry.')) return;
+    setCancelLoading(true);
+    try {
+      await subscriptionApi.cancel();
+      await doRefresh();
+    } catch {
+      // ignore
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   const isCurrent = (p: PaidPlan, cycle: BillingCycle) =>
@@ -211,6 +233,16 @@ export const Subscription = () => {
                     {fmtDaysLeft(sub.expiresAt)} · {fmtDate(sub.expiresAt)}
                   </span>
                 )}
+                {plan !== 'free' && sub?.status === 'active' && (
+                  <button
+                    onClick={() => void handleCancel()}
+                    disabled={cancelLoading}
+                    className="inline-flex items-center gap-1 text-[10px] font-black text-white/30 hover:text-red-400 uppercase tracking-widest transition-colors disabled:opacity-40"
+                  >
+                    <RotateCcw size={9} />
+                    {cancelLoading ? 'Cancelling…' : 'Cancel auto-renew'}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -225,6 +257,7 @@ export const Subscription = () => {
                       caption={`${b.remaining.toLocaleString()} / ${b.total.toLocaleString()}`}
                       tone={b.pct <= 0.1 ? 'amber' : 'accent'}
                       accentClass={accent}
+                      icon={<img src="/chat_sparks.png" className="w-5 h-5 object-contain opacity-70" alt="" />}
                     />
                   </div>
                 ))
@@ -236,6 +269,7 @@ export const Subscription = () => {
                     caption={sub?.expiresAt ? fmtDaysLeft(sub.expiresAt) : '—'}
                     tone="accent"
                     accentClass={accent}
+                    icon={<Calendar size={16} className="opacity-60" />}
                   />
                 </div>
               )}
@@ -399,6 +433,48 @@ export const Subscription = () => {
         {/* ── FAQ ─────────────────────────────────────────────────── */}
         <FaqAccordion />
 
+        {/* ── Token Booster packs ──────────────────────────────────────────── */}
+        {plan !== 'free' && (
+          <section className="mt-12">
+            <div className="mb-4">
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Add-ons</span>
+              <h2 className="mt-1 text-2xl md:text-3xl font-black text-white tracking-tight">Token Boosters</h2>
+              <p className="mt-1 text-[12px] text-white/40 font-bold">One-time top-ups. Credits added instantly after payment.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.values(BOOSTER_PRODUCTS).map((b) => (
+                <div
+                  key={b.id}
+                  className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 flex flex-col gap-3 hover:border-white/[0.15] transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={b.tokenType === 'chat' ? '/chat_sparks.png' : '/nexus_credits.png'}
+                      className="w-7 h-7 object-contain"
+                      alt={b.tokenType}
+                    />
+                    <div>
+                      <div className="text-[11px] font-black text-white/50 uppercase tracking-widest">
+                        {b.tokenType === 'chat' ? 'Chat Sparks' : 'Nexus Credits'}
+                      </div>
+                      <div className="text-[13px] font-black text-white">{b.name}</div>
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-white/40">
+                    +{b.amount.toLocaleString()} tokens added to your pool
+                  </div>
+                  <button
+                    onClick={() => setBoosterTarget(b)}
+                    className="mt-auto w-full py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white font-black text-[11px] uppercase tracking-widest hover:bg-white/[0.1] transition-all"
+                  >
+                    ₹{b.price.toLocaleString('en-IN')} — Add Now
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <AnimatePresence>
           {target && (
             <CheckoutModal
@@ -415,18 +491,18 @@ export const Subscription = () => {
               }}
             />
           )}
-          {entForm && !entTarget && (
+          {entForm && (
             <EnterpriseForm
               onClose={() => setEntForm(false)}
-              onSubmit={(t) => { setEntForm(false); setEntTarget(t); }}
+              onSuccess={() => { setEntForm(false); }}
             />
           )}
-          {entTarget && (
-            <EnterpriseCheckoutModal
-              target={entTarget}
-              onClose={() => setEntTarget(null)}
+          {boosterTarget && (
+            <BoosterCheckoutModal
+              booster={boosterTarget}
+              onClose={() => setBoosterTarget(null)}
               onSuccess={() => {
-                setEntTarget(null);
+                setBoosterTarget(null);
                 void doRefresh();
               }}
             />
@@ -482,11 +558,19 @@ const PromoBanner = ({ offerType, discountPct }: { offerType: OfferType; discoun
 
 // ── Hero ring ───────────────────────────────────────────────────────────────
 
-const HeroRing = ({ label, pct, caption, tone, accentClass }: {
+const HeroRing = ({ label, pct, caption, tone, accentClass, icon }: {
   label: string; pct: number; caption: string; tone: 'accent' | 'amber'; accentClass: string;
+  icon?: React.ReactNode;
 }) => (
   <div className={`flex items-center gap-3 ${tone === 'amber' ? 'text-amber-400' : accentClass}`}>
-    <Ring pct={pct} size={52} stroke={4} tone={tone} />
+    <div className="relative">
+      <Ring pct={pct} size={52} stroke={4} tone={tone} />
+      {icon && (
+        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {icon}
+        </span>
+      )}
+    </div>
     <div>
       <div className="text-[9px] font-black text-white/40 uppercase tracking-[0.25em]">{label}</div>
       <div className="text-[12px] font-black text-white tabular-nums">{caption}</div>
@@ -758,114 +842,236 @@ const PaidPlanCard = ({
 
 // ── Enterprise configuration form ──────────────────────────────────────────
 
-const EnterpriseForm = ({ onClose, onSubmit }: {
+const EnterpriseForm = ({ onClose, onSuccess }: {
   onClose: () => void;
-  onSubmit: (t: EnterpriseCheckoutTarget) => void;
+  onSuccess: () => void;
 }) => {
-  const [monthlyLimit, setMonthlyLimit]     = useState<string>('1000000');
-  const [durationMonths, setDurationMonths] = useState<string>('6');
+  const [sparksLimit, setSparksLimit]       = useState(1_000_000);
+  const [durationMonths, setDurationMonths] = useState(6);
+  const [sla, setSla]                       = useState<'standard' | 'priority' | 'dedicated'>('standard');
+  const [features, setFeatures]             = useState({ customModels: false, dedicatedInfra: false, slaGuarantee: false });
   const [quote, setQuote]  = useState<{ priceDisplay: number; discountPct: number } | null>(null);
   const [error, setError]  = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [userNote, setUserNote] = useState('');
 
   useEffect(() => {
-    const limit    = Number(monthlyLimit);
-    const duration = Number(durationMonths);
-    const inputsValid =
-      Number.isFinite(limit) && limit >= 100_000 &&
-      Number.isInteger(duration) && duration >= 1 && duration <= 12;
-
-    if (!inputsValid) { setQuote(null); return; }
-
     let cancelled = false;
-    subscriptionApi.enterpriseQuote(limit, duration)
+    subscriptionApi.enterpriseQuote(sparksLimit, durationMonths)
       .then((res) => {
         if (cancelled) return;
         setQuote({ priceDisplay: res.priceDisplay, discountPct: res.discountPct });
       })
       .catch(() => { if (!cancelled) setQuote(null); });
-
     return () => { cancelled = true; };
-  }, [monthlyLimit, durationMonths]);
+  }, [sparksLimit, durationMonths]);
 
-  const submit = () => {
-    const limit    = Number(monthlyLimit);
-    const duration = Number(durationMonths);
+  const toggleFeature = (k: keyof typeof features) =>
+    setFeatures((f) => ({ ...f, [k]: !f[k] }));
 
-    if (!Number.isFinite(limit) || limit < 100_000) {
-      setError('Monthly limit must be at least 100,000 tokens.'); return;
-    }
-    if (!Number.isInteger(duration) || duration < 1 || duration > 12) {
-      setError('Duration must be an integer from 1 to 12 months.'); return;
-    }
-    if (!quote) {
-      setError('Waiting for price — try again in a moment.'); return;
-    }
+  const submit = async () => {
+    if (!quote) { setError('Waiting for price quote…'); return; }
     setError(null);
-    onSubmit({
-      monthlyLimit:   limit,
-      durationMonths: duration,
-      priceDisplay:   quote.priceDisplay,
-      discountPct:    quote.discountPct,
-    });
+    setSubmitting(true);
+    try {
+      await subscriptionApi.requestEnterpriseQuote({
+        monthlyLimit: sparksLimit,
+        durationMonths,
+        priceDisplay: quote.priceDisplay,
+        userNote: userNote.trim() || undefined,
+      });
+      setSuccess(true);
+      setTimeout(onSuccess, 2000);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Failed to submit request');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const fmtK = (n: number) =>
+    n >= 1_000_000 ? `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M` : `${(n / 1_000).toFixed(0)}K`;
 
   return (
     <ModalShell onClose={onClose} heading="Enterprise" subheading="Custom terms" accent="emerald">
-      <div className="mt-5 space-y-3">
-        <label className="block">
-          <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Monthly limit</span>
+      <div className="mt-5 space-y-4">
+        {/* Chat Sparks slider */}
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Monthly Chat Sparks</span>
+            <span className="text-[12px] font-black text-emerald-300 tabular-nums">{fmtK(sparksLimit)}</span>
+          </div>
           <input
-            type="number" min={100_000} value={monthlyLimit}
-            onChange={(e) => setMonthlyLimit(e.target.value)}
-            className="w-full mt-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm font-bold placeholder:text-white/20 focus:outline-none focus:border-emerald-400/40"
+            type="range" min={100_000} max={5_000_000} step={100_000}
+            value={sparksLimit}
+            onChange={(e) => setSparksLimit(Number(e.target.value))}
+            className="w-full accent-emerald-400"
           />
-        </label>
-        <label className="block">
-          <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Duration (months, 1–12)</span>
+          <div className="flex justify-between text-[9px] text-white/30 mt-0.5">
+            <span>100K</span><span>5M</span>
+          </div>
+        </div>
+
+        {/* Duration slider */}
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Contract Duration</span>
+            <span className="text-[12px] font-black text-emerald-300 tabular-nums">{durationMonths} month{durationMonths !== 1 ? 's' : ''}</span>
+          </div>
           <input
-            type="number" min={1} max={12} value={durationMonths}
-            onChange={(e) => setDurationMonths(e.target.value)}
-            className="w-full mt-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm font-bold placeholder:text-white/20 focus:outline-none focus:border-emerald-400/40"
+            type="range" min={1} max={12} step={1}
+            value={durationMonths}
+            onChange={(e) => setDurationMonths(Number(e.target.value))}
+            className="w-full accent-emerald-400"
           />
-        </label>
+          <div className="flex justify-between text-[9px] text-white/30 mt-0.5">
+            <span>1 mo</span><span>12 mo</span>
+          </div>
+        </div>
+
+        {/* Support SLA */}
+        <div>
+          <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Support SLA</span>
+          <select
+            value={sla}
+            onChange={(e) => setSla(e.target.value as typeof sla)}
+            className="w-full mt-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm font-bold focus:outline-none focus:border-emerald-400/40"
+          >
+            <option value="standard">Standard (48h response)</option>
+            <option value="priority">Priority (24h response)</option>
+            <option value="dedicated">Dedicated Account Manager</option>
+          </select>
+        </div>
+
+        {/* Add-on features */}
+        <div>
+          <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Add-ons</span>
+          <div className="mt-2 space-y-2">
+            {([
+              { key: 'customModels',   label: 'Custom model configuration' },
+              { key: 'dedicatedInfra', label: 'Dedicated infrastructure' },
+              { key: 'slaGuarantee',  label: 'SLA uptime guarantee (99.9%)' },
+            ] as const).map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={features[key]}
+                  onChange={() => toggleFeature(key)}
+                  className="accent-emerald-400 w-4 h-4 rounded"
+                />
+                <span className="text-[12px] text-white/70 font-bold">{label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block">
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">
+              Additional Note (Optional)
+            </span>
+            <textarea
+              value={userNote}
+              onChange={(e) => setUserNote(e.target.value)}
+              rows={3}
+              placeholder="e.g. We need SSO integration and priority support."
+              className="w-full mt-1.5 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm font-bold placeholder:text-white/20 focus:outline-none focus:border-white/20 resize-none"
+            />
+          </label>
+        </div>
+
+        {/* Quote */}
         <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
-          <div className="text-[10px] font-black text-white/50 uppercase tracking-widest">Total</div>
+          <div className="text-[10px] font-black text-white/50 uppercase tracking-widest">Estimated Total</div>
           {quote ? (
             <>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-2xl font-black text-white">
-                  ₹{quote.priceDisplay.toLocaleString('en-IN')}
-                </span>
+                <span className="text-2xl font-black text-white">₹{quote.priceDisplay.toLocaleString('en-IN')}</span>
                 {quote.discountPct > 0 && (
-                  <span className="text-[10px] font-black text-emerald-300 uppercase tracking-wider">
-                    {quote.discountPct}% off
-                  </span>
+                  <span className="text-[10px] font-black text-emerald-300 uppercase tracking-wider">{quote.discountPct}% off</span>
                 )}
               </div>
               <p className="mt-1 text-[10px] text-white/40">
-                Based on ₹0.0007 per token per month, with a bulk discount for longer contracts.
+                ₹0.0007 per token/month · {durationMonths}-month contract
+                {quote.discountPct > 0 ? ` · ${quote.discountPct}% volume discount` : ''}
               </p>
             </>
           ) : (
-            <div className="mt-1 text-[11px] font-bold text-white/30">Enter valid limit and duration…</div>
+            <div className="mt-1 text-[11px] font-bold text-white/30">Calculating…</div>
           )}
         </div>
 
         {error && <p className="text-[10px] font-bold text-red-400">{error}</p>}
 
-        <button
-          onClick={submit}
-          disabled={!quote}
-          className="w-full py-3 rounded-xl bg-emerald-500 text-black font-black text-xs uppercase tracking-widest hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-        >
-          Continue to payment
-        </button>
+        {success ? (
+          <div className="mt-4 p-4 rounded-xl bg-emerald-400/10 border border-emerald-400/25 flex flex-col items-center">
+            <CheckCircle2 size={24} className="text-emerald-400 mb-2" />
+            <p className="text-[12px] font-bold text-emerald-300 text-center">Request submitted successfully! Our team will review it shortly.</p>
+          </div>
+        ) : (
+          <button
+            onClick={submit}
+            disabled={!quote || submitting}
+            className="w-full py-3 rounded-xl bg-emerald-500 text-black font-black text-xs uppercase tracking-widest hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          >
+            {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Submit Request'}
+          </button>
+        )}
       </div>
     </ModalShell>
   );
 };
 
-// ── Modal shell (shared look) ──────────────────────────────────────────────
+// ── Booster checkout modal ─────────────────────────────────────────
+
+const BoosterCheckoutModal = ({ booster, onClose, onSuccess }: {
+  booster:   BoosterProduct;
+  onClose:   () => void;
+  onSuccess: () => void;
+}) => {
+  const form = usePaymentMethodForm();
+  const { paymentStep, errorMessage, startPayment, reset } = usePaymentFlow({
+    createIntent: async () => {
+      const { paymentsApi } = await import('../services/api/index.js');
+      const res = await paymentsApi.createPaymentIntent({
+        amount:   booster.price * 100,
+        currency: 'INR',
+        kind:     'subscription',
+        metadata: { kind: 'booster', productId: booster.id },
+      });
+      return {
+        paymentIntentId: res.paymentIntentId,
+        clientSecret:    res.clientSecret,
+        amount:          res.amount,
+        currency:        res.currency,
+      };
+    },
+    confirm: async (paymentIntentId, method) => {
+      const { paymentsApi } = await import('../services/api/index.js');
+      return paymentsApi.confirm(paymentIntentId, method);
+    },
+    onSuccess: () => { setTimeout(onSuccess, 1200); },
+  });
+
+  return (
+    <PaymentShell
+      heading={booster.name}
+      subheading={`+${booster.amount.toLocaleString()} ${booster.tokenType === 'chat' ? 'Chat Sparks' : 'Nexus Credits'}`}
+      priceDisplay={booster.price}
+      accent="blue"
+      form={form}
+      paymentStep={paymentStep}
+      errorMessage={errorMessage}
+      startPayment={startPayment}
+      reset={reset}
+      successMessage="Tokens added to your account!"
+      onClose={onClose}
+    />
+  );
+};
+
+// ── Modal shell (shared look) ────────────────────────────────────────────
 
 const ModalShell = ({
   onClose, heading, subheading, accent, children,
@@ -961,48 +1167,7 @@ const CheckoutModal = ({
   );
 };
 
-const EnterpriseCheckoutModal = ({ target, onClose, onSuccess }: {
-  target:    EnterpriseCheckoutTarget;
-  onClose:   () => void;
-  onSuccess: () => void;
-}) => {
-  const form = usePaymentMethodForm();
-  const { paymentStep, errorMessage, startPayment, reset } = usePaymentFlow({
-    createIntent: async () => {
-      const res = await subscriptionApi.enterpriseCheckout({
-        monthlyLimit:   target.monthlyLimit,
-        durationMonths: target.durationMonths,
-      });
-      return {
-        paymentIntentId: res.paymentIntentId,
-        clientSecret:    res.clientSecret,
-        amount:          res.amount,
-        currency:        res.currency,
-      };
-    },
-    confirm: async (paymentIntentId, method) => {
-      const { paymentsApi } = await import('../services/api/index.js');
-      return paymentsApi.confirm(paymentIntentId, method);
-    },
-    onSuccess: () => { setTimeout(onSuccess, 1200); },
-  });
 
-  return (
-    <PaymentShell
-      heading="Enterprise"
-      subheading={`${target.monthlyLimit.toLocaleString()} tokens / month · ${target.durationMonths} month${target.durationMonths === 1 ? '' : 's'}`}
-      priceDisplay={target.priceDisplay}
-      accent="emerald"
-      form={form}
-      paymentStep={paymentStep}
-      errorMessage={errorMessage}
-      startPayment={startPayment}
-      reset={reset}
-      successMessage="You're on Enterprise"
-      onClose={onClose}
-    />
-  );
-};
 
 interface PaymentShellProps {
   heading:         string;

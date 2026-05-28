@@ -14,6 +14,9 @@ export const paymentsApi = {
       reservationIds,
     }),
 
+  createPaymentIntent: (args: { amount: number; currency: string; kind?: string; metadata?: Record<string, unknown>; reservationIds?: string[] }) =>
+    http.post<PaymentIntentResponse>('/payment/create-intent', args),
+
   confirm: (paymentIntentId: string, paymentMethod: PaymentMethodInput) =>
     http.post<ConfirmPaymentResponse>('/payment/confirm', {
       paymentIntentId,

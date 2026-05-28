@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck } from 'lucide-react';
+import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck, Receipt, Activity } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { useLogout } from '../hooks/useLogout.js';
@@ -23,6 +23,8 @@ const useUserSidebarConfig = (): SidebarConfig => {
         items: [
           { icon: Ticket, label: 'My Tickets', to: '/user/bookings', colorClass: 'text-accent-blue' },
           { icon: BarChart3, label: 'Stats', to: '/user/stats', colorClass: 'text-accent-pink' },
+          { icon: Receipt, label: 'Billing History', to: '/user/billing', colorClass: 'text-emerald-400' },
+          { icon: Activity, label: 'Token Usage', to: '/user/transactions', colorClass: 'text-accent-purple' },
         ],
       },
       {

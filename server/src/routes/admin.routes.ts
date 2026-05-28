@@ -8,7 +8,9 @@ import {
   createShowtime,
   getShowtimesByScreen,
   updateShowtime,
-  deleteShowtime
+  deleteShowtime,
+  getSubscriptionRequests,
+  updateSubscriptionRequest
 } from '../controllers/admin.controller.js';
 import { isAuthenticated, isTheatreOwner } from '../middleware/auth.middleware.js';
 
@@ -31,5 +33,9 @@ router.post('/showtimes', createShowtime);
 router.get('/screens/:screenId/showtimes', getShowtimesByScreen);
 router.put('/showtimes/:id', updateShowtime);
 router.delete('/showtimes/:id', deleteShowtime);
+
+// Subscription Requests
+router.get('/subscription-requests', getSubscriptionRequests);
+router.patch('/subscription-requests/:id', updateSubscriptionRequest);
 
 export default router;

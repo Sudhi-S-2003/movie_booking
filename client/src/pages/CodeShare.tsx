@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreHorizontal, ChevronUp } from 'lucide-react';
+import "../css/codeshare.css"
 
 // Stores
 import { useCodeShareStore } from '../store/codeShareStore.js';

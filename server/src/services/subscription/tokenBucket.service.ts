@@ -144,23 +144,19 @@ export const ensureBuckets = async (
   const now = new Date();
   const buckets: TokenBucketDoc[] = [];
   for (const spec of specs) {
-    const existing = await TokenBucket.findOne(
+    let bucket = await TokenBucket.findOneAndUpdate(
       { userId: uid, window: spec.window },
-      null,
-      withSession(session),
+      {
+        $setOnInsert: {
+          limit: spec.limit,
+          used: 0,
+          resetAt: computeResetAt(spec, now),
+        }
+      },
+      { upsert: true, returnDocument: 'after', ...withSession(session) }
     );
-    const bucket = existing
-      ? await rollOverIfDue(existing as unknown as TokenBucketDoc, spec, session)
-      : ((await TokenBucket.create(
-          [{
-            userId:  uid,
-            window:  spec.window,
-            limit:   spec.limit,
-            used:    0,
-            resetAt: computeResetAt(spec, now),
-          }],
-          withSession(session),
-        ))[0] as unknown as TokenBucketDoc);
+    
+    bucket = await rollOverIfDue(bucket as TokenBucketDoc, spec, session);
     buckets.push(bucket);
   }
   return buckets;

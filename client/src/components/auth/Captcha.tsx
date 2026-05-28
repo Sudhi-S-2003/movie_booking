@@ -96,7 +96,7 @@ export const Captcha = memo(({ onTokenChange, value, onChange, ref }: CaptchaPro
           value={value}
           onChange={e => onChange(e.target.value)}
           required
-          className="w-full bg-[#1c1c21] border border-white/5 rounded-[20px] py-4 pl-14 pr-6 text-white placeholder:text-gray-700 focus:outline-none focus:border-accent-pink/30 transition-all font-bold shadow-inner text-sm uppercase tracking-wider"
+          className="w-full bg-[#1c1c21] border border-white/5 rounded-[20px] py-4 pl-14 pr-6 text-white placeholder:text-gray-700 focus:outline-none focus:border-accent-pink/30 transition-all font-bold shadow-inner text-sm  tracking-wider"
         />
       </div>
     </motion.div>

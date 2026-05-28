@@ -18,6 +18,9 @@ import {
 import { getOrCreateForUser } from '../services/subscription/subscription.service.js';
 import { paymentIntentsStore } from './payment.controller.js';
 import type { BillingCycle } from '../models/subscription.model.js';
+import { TokenTransaction } from '../models/tokenTransaction.model.js';
+import { SubscriptionRequest } from '../models/subscriptionRequest.model.js';
+import { parsePage, buildPageEnvelope } from '../utils/pagination.js';
 
 const generateId = (prefix: string) => `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
 
@@ -409,6 +412,91 @@ export const cancel = async (req: Request, res: Response) => {
     }
     const summary = await getSummary(String(user._id));
     res.json({ success: true, ...toPayload(summary) });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/** GET /api/subscription/transactions — fetch user token transactions */
+export const getTransactions = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const page = parsePage(req);
+
+    const [transactions, total] = await Promise.all([
+      TokenTransaction.find({ userId: user._id })
+        .sort({ createdAt: -1 })
+        .skip(page.skip)
+        .limit(page.limit),
+      TokenTransaction.countDocuments({ userId: user._id })
+    ]);
+
+    res.json({ success: true, transactions, pagination: buildPageEnvelope(total, page) });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/** POST /api/subscription/enterprise/request — submit an enterprise quote request */
+export const enterpriseRequest = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const { monthlyLimit, durationMonths, priceDisplay, userNote } = req.body ?? {};
+
+    if (
+      typeof monthlyLimit !== 'number' ||
+      !Number.isFinite(monthlyLimit) ||
+      monthlyLimit < ENTERPRISE_PLAN.minMonthlyLimit
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: `monthlyLimit must be a number >= ${ENTERPRISE_PLAN.minMonthlyLimit}`,
+      });
+    }
+    if (
+      typeof durationMonths !== 'number' ||
+      !Number.isInteger(durationMonths) ||
+      durationMonths < ENTERPRISE_PLAN.minDurationMonths ||
+      durationMonths > ENTERPRISE_PLAN.maxDurationMonths
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: `durationMonths must be an integer between ${ENTERPRISE_PLAN.minDurationMonths} and ${ENTERPRISE_PLAN.maxDurationMonths}`,
+      });
+    }
+
+    const request = await SubscriptionRequest.create({
+      userId: user._id,
+      monthlyLimit,
+      durationMonths,
+      priceDisplay: typeof priceDisplay === 'number' ? priceDisplay : 0,
+      ...(userNote ? { userNote } : {}),
+      status: 'pending',
+    });
+
+    res.status(201).json({ success: true, request });
+  } catch (e: unknown) {
+    res.status(500).json({ success: false, message: getErrorMessage(e) });
+  }
+};
+
+/** GET /api/subscription/billing — fetch user fiat payment transactions */
+export const getBillingHistory = async (req: Request, res: Response) => {
+  try {
+    const user = requireAuthUser(req);
+    const page = parsePage(req);
+    
+    const { PaymentTransaction } = await import('../models/paymentTransaction.model.js');
+
+    const [transactions, total] = await Promise.all([
+      PaymentTransaction.find({ userId: user._id })
+        .sort({ createdAt: -1 })
+        .skip(page.skip)
+        .limit(page.limit),
+      PaymentTransaction.countDocuments({ userId: user._id })
+    ]);
+
+    res.json({ success: true, transactions, pagination: buildPageEnvelope(total, page) });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
   }

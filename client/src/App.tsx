@@ -30,11 +30,14 @@ import { AdminOverview } from './pages/dashboards/admin/AdminOverview.js';
 import { AdminMovies } from './pages/dashboards/admin/AdminMovies.js';
 import { AdminTheatres } from './pages/dashboards/admin/AdminTheatres.js';
 import { AdminUsers } from './pages/dashboards/admin/AdminUsers.js';
+import { AdminSubscriptionRequests } from './pages/dashboards/admin/AdminSubscriptionRequests.js';
 import { AdminIssues } from './pages/dashboards/admin/AdminIssues.js';
 import { UserDetails } from './pages/UserDetails.js';
 import { ProfileEdit } from './pages/ProfileEdit.js';
 import { UserBookings } from './pages/dashboards/user/UserBookings.js';
 import { UserStats } from './pages/dashboards/user/UserStats.js';
+import { UserTransactions } from './pages/dashboards/user/UserTransactions.js';
+import { UserBilling } from './pages/dashboards/user/UserBilling.js';
 import { UserSupport } from './pages/dashboards/user/UserSupport.js';
 import { Movies } from './pages/Movies.js';
 import { Theatres } from './pages/Theatres.js';
@@ -184,6 +187,7 @@ const App = () => {
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="issues" element={<AdminIssues />} />
                 <Route path="issues/:issueId" element={<AdminIssues />} />
+                <Route path="subscription-requests" element={<AdminSubscriptionRequests />} />
                 <Route path="chat" element={<Chat />} />
                 <Route path="chat/:conversationId" element={<Chat />} />
                 <Route path="chat/:conversationId/members" element={<ChatMembers />} />
@@ -216,6 +220,8 @@ const App = () => {
                 <Route index element={<Navigate to="bookings" replace />} />
                 <Route path="bookings" element={<UserBookings />} />
                 <Route path="stats" element={<UserStats />} />
+                <Route path="billing" element={<UserBilling />} />
+                <Route path="transactions" element={<UserTransactions />} />
                 <Route path="support" element={<UserSupport />} />
                 <Route path="support/:issueId" element={<UserSupport />} />
                 <Route path="chat" element={<Chat />} />

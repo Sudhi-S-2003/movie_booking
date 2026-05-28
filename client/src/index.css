@@ -44,7 +44,7 @@
 
 @layer base {
   html, body {
-    @apply bg-background text-white antialiased font-sans selection:bg-accent-pink/30 selection:text-white h-full overflow-hidden;
+    @apply bg-background text-white antialiased font-sans selection:bg-accent-pink/30 selection:text-white h-full;
   }
 }
 

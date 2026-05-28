@@ -243,3 +243,23 @@ export const applyPromoDiscount = (paiseAmount: number, purchasesCount: number):
   const discounted = Math.round(paiseAmount * (100 - pct) / 100);
   return { original: paiseAmount, discounted, discountPct: pct };
 };
+
+// ── Token Booster one-time top-up products ──────────────────────────────────
+//
+// Referenced by payment.controller.ts when `intentKind === 'booster'` in the
+// payment metadata.  The controller does a dynamic import of this module and
+// looks up the product by `productId`.  Keep this in sync with the client-side
+// BOOSTER_PRODUCTS constant in Subscription.tsx.
+
+export const BOOSTER_PRODUCTS = {
+  sparks_sm:  { id: 'sparks_sm',  name: '50K Chat Sparks',    tokenType: 'chat'  as const, amount: 50_000,    priceInPaise: 19_900  },
+  sparks_md:  { id: 'sparks_md',  name: '200K Chat Sparks',   tokenType: 'chat'  as const, amount: 200_000,   priceInPaise: 59_900  },
+  sparks_lg:  { id: 'sparks_lg',  name: '1M Chat Sparks',     tokenType: 'chat'  as const, amount: 1_000_000, priceInPaise: 199_900 },
+  credits_sm: { id: 'credits_sm', name: '25K Nexus Credits',  tokenType: 'nexus' as const, amount: 25_000,    priceInPaise: 29_900  },
+  credits_md: { id: 'credits_md', name: '100K Nexus Credits', tokenType: 'nexus' as const, amount: 100_000,   priceInPaise: 89_900  },
+  credits_lg: { id: 'credits_lg', name: '500K Nexus Credits', tokenType: 'nexus' as const, amount: 500_000,   priceInPaise: 249_900 },
+} as const;
+
+export type BoosterProductId = keyof typeof BOOSTER_PRODUCTS;
+export type BoosterProduct   = typeof BOOSTER_PRODUCTS[BoosterProductId];
+

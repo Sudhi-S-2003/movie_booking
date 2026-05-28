@@ -14,6 +14,8 @@ interface DebitOutcome {
 
 interface GuardOpts {
   session?: mongoose.ClientSession | null | undefined;
+  description?: string;
+  tokenType?: 'chat' | 'nexus';
 }
 
 /**
@@ -50,6 +52,16 @@ export const guardTokens = async (
     });
     return null;
   }
+
+  // Log the debit transaction
+  const { TokenTransaction } = await import('../../models/tokenTransaction.model.js');
+  await TokenTransaction.create([{
+    userId: typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId,
+    type: 'debit',
+    tokenType: opts.tokenType || 'chat',
+    amount: cost,
+    description: opts.description || 'API Usage / Prompt generation',
+  }], { session: session ?? null });
 
   return {
     ok:   true,
@@ -92,6 +104,16 @@ export const guardTokensForLength = async (
     });
     return null;
   }
+
+  // Log the debit transaction
+  const { TokenTransaction } = await import('../../models/tokenTransaction.model.js');
+  await TokenTransaction.create([{
+    userId: typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId,
+    type: 'debit',
+    tokenType: opts.tokenType || 'chat',
+    amount: cost,
+    description: opts.description || 'API Usage / Prompt generation',
+  }], { session: session ?? null });
 
   return {
     ok:   true,

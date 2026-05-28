@@ -58,12 +58,19 @@ export const createApiServiceResource = async (req: Request, res: Response) => {
       const { title, code, expiresAt, expiryMinutes } = req.body;
       if (!title) return res.status(400).json({ success: false, message: 'Title required' });
 
+      // Token metering
+      const { guardTokens } = await import('../services/subscription/tokenGuard.js');
+      const tokenOutcome = await guardTokens(String(req.user?._id), JSON.stringify({ title, code }), res, {
+        description: 'CodeShare V2 API Call',
+      });
+      if (!tokenOutcome) return;
+
       let computedExpiresAt = expiresAt ? new Date(expiresAt) : undefined;
       if (!computedExpiresAt && expiryMinutes) {
         computedExpiresAt = new Date(Date.now() + expiryMinutes * 60000);
       }
 
-    const data: any = await createCodeShare(String(req.user?._id), {
+      const data: any = await createCodeShare(String(req.user?._id), {
         title,
         code: code || '',
         expiresAt: computedExpiresAt
@@ -85,6 +92,13 @@ export const createApiServiceResource = async (req: Request, res: Response) => {
       const { title, files, expiresAt, expiryMinutes } = req.body;
       if (!title) return res.status(400).json({ success: false, message: 'Title required' });
       if (!files || !Array.isArray(files)) return res.status(400).json({ success: false, message: 'Files array required' });
+
+      // Token metering
+      const { guardTokens } = await import('../services/subscription/tokenGuard.js');
+      const tokenOutcome = await guardTokens(String(req.user?._id), JSON.stringify({ title, files }), res, {
+        description: 'CodeShare V2 Bundle Deployment',
+      });
+      if (!tokenOutcome) return;
 
       let computedExpiresAt = expiresAt ? new Date(expiresAt) : undefined;
       if (!computedExpiresAt && expiryMinutes) {

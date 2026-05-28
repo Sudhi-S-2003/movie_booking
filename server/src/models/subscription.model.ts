@@ -14,6 +14,8 @@ interface SubscriptionAttrs {
   lastPaymentId?: string | undefined;
   customMonthlyLimit?:    number | undefined;
   customDurationMonths?:  number | undefined;
+  boosterChat:          number;
+  boosterNexus:         number;
   /**
    * How many paid subscriptions this user has purchased (across all time).
    * Drives the first-time / second-time promotional discount tiers:
@@ -39,6 +41,8 @@ const SubscriptionSchema = new Schema<SubscriptionAttrs>(
     lastPaymentId: { type: String },
     purchasesCount: { type: Number, default: 0, required: true, min: 0 },
     customMonthlyLimit:   { type: Number, min: 0 },
+    boosterChat:          { type: Number, default: 0, min: 0 },
+    boosterNexus:         { type: Number, default: 0, min: 0 },
     customDurationMonths: {
       type: Number,
       min: 1,

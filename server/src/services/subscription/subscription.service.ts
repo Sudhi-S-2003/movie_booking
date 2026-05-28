@@ -7,6 +7,7 @@ import {
 import { ensureBuckets, getRemaining, type RemainingSummary } from './tokenBucket.service.js';
 import { cycleToDurationDays, type PaidPlanKey } from './subscriptionPlans.js';
 import { TokenBucket } from '../../models/tokenBucket.model.js';
+import { TokenTransaction } from '../../models/tokenTransaction.model.js';
 import { requireTransaction, withSession } from '../../utils/transaction.util.js';
 
 interface SessionOpts {
@@ -169,3 +170,36 @@ export const getSummary = async (userId: UserIdLike): Promise<SubscriptionSummar
   const remaining = await getRemaining(userId, sub.plan);
   return { sub, remaining };
 };
+
+/**
+ * Adds a one-time token top-up to the user's subscription record.
+ * These tokens persist across billing cycles and never expire.
+ */
+export const creditBoosterTokens = async (
+  userId: UserIdLike,
+  tokenType: 'chat' | 'nexus',
+  amount: number,
+  referenceId?: string,
+): Promise<SubscriptionDoc> => {
+  const sub = await getOrCreateForUser(userId);
+  
+  if (tokenType === 'chat') {
+    sub.boosterChat += amount;
+  } else if (tokenType === 'nexus') {
+    sub.boosterNexus += amount;
+  }
+  
+  await sub.save();
+
+  await TokenTransaction.create({
+    userId: toObjectId(userId),
+    type: 'credit',
+    tokenType,
+    amount,
+    description: `${tokenType === 'chat' ? 'Chat Sparks' : 'Nexus Credits'} Booster Pack`,
+    ...(referenceId ? { referenceId } : {}),
+  });
+
+  return sub;
+};
+

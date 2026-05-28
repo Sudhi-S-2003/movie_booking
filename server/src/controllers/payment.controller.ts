@@ -170,57 +170,122 @@ export const confirmPayment = async (req: AuthRequest, res: Response) => {
         url: '/admin/overview' // Link to admin dashboard
       });
     } else {
-      // Subscription path — metadata.plan + cycle/custom fields drive activation.
-      const meta = intent.metadata ?? {};
-      const planKey = (meta['plan'] as PaidPlanKey | 'enterprise' | undefined) ?? 'pro';
+      // Subscription path — metadata drives activation.
+      const meta     = intent.metadata ?? {};
+      const intentKind = meta['kind'] as string | undefined;
 
-      if (planKey === 'enterprise') {
-        const customMonthlyLimit   = meta['customMonthlyLimit']   as number | undefined;
-        const customDurationMonths = meta['customDurationMonths'] as number | undefined;
+      // ── Booster top-up ───────────────────────────────────────────────────
+      if (intentKind === 'booster') {
+        const productId = meta['productId'] as string | undefined;
+        const { BOOSTER_PRODUCTS } = await import('../services/subscription/subscriptionPlans.js');
+        const booster = productId ? BOOSTER_PRODUCTS[productId as keyof typeof BOOSTER_PRODUCTS] : undefined;
+        if (!booster) {
+          intent.status = 'failed';
+          return res.status(400).json({ success: false, message: 'Unknown booster product' });
+        }
         try {
-          await activatePaidPlan(intent.userId, {
-            plan: 'enterprise',
-            paymentId: paymentIntentId,
-            ...(customMonthlyLimit   !== undefined ? { customMonthlyLimit }   : {}),
-            ...(customDurationMonths !== undefined ? { customDurationMonths } : {}),
-          });
+          const { creditBoosterTokens } = await import('../services/subscription/subscription.service.js');
+          await creditBoosterTokens(intent.userId, booster.tokenType, booster.amount, paymentIntentId);
         } catch (err: unknown) {
           intent.status = 'failed';
           return res.status(400).json({ success: false, message: getErrorMessage(err) });
         }
-      } else if (planKey === 'pro' || planKey === 'proMax') {
-        const cycle = (meta['cycle'] as BillingCycle | undefined) ?? 'monthly';
-        if (cycle !== 'monthly' && cycle !== 'quarterly') {
-          intent.status = 'failed';
-          return res.status(400).json({ success: false, message: 'Invalid subscription cycle' });
-        }
-        await activatePaidPlan(intent.userId, {
-          plan: planKey,
-          cycle,
-          paymentId: paymentIntentId,
+
+        intent.status = 'succeeded';
+        intent.transactionId = transactionId;
+
+        notificationService.sendNotification({
+          userIds: [intent.userId],
+          title: 'Tokens Added! ⚡',
+          message: `${booster.amount.toLocaleString()} ${booster.tokenType === 'chat' ? 'Chat Sparks' : 'Nexus Credits'} added to your account.`,
+          url: '/subscription',
         });
       } else {
-        intent.status = 'failed';
-        return res.status(400).json({ success: false, message: 'Invalid subscription plan' });
+        // ── Subscription plan activation ────────────────────────────────────
+        const planKey = (meta['plan'] as PaidPlanKey | 'enterprise' | undefined) ?? 'pro';
+
+        if (planKey === 'enterprise') {
+          const customMonthlyLimit   = meta['customMonthlyLimit']   as number | undefined;
+          const customDurationMonths = meta['customDurationMonths'] as number | undefined;
+          try {
+            await activatePaidPlan(intent.userId, {
+              plan: 'enterprise',
+              paymentId: paymentIntentId,
+              ...(customMonthlyLimit   !== undefined ? { customMonthlyLimit }   : {}),
+              ...(customDurationMonths !== undefined ? { customDurationMonths } : {}),
+            });
+          } catch (err: unknown) {
+            intent.status = 'failed';
+            return res.status(400).json({ success: false, message: getErrorMessage(err) });
+          }
+        } else if (planKey === 'pro' || planKey === 'proMax') {
+          const cycle = (meta['cycle'] as BillingCycle | undefined) ?? 'monthly';
+          if (cycle !== 'monthly' && cycle !== 'quarterly') {
+            intent.status = 'failed';
+            return res.status(400).json({ success: false, message: 'Invalid subscription cycle' });
+          }
+          await activatePaidPlan(intent.userId, {
+            plan: planKey,
+            cycle,
+            paymentId: paymentIntentId,
+          });
+        } else {
+          intent.status = 'failed';
+          return res.status(400).json({ success: false, message: 'Invalid subscription plan' });
+        }
+
+        intent.status = 'succeeded';
+        intent.transactionId = transactionId;
+
+        notificationService.sendNotification({
+          userIds: [intent.userId],
+          title: 'Subscription Activated! 🚀',
+          message: `You have successfully upgraded to the ${planKey.toUpperCase()} plan. Enjoy your premium benefits!`,
+          url: '/profile/subscription',
+        });
+
+        notificationService.sendNotification({
+          targets: ['admins'],
+          title: 'New Subscription!',
+          message: `User ${req.user!.name} upgraded to ${planKey.toUpperCase()} plan.`,
+          url: '/admin/users',
+        });
+      }
+    }
+
+    // --- Create Fiat Payment Transaction Log ---
+    if (intent.status === 'succeeded' && transactionId) {
+      const { PaymentTransaction } = await import('../models/paymentTransaction.model.js');
+      
+      let description = 'Payment';
+      let txKind: 'seat' | 'subscription' | 'booster' = 'seat';
+
+      if (intent.kind === 'seat') {
+        description = `Movie Ticket Booking (${(intent.reservationIds || []).length} seats)`;
+        txKind = 'seat';
+      } else {
+        const meta = intent.metadata ?? {};
+        const intentKind = meta['kind'] as string | undefined;
+        if (intentKind === 'booster') {
+          txKind = 'booster';
+          const productId = meta['productId'] as string | undefined;
+          description = `Booster Pack: ${productId || 'Unknown'}`;
+        } else {
+          txKind = 'subscription';
+          const planKey = (meta['plan'] as string | undefined) ?? 'pro';
+          description = `Subscription Upgrade: ${planKey.toUpperCase()}`;
+        }
       }
 
-      intent.status = 'succeeded';
-      intent.transactionId = transactionId;
-
-      // Notify user about subscription
-      notificationService.sendNotification({
-        userIds: [intent.userId],
-        title: 'Subscription Activated! 🚀',
-        message: `You have successfully upgraded to the ${planKey.toUpperCase()} plan. Enjoy your premium benefits!`,
-        url: '/profile/subscription'
-      });
-
-      // Platform notification for new subscription
-      notificationService.sendNotification({
-        targets: ['admins'],
-        title: 'New Subscription!',
-        message: `User ${req.user!.name} upgraded to ${planKey.toUpperCase()} plan.`,
-        url: '/admin/users' // Link to user management
+      await PaymentTransaction.create({
+        userId: intent.userId,
+        paymentIntentId,
+        transactionId,
+        amount: intent.amount,
+        currency: intent.currency,
+        kind: txKind,
+        description,
+        status: 'succeeded',
       });
     }
 

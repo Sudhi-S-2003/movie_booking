@@ -133,6 +133,7 @@ interface EnterpriseCheckoutResponse {
   plan:            'enterprise';
   customMonthlyLimit:   number;
   customDurationMonths: number;
+
   /** Final price in rupees (display). */
   priceDisplay:   number;
   /** 0, 5, 10, or 15 depending on duration tier. */
@@ -146,6 +147,50 @@ interface EnterpriseQuoteResponse {
   priceDisplay:   number;
   discountPct:    number;
   currency:       string;
+}
+
+export interface TokenTransaction {
+  _id: string;
+  userId: string;
+  type: 'credit' | 'debit';
+  tokenType: 'chat' | 'nexus';
+  amount: number;
+  description: string;
+  referenceId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentTransaction {
+  _id: string;
+  paymentIntentId: string;
+  transactionId: string;
+  amount: number;
+  currency: string;
+  kind: 'seat' | 'subscription' | 'booster';
+  description: string;
+  status: 'succeeded' | 'failed' | 'refunded';
+  createdAt: string;
+}
+
+export interface TransactionsResponse {
+  transactions: TokenTransaction[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
+
+export interface BillingHistoryResponse {
+  transactions: PaymentTransaction[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
 }
 
 export const subscriptionApi = {
@@ -175,4 +220,10 @@ export const subscriptionApi = {
   confirm:         (paymentIntentId: string) =>
     http.post<SubscriptionSummaryResponse>('/subscription/confirm', { paymentIntentId }),
   cancel:          () => http.post<SubscriptionSummaryResponse>('/subscription/cancel', {}),
+  getTransactions: (page?: number, limit?: number) =>
+    http.get<TransactionsResponse>('/subscription/transactions', { params: { page, limit } }),
+  getBillingHistory: (page?: number, limit?: number) =>
+    http.get<BillingHistoryResponse>('/subscription/billing', { params: { page, limit } }),
+  requestEnterpriseQuote: (data: { monthlyLimit: number; durationMonths: number; priceDisplay: number; userNote?: string }) =>
+    http.post<{ success: boolean; request: any }>('/subscription/enterprise/request', data),
 };

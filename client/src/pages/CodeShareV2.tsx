@@ -21,7 +21,7 @@ import CodeMirror, { EditorView, type Extension } from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { tags as t } from '@lezer/highlight';
 import { createTheme } from '@uiw/codemirror-themes';
-
+import "../css/codeshare.css"
 import { useCodeShareStoreV2 } from '../store/codeShareStoreV2.js';
 import { FileTree } from '../components/code-share-v2/FileTree.js';
 import { CommitHistory } from '../components/code-share-v2/CommitHistory.js';
@@ -173,7 +173,7 @@ export const CodeShareV2 = () => {
   const isReadOnly = activeCommitId !== null;
 
   return (
-    <div className={`h-screen bg-black text-white flex flex-col font-inter overflow-hidden relative selection:bg-zinc-800 transition-all duration-500 ${isFullscreen ? 'p-0' : 'p-4 sm:p-8'}`}>
+    <div className={`h-screen bg-black text-white flex flex-col font-inter overflow-x-hidden overflow-y-auto relative selection:bg-zinc-800 transition-all duration-500 ${isFullscreen ? 'p-0' : 'p-4 sm:p-8'}`}>
       {/* Dynamic Grid Background Overlay */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-zinc-900/10 blur-[130px] rounded-full -z-0 pointer-events-none" />
 

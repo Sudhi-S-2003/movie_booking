@@ -15,6 +15,30 @@ export interface AdminTheatresQuery {
   limit?: number;
 }
 
+export interface SubscriptionRequest {
+  _id: string;
+  userId: { _id: string; name: string; email: string };
+  monthlyLimit: number;
+  durationMonths: number;
+  priceDisplay: number;
+  status: 'pending' | 'approved' | 'rejected';
+  userNote?: string;
+  adminNote?: string;
+  discountPct?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionRequestsResponse {
+  requests: SubscriptionRequest[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
+
 export const adminApi = {
   listTheatres: (params?: AdminTheatresQuery) =>
     http.get<TheatresListResponse>('/admin/theatres', {
@@ -51,4 +75,12 @@ export const adminApi = {
 
   deleteShowtime: (id: string) =>
     http.delete<{ message: string }>(`/admin/showtimes/${id}`),
+
+  getSubscriptionRequests: (params?: { page?: number; limit?: number; status?: string }) =>
+    http.get<SubscriptionRequestsResponse>('/admin/subscription-requests', {
+      params: (params ?? {}) as Record<string, unknown>,
+    }),
+
+  updateSubscriptionRequest: (id: string, status: 'approved' | 'rejected', adminNote?: string, discountPct?: number) =>
+    http.patch<{ request: SubscriptionRequest }>(`/admin/subscription-requests/${id}`, { status, adminNote, discountPct }),
 };
