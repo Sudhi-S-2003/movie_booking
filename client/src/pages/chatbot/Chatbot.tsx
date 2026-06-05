@@ -1,0 +1,6 @@
+const ChatBotPage = () => {
+
+    
+
+}
+export { ChatBotPage };

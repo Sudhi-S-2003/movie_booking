@@ -29,7 +29,8 @@ import integrationRoutes from './routes/integration.routes.js';
 import urlPreviewRoutes from './routes/urlPreview.routes.js';
 import apiServicePublicRoutes from './routes/apiService.public.routes.js';
 import imageRoutes from './routes/image.routes.js';
-import shareRoutes from "./routes/share/share.routes.js"
+import shareRoutes from "./routes/share/share.routes.js";
+import chatbotRoutes from './routes/chatbot.routes.js';
 // import { errorHandler } from './middleware/error.middleware.js';
 import { getClientIp } from './utils/ip.util.js';
 import { authRateLimiter, apiRateLimiter } from './middleware/rateLimit.middleware.js';
@@ -94,7 +95,8 @@ app.use('/api/integrations', integrationRoutes);
 app.use('/api/url/preview', urlPreviewRoutes);
 app.use('/api/public/api-service', apiServicePublicRoutes);
 app.use('/api/images', imageRoutes);
-app.use('/api/share',shareRoutes)
+app.use('/api/share',shareRoutes);
+app.use('/api/chatbots', chatbotRoutes);
 
 // 404 handler
 app.use((_req, res, _next) => {

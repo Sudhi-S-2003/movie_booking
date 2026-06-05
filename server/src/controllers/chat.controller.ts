@@ -57,6 +57,8 @@ import { guardTokens } from '../services/subscription/tokenGuard.js';
 import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
 import { withOptionalTransaction, withSession } from '../utils/transaction.util.js';
 import type { ChatMessageDoc } from '../models/chat.model.js';
+import { handleChatbotTrigger } from '../services/chatbot/chatbotTrigger.service.js';
+import * as ChatActionService from '../services/chat/chatAction.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -579,7 +581,6 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'Conversation not found or inactive' });
     }
 
-    // System conversations don't accept user replies
     if (conversation.type === 'system') {
       return res.status(403).json({ success: false, message: 'Cannot reply to system conversations' });
     }
@@ -589,74 +590,21 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, reason: validation.reason });
     }
     const normalized = validation.message;
-
-    // Token metering — debit before persisting. On overflow the guard writes
-    // the 402 response itself; we just short-circuit. Use the rendered text
-    // so non-text messages still meter proportionally to their preview.
     const meterInput = normalized.text || normalized.emoji || '';
     const previewText = buildPreviewText(normalized);
 
-    // Atomic debit + message-create + conversation-denorm. Returns a tagged
-    // union so we can write the 402 response OUTSIDE the transaction without
-    // throw/catch control flow. The idempotent cursor advance + socket emits
-    // stay outside.
-    type TxResult =
-      | { ok: true; message: ChatMessageDoc; tokens: NonNullable<Awaited<ReturnType<typeof guardTokens>>> }
-      | { ok: false; status: number; body: Record<string, unknown> };
-
-    const outcome = await withOptionalTransaction<TxResult>(async (rawSession) => {
-      const session = rawSession ?? undefined;
-      const tokens = await guardTokens(String(userId), meterInput, res, { session });
-      if (!tokens) {
-        // guardTokens already wrote the 402 response — signal caller to bail.
-        return { ok: false, status: 402, body: {} };
-      }
-
-      const [createdMessage] = await ChatMessage.create(
-        [{
-          conversationId,
-          senderId: userId,
-          senderName: user.name,
-          contentType: normalized.contentType,
-          text:        normalized.text,
-          attachments: normalized.attachments,
-          isSystem:    false,
-          ...(normalized.emoji    !== undefined && { emoji:    normalized.emoji }),
-          ...(normalized.contact  !== undefined && { contact:  normalized.contact }),
-          ...(normalized.location !== undefined && { location: normalized.location }),
-          ...(normalized.date     !== undefined && { date:     normalized.date }),
-          ...(normalized.event    !== undefined && { event:    normalized.event }),
-          ...(normalized.replyTo && {
-            replyTo: {
-              messageId:  normalized.replyTo.messageId,
-              senderName: normalized.replyTo.senderName,
-              text:       normalized.replyTo.text,
-            },
-          }),
-        }],
-        withSession(session),
-      );
-      const message = createdMessage!;
-
-      await Conversation.updateOne(
-        { _id: conversationId },
-        {
-          $set: {
-            lastMessageId: message._id,
-            lastMessageAt: message.createdAt,
-            lastMessageText: previewText,
-            lastMessageSender: user.name,
-          },
-          $inc: { messageCount: 1 },
-        },
-        withSession(session),
-      );
-
-      return { ok: true, message, tokens };
-    });
+    const outcome = await ChatActionService.saveAndEmitMessage(
+      conversationId,
+      userId,
+      user.name,
+      normalized,
+      previewText,
+      meterInput,
+      res
+    );
 
     if (!outcome.ok) {
-      if (outcome.status === 402) return; // response already written by guardTokens
+      if (outcome.status === 402) return;
       return res.status(outcome.status).json({ success: false, ...outcome.body });
     }
 
@@ -668,51 +616,13 @@ export const sendMessage = async (req: Request, res: Response) => {
       deliveryStatus: 'sent',
     };
 
-    // Socket: broadcast to conversation room
-    const chatMsgNs = getChatMessagesNamespace();
-    emitNewMessage(chatMsgNs, conversationId, {
-      ...message.toObject(),
-      deliveryStatus: 'sent',
-    });
-
-    // Socket: notify all OTHER participants about unread + list update.
-    // Uses delta-style hint (count: -1) — the client refetches the canonical
-    // map on receipt. This avoids N+1 per-participant unread-count queries.
-    //
-    // Streams membership via a server-side cursor so fan-out on large groups
-    // doesn't buffer the whole roster.
-    const chatListNs = getChatListNamespace();
-    const nextMessageCount = conversation.messageCount + 1;
-    await forEachParticipant(conversationId, (pid) => {
-      const pidStr = pid.toString();
-      // We no longer skip the sender (selfIdStr).
-      // This ensures that if the user has multiple tabs/devices open, 
-      // all of them receive the update and stay in sync.
-
-      emitChatUnreadChanged(chatListNs, pidStr, {
-        conversationId,
-        count: -1, // delta hint — client refetches
-      });
-
-      emitConversationUpdated(chatListNs, pidStr, {
-        conversationId,
-        lastMessageAt: message.createdAt.toISOString(),
-        lastMessageText: previewText,
-        lastMessageSender: user.name,
-        messageCount: nextMessageCount,
-      });
-    });
-
-    // Advance the sender's read cursor + MessageRead entry to their own send.
-    // When a user sends a message they've obviously read everything up to it.
-    // Without this, reopening the conversation would show stale "unread" state
-    // and the delivery-status aggregation would miss the sender as a reader.
-    markSentMessageRead({
-      userId:           String(userId),
+    await ChatActionService.broadcastAndPostProcessMessage(
+      message,
       conversationId,
-      messageId:        message._id,
-      messageCreatedAt: message.createdAt,
-    }).catch(() => {/* fire-and-forget */ });
+      user.name,
+      previewText,
+      userId
+    );
 
     res.status(201).json({
       success: true,
@@ -735,18 +645,16 @@ export const deleteMessage = async (req: Request, res: Response) => {
     const conversationId = req.params.id as string;
     const messageId = req.params.messageId as string;
 
-    const message = await ChatMessage.findOneAndUpdate(
-      { _id: messageId, conversationId, senderId: userId },
-      { text: 'This message was deleted', attachments: [], contentType: 'system' as const },
-      { returnDocument: 'after' },
+    const message = await ChatActionService.performDeleteMessage(
+      messageId,
+      conversationId,
+      userId,
+      user.name
     );
 
     if (!message) {
       return res.status(404).json({ success: false, message: 'Message not found or not yours' });
     }
-
-    const chatMsgNs = getChatMessagesNamespace();
-    emitMessageDeleted(chatMsgNs, conversationId, messageId);
 
     res.json({ success: true, message });
   } catch (e: unknown) {

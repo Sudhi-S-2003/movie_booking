@@ -39,6 +39,8 @@ import { validateIncomingMessage, buildPreviewText } from '../services/chat/cont
 import { getSummary as getSubscriptionSummary } from '../services/subscription/subscription.service.js';
 import { withOptionalTransaction, withSession } from '../utils/transaction.util.js';
 import type { ChatMessageDoc } from '../models/chat.model.js';
+import { handleChatbotTrigger } from '../services/chatbot/chatbotTrigger.service.js';
+import * as ChatActionService from '../services/chat/chatAction.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
 
@@ -252,64 +254,24 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
     const conversation = await Conversation.findOne({ _id: conversationId, isActive: true });
     if (!conversation) return res.status(404).json({ success: false, message: 'Inactive conversation' });
 
-    // Guest sends are metered against the API-key owner (conversation.createdBy).
-    // If the owner can't be resolved, we treat the message as rejected rather
-    // than silently allowing unlimited free traffic.
     if (!conversation.createdBy) {
       return res.status(400).json({ success: false, message: 'Conversation has no owner to bill' });
     }
+
     const meterInput = normalized.text || normalized.emoji || '';
     const previewText = buildPreviewText(normalized);
 
-    type TxResult =
-      | { ok: true; message: ChatMessageDoc; tokens: NonNullable<Awaited<ReturnType<typeof guardTokens>>> }
-      | { ok: false; status: number; body: Record<string, unknown> };
-
-    const outcome = await withOptionalTransaction<TxResult>(async (rawSession) => {
-      const session = rawSession ?? undefined;
-      const tokens = await guardTokens(String(conversation.createdBy), meterInput, res, { session });
-      if (!tokens) return { ok: false, status: 402, body: {} };
-
-      const messageDoc: Record<string, unknown> = {
-        conversationId,
-        senderId: null, // Always null for external guests
-        senderName: identity.name,
-        contentType: normalized.contentType,
-        text:        normalized.text,
-        attachments: normalized.attachments,
-        isSystem:    false,
-      };
-      if (normalized.emoji    !== undefined) messageDoc.emoji    = normalized.emoji;
-      if (normalized.contact  !== undefined) messageDoc.contact  = normalized.contact;
-      if (normalized.location !== undefined) messageDoc.location = normalized.location;
-      if (normalized.date     !== undefined) messageDoc.date     = normalized.date;
-      if (normalized.event    !== undefined) messageDoc.event    = normalized.event;
-      if (normalized.replyTo) {
-        messageDoc.replyTo = {
-          messageId:  normalized.replyTo.messageId,
-          senderName: normalized.replyTo.senderName,
-          text:       normalized.replyTo.text,
-        };
-      }
-      const [createdMessage] = await ChatMessage.create([messageDoc], withSession(session));
-      const message = createdMessage!;
-
-      await Conversation.updateOne(
-        { _id: conversationId },
-        {
-          $set: {
-            lastMessageId: message._id,
-            lastMessageAt: message.createdAt,
-            lastMessageText: previewText,
-            lastMessageSender: identity.name,
-          },
-          $inc: { messageCount: 1 },
-        },
-        withSession(session),
-      );
-
-      return { ok: true, message, tokens };
-    });
+    const outcome = await ChatActionService.saveAndEmitMessage(
+      conversationId,
+      null,
+      identity.name,
+      normalized,
+      previewText,
+      meterInput,
+      res,
+      true,
+      String(conversation.createdBy)
+    );
 
     if (!outcome.ok) {
       if (outcome.status === 402) return;
@@ -323,39 +285,14 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
       deliveryStatus: 'sent',
     };
 
-    const chatMsgNs = getChatMessagesNamespace();
-    emitNewMessage(chatMsgNs, conversationId, {
-      ...message.toObject(),
-      deliveryStatus: 'sent',
-    });
-
-    const chatListNs = getChatListNamespace();
-    const nextMessageCount = conversation.messageCount + 1;
-    await forEachParticipant(conversationId, (pid) => {
-      const pidStr = pid.toString();
-      // External guest doesn't have a user ID, so we broadcast to all REAL participants.
-      // (The guest UI uses the direct socket room for updates)
-      emitChatUnreadChanged(chatListNs, pidStr, {
-        conversationId,
-        count: -1,
-      });
-
-      emitConversationUpdated(chatListNs, pidStr, {
-        conversationId,
-        lastMessageAt: message.createdAt.toISOString(),
-        lastMessageText: previewText,
-        lastMessageSender: identity.name,
-        messageCount: nextMessageCount,
-      });
-    });
-
-    // Advance the guest's read cursor + MessageRead entry to their own send.
-    markSentMessageRead({
-      externalUserName: identity.name,
+    await ChatActionService.broadcastAndPostProcessMessage(
+      message,
       conversationId,
-      messageId:        message._id,
-      messageCreatedAt: message.createdAt,
-    }).catch(() => { });
+      identity.name,
+      previewText,
+      null,
+      true
+    );
 
     res.status(201).json({
       success: true,
@@ -440,16 +377,15 @@ export const deleteGuestMessage = async (req: Request, res: Response) => {
     const conversationId = req.params.id as string;
     const messageId = req.params.messageId as string;
 
-    const message = await ChatMessage.findOneAndUpdate(
-      { _id: messageId, conversationId, senderId: null, senderName: identity.name },
-      { text: 'This message was deleted', attachments: [], contentType: 'system' as const },
-      { returnDocument: 'after' },
+    const message = await ChatActionService.performDeleteMessage(
+      messageId,
+      conversationId,
+      null,
+      identity.name,
+      true
     );
 
     if (!message) return res.status(404).json({ success: false, message: 'Message not found or not yours' });
-
-    const chatMsgNs = getChatMessagesNamespace();
-    emitMessageDeleted(chatMsgNs, conversationId, messageId);
 
     res.json({ success: true, message });
   } catch (e: unknown) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck, Receipt, Activity } from 'lucide-react';
+import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck, Receipt, Activity, Bot } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { useLogout } from '../hooks/useLogout.js';
@@ -31,6 +31,7 @@ const useUserSidebarConfig = (): SidebarConfig => {
         label: 'Social',
         items: [
           { icon: MessageCircle, label: 'Messages', to: '/user/chat', colorClass: 'text-emerald-400' },
+          { icon: Bot, label: 'Chatbots', to: '/user/chatbots', colorClass: 'text-accent-pink' },
         ],
       },
       {

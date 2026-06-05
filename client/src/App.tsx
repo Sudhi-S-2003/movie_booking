@@ -52,6 +52,9 @@ import { ApiKeys } from './pages/ApiKeys.js';
 import { ApiKeyChat } from './pages/ApiKeyChat.js';
 import { Subscription } from './pages/Subscription.js';
 import { Integrations } from './pages/Integrations.js';
+import { ChatbotList } from './pages/chatbot/ChatbotList.js';
+import { ChatbotCreate } from './pages/chatbot/ChatbotCreate.js';
+import { ChatbotDetail } from './pages/chatbot/ChatbotDetail.js';
 import { ApiDocs } from './pages/ApiDocs.js';
 import { CodeShareDocsPage } from './pages/CodeShareDocsPage.js';
 import { CodeShareV2DocsPage } from './pages/CodeShareV2DocsPage.js';
@@ -161,6 +164,9 @@ const App = () => {
                 <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
                 <Route path="api-docs/chat" element={<ChatDocsPage />} />
                 <Route path="integrations" element={<Integrations />} />
+                <Route path="chatbots" element={<ChatbotList />} />
+                <Route path="chatbots/new" element={<ChatbotCreate />} />
+                <Route path="chatbots/:id" element={<ChatbotDetail />} />
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
                   <Route path="2fa" element={<TwoFactorManager />} />
@@ -198,6 +204,9 @@ const App = () => {
                 <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
                 <Route path="api-docs/chat" element={<ChatDocsPage />} />
                 <Route path="integrations" element={<Integrations />} />
+                <Route path="chatbots" element={<ChatbotList />} />
+                <Route path="chatbots/new" element={<ChatbotCreate />} />
+                <Route path="chatbots/:id" element={<ChatbotDetail />} />
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
                   <Route path="2fa" element={<TwoFactorManager />} />
@@ -234,6 +243,9 @@ const App = () => {
                 <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
                 <Route path="api-docs/chat" element={<ChatDocsPage />} />
                 <Route path="integrations" element={<Integrations />} />
+                <Route path="chatbots" element={<ChatbotList />} />
+                <Route path="chatbots/new" element={<ChatbotCreate />} />
+                <Route path="chatbots/:id" element={<ChatbotDetail />} />
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
                   <Route path="2fa" element={<TwoFactorManager />} />

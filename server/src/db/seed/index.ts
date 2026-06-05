@@ -12,3 +12,5 @@ export { seedBookings } from './bookings.js';
 export { seedIssues } from './issues.js';
 export { seedHashtagsAndPosts } from './hashtagsAndPosts.js';
 export { seedUserFollows } from './userFollows.js';
+export { seedChatbots } from './chatbots.js';
+

@@ -14,6 +14,7 @@ import {
   seedIssues,
   seedHashtagsAndPosts,
   seedUserFollows,
+  seedChatbots,
 } from './db/seed/index.js';
 
 const log = (icon: string, msg: string) => console.log(`${icon}  ${msg}`);
@@ -39,6 +40,7 @@ const run = async () => {
     await seedIssues(users);
     await seedHashtagsAndPosts(users, movies);
     await seedUserFollows(users);
+    await seedChatbots();
 
     log('🍿', 'Seeding complete. CinemaConnect is fully operational.');
     process.exit(0);

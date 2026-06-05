@@ -62,6 +62,7 @@ export interface IConversation {
   lastMessageSender?: string;       // sender name for preview
   messageCount:  number;
   isActive:      boolean;           // soft-close for system conversations
+  chatbotDisabled?: boolean;
   createdAt:     Date;
   updatedAt:     Date;
 }
@@ -100,6 +101,7 @@ const ConversationSchema = new Schema<IConversation>(
 
     messageCount: { type: Number, default: 0 },
     isActive:     { type: Boolean, default: true },
+    chatbotDisabled: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
@@ -133,7 +135,8 @@ export type ChatContentType =
   | 'system'
   | 'date'
   | 'event'
-  | 'longtext';
+  | 'longtext'
+  | 'chatbot_template';
 
 export interface ChatContactPayload {
   name?:        string;
@@ -164,6 +167,7 @@ export interface IChatMessage {
   conversationId: mongoose.Types.ObjectId;
   senderId?:      mongoose.Types.ObjectId;  // null for system messages
   senderName:     string;
+  senderAvatarUrl?: string;
   contentType:    ChatContentType;
   text:           string;
   attachments:    string[];
@@ -184,8 +188,30 @@ export interface IChatMessage {
     text:       string;
   };
   isSystem:  boolean;                       // true for auto-generated messages
+  chatbotTemplate?: ChatbotTemplatePayload;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ChatbotTemplateHeaderPayload {
+  type: string;
+  key: string;
+  value: string;
+  order: number;
+}
+
+export interface ChatbotTemplateSectionPayload {
+  key: string;
+  value: string;
+  order: number;
+}
+
+export interface ChatbotTemplatePayload {
+  templateId:     mongoose.Types.ObjectId;
+  name:           string;
+  headers:        ChatbotTemplateHeaderPayload[];
+  bodies:         ChatbotTemplateSectionPayload[];
+  footers:        ChatbotTemplateSectionPayload[];
 }
 
 export type ChatMessageDoc = mongoose.HydratedDocument<IChatMessage>;
@@ -195,15 +221,40 @@ const ChatMessageSchema = new Schema<IChatMessage>(
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
     senderId:       { type: Schema.Types.ObjectId, ref: 'User' },
     senderName:     { type: String, required: true },
+    senderAvatarUrl: { type: String },
     contentType: {
       type:    String,
-      enum:    ['text', 'emoji', 'contact', 'location', 'image', 'file', 'system', 'date', 'event', 'longtext'],
+      enum:    ['text', 'emoji', 'contact', 'location', 'image', 'file', 'system', 'date', 'event', 'longtext', 'chatbot_template'],
       default: 'text',
     },
     // `text` stays required so any code path that reads `.text` for preview
     // gets a sensible fallback. For non-text types we synthesize one server-side.
     text:           { type: String, required: true },
     attachments:    [{ type: String }],
+    chatbotTemplate: {
+      _id:        false,
+      templateId: { type: Schema.Types.ObjectId },
+      name:       { type: String },
+      headers:    [{
+        _id:   false,
+        type:  { type: String },
+        key:   { type: String },
+        value: { type: String },
+        order: { type: Number },
+      }],
+      bodies:     [{
+        _id:   false,
+        key:   { type: String },
+        value: { type: String },
+        order: { type: Number },
+      }],
+      footers:    [{
+        _id:   false,
+        key:   { type: String },
+        value: { type: String },
+        order: { type: Number },
+      }],
+    },
 
     emoji: {
       type: String,
@@ -378,6 +429,14 @@ ChatMessageSchema.pre('validate', function chatContentTypeValidator(this: ChatMe
     throw new Error('event payload not allowed for this contentType');
   } else if (doc.event) {
     doc.set('event', undefined);
+  }
+
+  if (doc.contentType === 'chatbot_template') {
+    if (!doc.chatbotTemplate) {
+      throw new Error('chatbotTemplate payload is required when contentType is chatbot_template');
+    }
+  } else if (doc.chatbotTemplate) {
+    doc.set('chatbotTemplate', undefined);
   }
 
 });

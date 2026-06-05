@@ -139,7 +139,7 @@ export const activatePaidPlan = async (
     const sub = await Subscription.findOneAndUpdate(
       { userId: uid },
       { ...update, $inc: { purchasesCount: 1 } },
-      { upsert: true, new: true, ...withSession(session) },
+      { upsert: true, returnDocument: 'after', ...withSession(session) },
     );
     if (!sub) throw new Error('Failed to upsert subscription');
 
@@ -156,7 +156,7 @@ export const cancelAtPeriodEnd = async (userId: UserIdLike): Promise<Subscriptio
   return Subscription.findOneAndUpdate(
     { userId: uid, plan: { $in: ['pro', 'proMax', 'enterprise'] } },
     { status: 'cancelled' },
-    { new: true },
+    { returnDocument: 'after' },
   );
 };
 

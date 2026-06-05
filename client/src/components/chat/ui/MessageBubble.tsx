@@ -14,6 +14,7 @@ import {
   DateBubble,
   EventBubble,
   LongTextBubble,
+  ChatbotTemplateBubble,
 } from './bubbles/index.js';
 import type { ChatMessage } from '../types.js';
 
@@ -97,6 +98,17 @@ export const MessageBubble = memo(({
             {...(onJumpToMessage ? { onJumpToMessage } : {})}
           />
         );
+      case 'chatbot_template':
+        return (
+          <ChatbotTemplateBubble
+            msg={msg}
+            isOwn={isOwn}
+            isSameGroupPrev={isSameGroupPrev}
+            showDateSeparator={showDateSeparator}
+            isFailed={isFailed}
+            {...(onJumpToMessage ? { onJumpToMessage } : {})}
+          />
+        );
       case 'text':
       default:
         return (
@@ -136,15 +148,23 @@ export const MessageBubble = memo(({
       >
         <div className="w-7 h-7 flex-shrink-0">
           {!isSameGroupNext && !isEmoji && (
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
-                isOwn
-                  ? 'bg-gradient-to-br from-violet-600/90 to-indigo-700/90 shadow-sm shadow-violet-500/15'
-                  : 'bg-white/10 border border-white/10'
-              }`}
-            >
-              {msg.senderName?.[0]?.toUpperCase() ?? '?'}
-            </div>
+            msg.senderAvatarUrl ? (
+              <img
+                src={msg.senderAvatarUrl}
+                alt={msg.senderName}
+                className="w-7 h-7 rounded-full object-cover border border-white/10 shadow-sm"
+              />
+            ) : (
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                  isOwn
+                    ? 'bg-gradient-to-br from-violet-600/90 to-indigo-700/90 shadow-sm shadow-violet-500/15'
+                    : 'bg-white/10 border border-white/10'
+                }`}
+              >
+                {msg.senderName?.[0]?.toUpperCase() ?? '?'}
+              </div>
+            )
           )}
         </div>
 

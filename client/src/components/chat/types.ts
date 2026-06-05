@@ -11,7 +11,29 @@ export type ChatContentType =
   | 'system'
   | 'date'
   | 'event'
-  | 'longtext';
+  | 'longtext'
+  | 'chatbot_template';
+
+export interface ChatbotTemplateHeaderPayload {
+  type: string;
+  key: string;
+  value: string;
+  order: number;
+}
+
+export interface ChatbotTemplateSectionPayload {
+  key: string;
+  value: string;
+  order: number;
+}
+
+export interface ChatbotTemplatePayload {
+  templateId:     string;
+  name:           string;
+  headers:        ChatbotTemplateHeaderPayload[];
+  bodies:         ChatbotTemplateSectionPayload[];
+  footers:        ChatbotTemplateSectionPayload[];
+}
 
 export interface ChatContactPayload {
   name?:       string;
@@ -86,6 +108,7 @@ export interface ChatMessage {
   conversationId: string;
   senderId?:      string | null;
   senderName:     string;
+  senderAvatarUrl?: string;
   contentType:    ChatContentType;
   text:           string;
   attachments:    string[];
@@ -108,6 +131,7 @@ export interface ChatMessage {
   isSystem:       boolean;
   isYou?:         boolean;
   deliveryStatus?: DeliveryStatus;
+  chatbotTemplate?: ChatbotTemplatePayload;
   /** Optimistic send status */
   _status?:       'sending' | 'failed';
   createdAt:      string;

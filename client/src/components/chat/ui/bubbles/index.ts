@@ -9,3 +9,4 @@ export { DateBubble } from './DateBubble.js';
 export { EventBubble } from './EventBubble.js';
 export { LongTextBubble } from './LongTextBubble.js';
 export { ImageLightbox } from './ImageLightbox.js';
+export { ChatbotTemplateBubble } from './ChatbotTemplateBubble.js';

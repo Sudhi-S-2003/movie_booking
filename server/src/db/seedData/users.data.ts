@@ -205,4 +205,17 @@ export const usersSeedData: Partial<IUser>[] = [
     bio: 'Horror movie collector. If it scares me, I watch it twice. #horror #suspense #cult',
     location: 'Guwahati, India',
   },
+  {
+    name: 'Sudhi S',
+    username: 'sudhi_dev',
+    email: 'sudhi@developer.com',
+    role: UserRole.USER,
+    authProvider: AuthProvider.LOCAL,
+    avatar: 'https://avatars.githubusercontent.com/u/104332822?v=4',
+    coverImageUrl: cover('sudhi_dev'),
+    bio: 'Full Stack Developer | Engineering Scalable Solutions for ONDC | MERN Stack Specialist',
+    location: 'Kerala, India',
+    pronouns: 'he/him',
+    website: 'https://sudhis.netlify.app/',
+  },
 ];
