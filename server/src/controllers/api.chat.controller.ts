@@ -11,9 +11,6 @@ import {
   ConversationParticipant,
 } from '../models/chat.model.js';
 import { User } from '../models/user.model.js';
-import {
-  forEachParticipant,
-} from '../services/chat/conversationParticipants.service.js';
 import { PAGINATION } from '../utils/pagination.js';
 import {
   loadLatest,
@@ -23,23 +20,16 @@ import {
   loadWithAnchor,
 } from '../services/chat/chatMessageFetch.service.js';
 import {
-  markSentMessageRead,
   advanceCursorTo,
 } from '../services/chat/chatReadCursor.service.js';
 import { recordReads } from '../services/chat/messageRead.service.js';
 import { decorateMessages } from './chat/chat.helpers.js';
 import {
   getChatMessagesNamespace,
-  getChatListNamespace,
 } from '../socket/index.js';
-import { emitNewMessage, emitMessageDeleted, emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
-import { emitChatUnreadChanged, emitConversationUpdated } from '../socket/channels/chat-list.channel.js';
-import { guardTokens } from '../services/subscription/tokenGuard.js';
+import { emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
 import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
 import { getSummary as getSubscriptionSummary } from '../services/subscription/subscription.service.js';
-import { withOptionalTransaction, withSession } from '../utils/transaction.util.js';
-import type { ChatMessageDoc } from '../models/chat.model.js';
-import { handleChatbotTrigger } from '../services/chatbot/chatbotTrigger.service.js';
 import * as ChatActionService from '../services/chat/chatAction.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────

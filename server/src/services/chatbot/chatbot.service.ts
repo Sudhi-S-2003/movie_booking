@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { Chatbot } from '../../models/chatbot.model.js';
 import { ChatbotKeyword } from '../../models/chatbotKeyword.model.js';
 import { ChatbotTemplate } from '../../models/chatbotTemplate.model.js';

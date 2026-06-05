@@ -469,4 +469,21 @@ sequenceDiagram
   Browser->>Server: GET /api-service/code-share-v2/:id?action=v2-download-all
   Server-->>Browser: Return all files & contents in single request
   Browser->>Browser: Dynamically load JSZip & download archive locally
+  
+```
+### 7. Create Public Chat Conversation (Body Payload)
+Create a new public chat conversation by passing the API key and secret in the JSON body.
+```bash
+curl -X POST "http://localhost:5000/api/public/chat/conversation" \
+  -H "Content-Type: application/json" \
+  -d "{\"apiKey\":\"ak_2a****\",\"apiSecret\":\"as_yFC0-*****\",\"name\":\"Jane Cooper\",\"email\":\"jane@example.com\",\"expiryMinutes\":6000}"
+```
+### 8. Create Public Chat Conversation (Header Authentication)
+Create a new public chat conversation by passing the API credentials in the request headers.
+```bash
+curl -X POST "http://localhost:5000/api/public/chat/conversation" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: ak_2a****" \
+  -H "x-api-secret: as_yFC0-*****" \
+  -d "{\"name\":\"Jane Cooper\",\"email\":\"jane@example.com\",\"expiryMinutes\":6000}"
 ```

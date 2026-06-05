@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs';
 import { User } from '../../models/user.model.js';
-import { UserRole, AuthProvider, NotificationType } from '../../constants/enums.js';
+import { UserRole, AuthProvider } from '../../constants/enums.js';
 import { Session } from '../../models/session.model.js';
 import { generateUsernameSuggestions } from '../../utils/username.utils.js';
 import { getOrCreateForUser as ensureSubscription } from '../subscription/subscription.service.js';
-import { notificationService } from '../notification.service.js';
+
 import { generateTotpSecret, verifyTotpToken, generateBackupCodes, hashBackupCodes, verifyAndConsumeBackupCode } from '../../utils/totp.utils.js';
 import { generateRandomToken } from '../../utils/token.utils.js';
 import { env } from '../../env.js';

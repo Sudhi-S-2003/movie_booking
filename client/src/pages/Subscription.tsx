@@ -1,27 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, Crown, Building2, Gift, Tag, Calendar, RotateCcw,
+  Sparkles, Crown, Building2, Gift, Tag, Calendar, RotateCcw, Zap, ArrowRight,
 } from 'lucide-react';
 import {
   subscriptionApi,
   type PlanCatalogResponse,
   type SubscriptionPlan,
+  type PaidPlan,
+  type BillingCycle,
 } from '../services/api/index.js';
-import type { PlanCatalogViewer } from '../services/api/subscription.api.js';
+import type { PlanCatalogViewer, OfferType } from '../services/api/subscription.api.js';
 import { SEO } from '../components/common/SEO.js';
 import { useSubscription } from '../components/chat/hooks/useSubscription.js';
 import {
   Ring, BucketBar, PlanIcon, planLabel, planAccent,
   resolveLimits, buildBuckets,
 } from '../components/chat/components/TokenUsageBadge.js';
-import { PricingToggle }  from './subscription/PricingToggle.js';
-import { PriceBlock }     from './subscription/PriceBlock.js';
 import { EnterpriseForm } from './subscription/EnterpriseForm.js';
 import { BoosterCheckoutModal, type BoosterProduct } from './subscription/BoosterCheckoutModal.js';
 import { CheckoutModal } from './subscription/CheckoutModal.js';
 import { PlanCardAnimated, PlanCard, PaidPlanCard } from './subscription/PlanCards.js';
-import { FeatureList }    from './subscription/FeatureList.js';
 import { SkeletonCard }   from './subscription/SkeletonCard.js';
 import { FaqAccordion }   from './subscription/FaqAccordion.js';
 import { TrustSignals }   from './subscription/TrustSignals.js';

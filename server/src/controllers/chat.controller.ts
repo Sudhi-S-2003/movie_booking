@@ -23,7 +23,6 @@ import {
   removeParticipantRow,
   listMembers,
   isParticipant,
-  forEachParticipant,
   populateMembers,
   attachDirectPeer,
   getUserConversationIds,
@@ -44,20 +43,16 @@ import {
   loadAround,
   loadWithAnchor,
 } from '../services/chat/chatMessageFetch.service.js';
-import { markSentMessageRead, advanceCursorTo } from '../services/chat/chatReadCursor.service.js';
+import { advanceCursorTo } from '../services/chat/chatReadCursor.service.js';
 import { recordReads } from '../services/chat/messageRead.service.js';
 import {
   getChatMessagesNamespace,
   getChatListNamespace,
 } from '../socket/index.js';
-import { emitNewMessage, emitMessageDeleted, emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
-import { emitChatUnreadChanged, emitConversationUpdated, emitNewConversation } from '../socket/channels/chat-list.channel.js';
+import { emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
+import { emitChatUnreadChanged, emitNewConversation } from '../socket/channels/chat-list.channel.js';
 import { decorateMessages, broadcastNewConversation } from './chat/chat.helpers.js';
-import { guardTokens } from '../services/subscription/tokenGuard.js';
 import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
-import { withOptionalTransaction, withSession } from '../utils/transaction.util.js';
-import type { ChatMessageDoc } from '../models/chat.model.js';
-import { handleChatbotTrigger } from '../services/chatbot/chatbotTrigger.service.js';
 import * as ChatActionService from '../services/chat/chatAction.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────

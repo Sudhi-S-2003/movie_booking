@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { Conversation, ChatMessage } from '../../models/chat.model.js';
 import type { ChatMessageDoc } from '../../models/chat.model.js';
 import { guardTokens } from '../subscription/tokenGuard.js';

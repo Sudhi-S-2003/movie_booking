@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { env } from '../env.js';
-import { UserRole, AuthProvider, NotificationType } from '../constants/enums.js';
+import { AuthProvider, NotificationType } from '../constants/enums.js';
 import type { AuthRequest, JwtPayload } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { disconnectSessionSockets } from '../socket/index.js';
@@ -336,7 +336,7 @@ export const revokeSession = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     
-    const session = await AuthService.revokeUserSession(id, req.user!._id);
+    const session = await AuthService.revokeUserSession(id as string, String(req.user!._id));
 
     if (!session) {
       return res.status(404).json({ success: false, message: 'Session not found' });
