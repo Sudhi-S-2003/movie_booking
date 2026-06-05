@@ -54,7 +54,14 @@ import { Subscription } from './pages/Subscription.js';
 import { Integrations } from './pages/Integrations.js';
 import { ChatbotList } from './pages/chatbot/ChatbotList.js';
 import { ChatbotCreate } from './pages/chatbot/ChatbotCreate.js';
-import { ChatbotDetail } from './pages/chatbot/ChatbotDetail.js';
+import { ChatbotDetailLayout } from './pages/chatbot/ChatbotDetailLayout.js';
+import { ChatbotOverview } from './pages/chatbot/tabs/ChatbotOverview.js';
+import { ChatbotVariables } from './pages/chatbot/tabs/ChatbotVariables.js';
+import { ChatbotKeywords } from './pages/chatbot/tabs/ChatbotKeywords.js';
+import { ChatbotTemplates } from './pages/chatbot/tabs/ChatbotTemplates.js';
+import { ChatbotFlows } from './pages/chatbot/tabs/ChatbotFlows.js';
+import { ChatbotMenus } from './pages/chatbot/tabs/ChatbotMenus.js';
+import { ChatbotForms } from './pages/chatbot/tabs/ChatbotForms.js';
 import { ApiDocs } from './pages/ApiDocs.js';
 import { CodeShareDocsPage } from './pages/CodeShareDocsPage.js';
 import { CodeShareV2DocsPage } from './pages/CodeShareV2DocsPage.js';
@@ -166,7 +173,16 @@ const App = () => {
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="chatbots" element={<ChatbotList />} />
                 <Route path="chatbots/new" element={<ChatbotCreate />} />
-                <Route path="chatbots/:id" element={<ChatbotDetail />} />
+                <Route path="chatbots/:id" element={<ChatbotDetailLayout />}>
+                  <Route index element={<Navigate to="overview" replace />} />
+                  <Route path="overview" element={<ChatbotOverview />} />
+                  <Route path="variables" element={<ChatbotVariables />} />
+                  <Route path="keywords" element={<ChatbotKeywords />} />
+                  <Route path="templates" element={<ChatbotTemplates />} />
+                  <Route path="flow-builder" element={<ChatbotFlows />} />
+                  <Route path="menu-builder" element={<ChatbotMenus />} />
+                  <Route path="form-builder" element={<ChatbotForms />} />
+                </Route>
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
                   <Route path="2fa" element={<TwoFactorManager />} />
@@ -206,7 +222,16 @@ const App = () => {
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="chatbots" element={<ChatbotList />} />
                 <Route path="chatbots/new" element={<ChatbotCreate />} />
-                <Route path="chatbots/:id" element={<ChatbotDetail />} />
+                <Route path="chatbots/:id" element={<ChatbotDetailLayout />}>
+                  <Route index element={<Navigate to="overview" replace />} />
+                  <Route path="overview" element={<ChatbotOverview />} />
+                  <Route path="variables" element={<ChatbotVariables />} />
+                  <Route path="keywords" element={<ChatbotKeywords />} />
+                  <Route path="templates" element={<ChatbotTemplates />} />
+                  <Route path="flow-builder" element={<ChatbotFlows />} />
+                  <Route path="menu-builder" element={<ChatbotMenus />} />
+                  <Route path="form-builder" element={<ChatbotForms />} />
+                </Route>
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
                   <Route path="2fa" element={<TwoFactorManager />} />
@@ -245,7 +270,16 @@ const App = () => {
                 <Route path="integrations" element={<Integrations />} />
                 <Route path="chatbots" element={<ChatbotList />} />
                 <Route path="chatbots/new" element={<ChatbotCreate />} />
-                <Route path="chatbots/:id" element={<ChatbotDetail />} />
+                <Route path="chatbots/:id" element={<ChatbotDetailLayout />}>
+                  <Route index element={<Navigate to="overview" replace />} />
+                  <Route path="overview" element={<ChatbotOverview />} />
+                  <Route path="variables" element={<ChatbotVariables />} />
+                  <Route path="keywords" element={<ChatbotKeywords />} />
+                  <Route path="templates" element={<ChatbotTemplates />} />
+                  <Route path="flow-builder" element={<ChatbotFlows />} />
+                  <Route path="menu-builder" element={<ChatbotMenus />} />
+                  <Route path="form-builder" element={<ChatbotForms />} />
+                </Route>
                 <Route path="security" element={<SecurityLayout />}>
                   <Route index element={<Navigate to="2fa" replace />} />
                   <Route path="2fa" element={<TwoFactorManager />} />

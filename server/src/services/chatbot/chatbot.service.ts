@@ -134,7 +134,7 @@ export async function addKeyword(chatbotId: string, userId: string, data: any) {
 export async function listKeywords(
   chatbotId: string,
   userId: string,
-  query: { sessionId?: string; isActive?: boolean; matchType?: string },
+  query: { sessionId?: string; isActive?: boolean; matchType?: string; q?: string },
 ) {
   await checkChatbotOwner(chatbotId, userId);
 
@@ -147,6 +147,9 @@ export async function listKeywords(
   }
   if (query.matchType) {
     filter.matchType = query.matchType;
+  }
+  if (query.q) {
+    filter.keyword = { $regex: query.q, $options: 'i' };
   }
 
   return await ChatbotKeyword.find(filter).sort({ priority: -1, createdAt: -1 });
@@ -184,12 +187,15 @@ export async function createTemplate(chatbotId: string, userId: string, data: an
   return await template.save();
 }
 
-export async function listTemplates(chatbotId: string, userId: string, query: { status?: string }) {
+export async function listTemplates(chatbotId: string, userId: string, query: { status?: string, q?: string }) {
   await checkChatbotOwner(chatbotId, userId);
 
   const filter: any = { chatbotId };
   if (query.status) {
     filter.status = query.status;
+  }
+  if (query.q) {
+    filter.name = { $regex: query.q, $options: 'i' };
   }
 
   return await ChatbotTemplate.find(filter).sort({ createdAt: -1 });

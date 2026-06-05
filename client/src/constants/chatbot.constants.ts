@@ -62,3 +62,17 @@ export const LEGACY_BODY_ALIAS: Record<string, string> = {
 export const LEGACY_HEADER_ALIAS: Record<string, string> = {
   welcome_media: 'media_image', // was ambiguous — default to image type rendering
 };
+
+export const LANGUAGES = [
+  { code: 'en', name: 'English' },
+  { code: 'hi', name: 'Hindi / हिन्दी' },
+  { code: 'ta', name: 'Tamil / தமிழ்' },
+  { code: 'te', name: 'Telugu / తెలుగు' },
+  { code: 'ml', name: 'Malayalam / മലയാളം' },
+  { code: 'kn', name: 'Kannada / ಕನ್ನಡ' },
+  { code: 'es', name: 'Spanish / Español' },
+  { code: 'fr', name: 'French / Français' },
+  { code: 'de', name: 'German / Deutsch' },
+  { code: 'ja', name: 'Japanese / 日本語' },
+  { code: 'ko', name: 'Korean / 한국어' },
+];

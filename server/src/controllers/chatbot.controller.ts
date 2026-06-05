@@ -75,11 +75,12 @@ export const addKeyword = async (req: Request, res: Response, next: NextFunction
 export const listKeywords = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = requireAuthUser(req);
-    const { sessionId, isActive, matchType } = req.query;
+    const { sessionId, isActive, matchType, q } = req.query;
     const queryParams: any = {};
     if (sessionId) queryParams.sessionId = sessionId as string;
     if (isActive !== undefined) queryParams.isActive = isActive === 'true';
     if (matchType) queryParams.matchType = matchType as string;
+    if (q) queryParams.q = q as string;
 
     const keywords = await chatbotService.listKeywords(req.params.id as string, user._id.toString(), queryParams);
     res.status(200).json({ success: true, keywords });
@@ -127,9 +128,10 @@ export const createTemplate = async (req: Request, res: Response, next: NextFunc
 export const listTemplates = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = requireAuthUser(req);
-    const { status } = req.query;
+    const { status, q } = req.query;
     const templates = await chatbotService.listTemplates(req.params.id as string, user._id.toString(), {
       status: status as string,
+      q: q as string,
     });
     res.status(200).json({ success: true, templates });
   } catch (err) {

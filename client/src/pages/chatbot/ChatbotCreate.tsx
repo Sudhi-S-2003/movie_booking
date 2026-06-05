@@ -13,23 +13,11 @@ import {
   Languages,
   RefreshCw,
 } from 'lucide-react';
-import { chatbotApi } from '../../services/api/chatbot.api.js';
+import { useChatbotStore } from '../../store/chatbotStore.js';
 import { toast } from '../../utils/toast.js';
 import { clsx } from 'clsx';
 
-const LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'hi', name: 'Hindi / हिन्दी' },
-  { code: 'ta', name: 'Tamil / தமிழ்' },
-  { code: 'te', name: 'Telugu / తెలుగు' },
-  { code: 'ml', name: 'Malayalam / മലയാളം' },
-  { code: 'kn', name: 'Kannada / ಕನ್ನಡ' },
-  { code: 'es', name: 'Spanish / Español' },
-  { code: 'fr', name: 'French / Français' },
-  { code: 'de', name: 'German / Deutsch' },
-  { code: 'ja', name: 'Japanese / 日本語' },
-  { code: 'ko', name: 'Korean / 한국어' },
-];
+import { LANGUAGES } from '../../constants/chatbot.constants.js';
 
 export const ChatbotCreate = () => {
   const navigate = useNavigate();
@@ -44,6 +32,8 @@ export const ChatbotCreate = () => {
     type: 'keyword-only' as 'keyword-only' | 'flow' | 'menu' | 'form',
     avatarUrl: '',
   });
+
+  const { createChatbot } = useChatbotStore();
 
   const handleNext = () => {
     if (step === 1 && !formData.name.trim()) {
@@ -60,10 +50,10 @@ export const ChatbotCreate = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const response = await chatbotApi.create(formData);
+      const response = await createChatbot(formData);
       toast.success(`Chatbot ${formData.name} created successfully!`);
       // Navigate to detail page of the created chatbot
-      navigate(`../${response.chatbot._id}`);
+      navigate(`../${response._id}`, { relative: 'path' });
     } catch (error: any) {
       console.error('Failed to create chatbot:', error);
       toast.error(error.response?.data?.message || 'Failed to create chatbot');

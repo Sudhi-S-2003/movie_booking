@@ -19,6 +19,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { chatbotApi, type Chatbot } from '../../services/api/chatbot.api.js';
+import { useChatbotStore } from '../../store/chatbotStore.js';
 import { toast } from '../../utils/toast.js';
 import { clsx } from 'clsx';
 
@@ -73,10 +74,7 @@ export const ChatbotList = () => {
   const [page, setPage] = useState(1);
 
   // ── Data ───────────────────────────────────────────────────────────────────
-  const [chatbots, setChatbots]   = useState<Chatbot[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading]     = useState(true);
+  const { chatbots, totalPages, totalCount, loading, fetchChatbots, updateChatbotState } = useChatbotStore();
 
   // Debounce search so we don't fire on every keystroke
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,8 +91,7 @@ export const ChatbotList = () => {
     setPage(1);
   }, [debouncedQuery, selectedType, selectedStatus]);
 
-  const fetchChatbots = useCallback(async () => {
-    setLoading(true);
+  const loadChatbots = useCallback(async () => {
     try {
       const params: Record<string, unknown> = { page, limit: PAGE_SIZE };
       if (debouncedQuery)               params.q        = debouncedQuery;
@@ -102,28 +99,21 @@ export const ChatbotList = () => {
       if (selectedStatus === 'active')  params.isActive = true;
       if (selectedStatus === 'inactive') params.isActive = false;
 
-      const response = await chatbotApi.list(params as any);
-      setChatbots(response.chatbots || []);
-      setTotalPages(response.totalPages || 1);
-      setTotalCount(response.total || 0);
+      await fetchChatbots(params as any);
     } catch (error: any) {
       console.error('Failed to fetch chatbots:', error);
       toast.error('Failed to load chatbots');
-    } finally {
-      setLoading(false);
     }
-  }, [page, debouncedQuery, selectedType, selectedStatus]);
+  }, [page, debouncedQuery, selectedType, selectedStatus, fetchChatbots]);
 
   useEffect(() => {
-    fetchChatbots();
-  }, [fetchChatbots]);
+    loadChatbots();
+  }, [loadChatbots]);
 
   const handleToggleActive = async (id: string, currentStatus: boolean, name: string) => {
     try {
       await chatbotApi.update(id, { isActive: !currentStatus });
-      setChatbots(prev =>
-        prev.map(bot => (bot._id === id ? { ...bot, isActive: !currentStatus } : bot))
-      );
+      updateChatbotState(id, { isActive: !currentStatus });
       toast.success(`${name} has been ${!currentStatus ? 'activated' : 'deactivated'}`);
     } catch (error) {
       console.error('Failed to toggle status:', error);

@@ -94,7 +94,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ sidebar, child
           <Menu size={18} />
         </button>
 
-        <div className="p-3 sm:p-5 lg:p-8 w-full h-full relative flex flex-col">
+        <div className="p-3 sm:p-5 lg:p-8 pb-16 sm:pb-20 lg:pb-24 w-full min-h-full relative flex flex-col">
           {children}
         </div>
 
