@@ -26,6 +26,7 @@ export const usePresence = () => {
         });
 
         socketRef.current.on('connect_error', (err) => {
+          if (err.message === 'timeout' || err.message === 'xhr poll error') return;
           console.error('[Presence] Connection error:', err.message);
         });
 

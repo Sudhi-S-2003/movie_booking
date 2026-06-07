@@ -1,97 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Home } from './pages/Home.js';
-import { MovieDetails } from './pages/MovieDetails.js';
-import { SeatBooking } from './pages/SeatBooking.js';
-import { Checkout } from './pages/Checkout.js';
-import { Success } from './pages/Success.js';
-import { Login } from './pages/Login.js';
-import { Register } from './pages/Register.js';
-import { Search } from './pages/Search.js';
-import { Dashboard } from './pages/Dashboard.js';
-import { OwnerOverview } from './pages/dashboards/owner/OwnerOverview.js';
-import { OwnerArchitecture } from './pages/dashboards/owner/OwnerArchitecture.js';
-import { OwnerTimeline } from './pages/dashboards/owner/OwnerTimeline.js';
-import { OwnerSupport } from './pages/dashboards/owner/OwnerSupport.js';
-import { TheatreDetails } from './pages/TheatreDetails.js';
-import { ReviewsPage } from './pages/ReviewsPage.js';
-import { OwnerLayout } from './layouts/OwnerLayout.js';
-import { UserLayout } from './layouts/UserLayout.js';
-import { AdminLayout } from './layouts/AdminLayout.js';
-import { MarketingLayoutWrapper } from './layouts/MarketingLayout.js';
-import { AuthLayout } from './layouts/AuthLayout.js';
-import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
+import { BrowserRouter } from 'react-router-dom';
 import { BookingSessionProvider } from './providers/BookingSessionProvider.js';
 import { SubscriptionProvider } from './components/chat/hooks/useSubscription.js';
-import { PublicRoute } from './components/auth/PublicRoute.js';
-import { NotificationProvider } from './providers/NotificationProvider.js';
-
-
-import { AdminOverview } from './pages/dashboards/admin/AdminOverview.js';
-import { AdminMovies } from './pages/dashboards/admin/AdminMovies.js';
-import { AdminTheatres } from './pages/dashboards/admin/AdminTheatres.js';
-import { AdminUsers } from './pages/dashboards/admin/AdminUsers.js';
-import { AdminSubscriptionRequests } from './pages/dashboards/admin/AdminSubscriptionRequests.js';
-import { AdminIssues } from './pages/dashboards/admin/AdminIssues.js';
-import { UserDetails } from './pages/UserDetails.js';
-import { ProfileEdit } from './pages/ProfileEdit.js';
-import { UserBookings } from './pages/dashboards/user/UserBookings.js';
-import { UserStats } from './pages/dashboards/user/UserStats.js';
-import { UserTransactions } from './pages/dashboards/user/UserTransactions.js';
-import { UserBilling } from './pages/dashboards/user/UserBilling.js';
-import { UserSupport } from './pages/dashboards/user/UserSupport.js';
-import { Movies } from './pages/Movies.js';
-import { Theatres } from './pages/Theatres.js';
-import { Hashtag } from './pages/Hashtag.js';
-import { PostDetail } from './pages/PostDetail.js';
-import { Chat } from './pages/Chat.js';
-import { ChatMembers } from './pages/ChatMembers.js';
-import { ChatJoinRequests } from './pages/ChatJoinRequests.js';
-import { PublicChat } from './pages/PublicChat.js';
-import { ChatInvite } from './pages/ChatInvite.js';
-import { ApiKeys } from './pages/ApiKeys.js';
-import { ApiKeyChat } from './pages/ApiKeyChat.js';
-import { Subscription } from './pages/Subscription.js';
-import { Integrations } from './pages/Integrations.js';
-import { ChatbotList } from './pages/chatbot/ChatbotList.js';
-import { ChatbotCreate } from './pages/chatbot/ChatbotCreate.js';
-import { ChatbotDetailLayout } from './pages/chatbot/ChatbotDetailLayout.js';
-import { ChatbotOverview } from './pages/chatbot/tabs/ChatbotOverview.js';
-import { ChatbotVariables } from './pages/chatbot/tabs/ChatbotVariables.js';
-import { ChatbotKeywords } from './pages/chatbot/tabs/ChatbotKeywords.js';
-import { ChatbotTemplates } from './pages/chatbot/tabs/ChatbotTemplates.js';
-import { ChatbotFlows } from './pages/chatbot/tabs/ChatbotFlows.js';
-import { ChatbotMenus } from './pages/chatbot/tabs/ChatbotMenus.js';
-import { ChatbotForms } from './pages/chatbot/tabs/ChatbotForms.js';
-import { ApiDocs } from './pages/ApiDocs.js';
-import { CodeShareDocsPage } from './pages/CodeShareDocsPage.js';
-import { CodeShareV2DocsPage } from './pages/CodeShareV2DocsPage.js';
-import { ChatDocsPage } from './pages/ChatDocsPage.js';
-import { ApiDocsTest } from './pages/ApiDocsTest.js';
+import { NotificationRoot } from './components/notifications/NotificationRoot.js';
 import { useRoleRedirect } from './hooks/useRoleRedirect.js';
-import PublicTicket from './pages/PublicTicket.js';
-import SessionsPage from './pages/dashboards/SessionsPage.js';
-import { CodeShare } from './pages/CodeShare.js';
-import { CodeShareV2 } from './pages/CodeShareV2.js';
-import { ApiDocsSignedService } from './pages/ApiDocsSignedService.js';
 import { ScrollToTop } from './components/common/ScrollToTop.js';
 import { ToastContainer } from './components/common/ToastContainer.js';
-import { TwoFactorSetup } from './pages/TwoFactorSetup.js';
-import { LoginVerify2FA } from './pages/LoginVerify2FA.js';
-import { SecurityLayout } from './components/layout/SecurityLayout.js';
-import { TwoFactorManager } from './components/auth/TwoFactorManager.js';
-import { PasskeyManager } from './components/auth/PasskeyManager.js';
-
-
 import { SEO } from './components/common/SEO.js';
-
+import { AppRoutes } from './routes/AppRoutes.js';
 
 const RoleRedirectHandler = () => {
   useRoleRedirect();
   return null;
 };
-
-
-
 
 const App = () => {
   return (
@@ -99,206 +19,13 @@ const App = () => {
       <ScrollToTop />
       <RoleRedirectHandler />
       <SEO />
-      <NotificationProvider>
-        <SubscriptionProvider>
-          <BookingSessionProvider>
-            <ToastContainer />
-            <Routes>
-              { }
-              <Route path="/chat/:conversationId" element={<ApiKeyChat />} />
-              <Route path="/code-share/:id" element={<CodeShare />} />
-              <Route path="/code-share-v2/:id" element={<CodeShareV2 />} />
-
-              <Route element={<MarketingLayoutWrapper />}>
-                <Route path="/" element={<Home />} />
-                <Route element={<PublicRoute><AuthLayout /></PublicRoute>}>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/login/verify-2fa" element={<LoginVerify2FA />} />
-                  <Route path="/register" element={<Register />} />
-                </Route>
-
-                <Route path="/movie/:id" element={<MovieDetails />} />
-                <Route path="/movie/:id/reviews" element={<ReviewsPage type="Movie" />} />
-                <Route path="/theatre/:id" element={<TheatreDetails />} />
-                <Route path="/theatre/:id/reviews" element={<ReviewsPage type="Theatre" />} />
-                <Route path="/movies" element={<Movies />} />
-                <Route path="/cinemas" element={<Theatres />} />
-                <Route path="/hashtag/:tag" element={<Hashtag />} />
-                <Route path="/post/:postId" element={<PostDetail />} />
-                <Route path="/user/:username" element={<UserDetails />} />
-                <Route path="/user/:username/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
-                <Route path="/settings/2fa" element={<ProtectedRoute><TwoFactorSetup /></ProtectedRoute>} />
-                <Route path="/booking/:showtimeId" element={<SeatBooking />} />
-                <Route path="/search" element={<Search />} />
-
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-
-                { }
-                <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                <Route path="/success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
-                <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-
-                {/* Public chat onboarding — no auth required to view */}
-                <Route path="/chat/g/:publicName" element={<PublicChat />} />
-                <Route path="/chat/invite/:token" element={<ChatInvite />} />
-                <Route path="/ticket/:id" element={<PublicTicket />} />
-                <Route path="/docs-test" element={<ApiDocsTest />} />
-                <Route path="/docs/signed-service" element={<ApiDocsSignedService />} />
-              </Route>
-
-              { }
-              <Route
-                path="/owner"
-                element={
-                  <ProtectedRoute>
-                    <OwnerLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Navigate to="overview" replace />} />
-                <Route path="overview" element={<OwnerOverview />} />
-                <Route path="architecture" element={<OwnerArchitecture />} />
-                <Route path="timeline" element={<OwnerTimeline />} />
-                <Route path="support" element={<OwnerSupport />} />
-                <Route path="support/:issueId" element={<OwnerSupport />} />
-                <Route path="chat" element={<Chat />} />
-                <Route path="chat/:conversationId" element={<Chat />} />
-                <Route path="chat/:conversationId/members" element={<ChatMembers />} />
-                <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
-                <Route path="api-keys" element={<ApiKeys />} />
-                <Route path="api-docs" element={<ApiDocs />} />
-                <Route path="api-docs/code-share" element={<CodeShareDocsPage />} />
-                <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
-                <Route path="api-docs/chat" element={<ChatDocsPage />} />
-                <Route path="integrations" element={<Integrations />} />
-                <Route path="chatbots" element={<ChatbotList />} />
-                <Route path="chatbots/new" element={<ChatbotCreate />} />
-                <Route path="chatbots/:id" element={<ChatbotDetailLayout />}>
-                  <Route index element={<Navigate to="overview" replace />} />
-                  <Route path="overview" element={<ChatbotOverview />} />
-                  <Route path="variables" element={<ChatbotVariables />} />
-                  <Route path="keywords" element={<ChatbotKeywords />} />
-                  <Route path="templates" element={<ChatbotTemplates />} />
-                  <Route path="flow-builder" element={<ChatbotFlows />} />
-                  <Route path="menu-builder" element={<ChatbotMenus />} />
-                  <Route path="form-builder" element={<ChatbotForms />} />
-                </Route>
-                <Route path="security" element={<SecurityLayout />}>
-                  <Route index element={<Navigate to="2fa" replace />} />
-                  <Route path="2fa" element={<TwoFactorManager />} />
-                  <Route path="pass-key" element={<PasskeyManager />} />
-                  <Route path="sessions" element={<SessionsPage />} />
-                </Route>
-                <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Settings Module Coming Soon</div>} />
-
-              </Route>
-
-              { }
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute>
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Navigate to="overview" replace />} />
-                <Route path="overview" element={<AdminOverview />} />
-                <Route path="movies" element={<AdminMovies />} />
-                <Route path="theatres" element={<AdminTheatres />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="issues" element={<AdminIssues />} />
-                <Route path="issues/:issueId" element={<AdminIssues />} />
-                <Route path="subscription-requests" element={<AdminSubscriptionRequests />} />
-                <Route path="chat" element={<Chat />} />
-                <Route path="chat/:conversationId" element={<Chat />} />
-                <Route path="chat/:conversationId/members" element={<ChatMembers />} />
-                <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
-                <Route path="api-keys" element={<ApiKeys />} />
-                <Route path="api-docs" element={<ApiDocs />} />
-                <Route path="api-docs/code-share" element={<CodeShareDocsPage />} />
-                <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
-                <Route path="api-docs/chat" element={<ChatDocsPage />} />
-                <Route path="integrations" element={<Integrations />} />
-                <Route path="chatbots" element={<ChatbotList />} />
-                <Route path="chatbots/new" element={<ChatbotCreate />} />
-                <Route path="chatbots/:id" element={<ChatbotDetailLayout />}>
-                  <Route index element={<Navigate to="overview" replace />} />
-                  <Route path="overview" element={<ChatbotOverview />} />
-                  <Route path="variables" element={<ChatbotVariables />} />
-                  <Route path="keywords" element={<ChatbotKeywords />} />
-                  <Route path="templates" element={<ChatbotTemplates />} />
-                  <Route path="flow-builder" element={<ChatbotFlows />} />
-                  <Route path="menu-builder" element={<ChatbotMenus />} />
-                  <Route path="form-builder" element={<ChatbotForms />} />
-                </Route>
-                <Route path="security" element={<SecurityLayout />}>
-                  <Route index element={<Navigate to="2fa" replace />} />
-                  <Route path="2fa" element={<TwoFactorManager />} />
-                  <Route path="pass-key" element={<PasskeyManager />} />
-                  <Route path="sessions" element={<SessionsPage />} />
-                </Route>
-                <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">System Settings Hub Coming Soon</div>} />
-
-              </Route>
-
-              { }
-              <Route
-                path="/user"
-                element={
-                  <ProtectedRoute>
-                    <UserLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Navigate to="bookings" replace />} />
-                <Route path="bookings" element={<UserBookings />} />
-                <Route path="stats" element={<UserStats />} />
-                <Route path="billing" element={<UserBilling />} />
-                <Route path="transactions" element={<UserTransactions />} />
-                <Route path="support" element={<UserSupport />} />
-                <Route path="support/:issueId" element={<UserSupport />} />
-                <Route path="chat" element={<Chat />} />
-                <Route path="chat/:conversationId" element={<Chat />} />
-                <Route path="chat/:conversationId/members" element={<ChatMembers />} />
-                <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
-                <Route path="api-keys" element={<ApiKeys />} />
-                <Route path="api-docs" element={<ApiDocs />} />
-                <Route path="api-docs/code-share" element={<CodeShareDocsPage />} />
-                <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
-                <Route path="api-docs/chat" element={<ChatDocsPage />} />
-                <Route path="integrations" element={<Integrations />} />
-                <Route path="chatbots" element={<ChatbotList />} />
-                <Route path="chatbots/new" element={<ChatbotCreate />} />
-                <Route path="chatbots/:id" element={<ChatbotDetailLayout />}>
-                  <Route index element={<Navigate to="overview" replace />} />
-                  <Route path="overview" element={<ChatbotOverview />} />
-                  <Route path="variables" element={<ChatbotVariables />} />
-                  <Route path="keywords" element={<ChatbotKeywords />} />
-                  <Route path="templates" element={<ChatbotTemplates />} />
-                  <Route path="flow-builder" element={<ChatbotFlows />} />
-                  <Route path="menu-builder" element={<ChatbotMenus />} />
-                  <Route path="form-builder" element={<ChatbotForms />} />
-                </Route>
-                <Route path="security" element={<SecurityLayout />}>
-                  <Route index element={<Navigate to="2fa" replace />} />
-                  <Route path="2fa" element={<TwoFactorManager />} />
-                  <Route path="pass-key" element={<PasskeyManager />} />
-                  <Route path="sessions" element={<SessionsPage />} />
-                </Route>
-                <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Account Settings Coming Soon</div>} />
-
-              </Route>
-
-
-              <Route path="/my-bookings" element={<Navigate to="/user/bookings" replace />} />
-
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BookingSessionProvider>
-        </SubscriptionProvider>
-      </NotificationProvider>
+      <NotificationRoot />
+      <SubscriptionProvider>
+        <BookingSessionProvider>
+          <ToastContainer />
+          <AppRoutes />
+        </BookingSessionProvider>
+      </SubscriptionProvider>
     </BrowserRouter>
   );
 };

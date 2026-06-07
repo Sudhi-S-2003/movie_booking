@@ -8,7 +8,7 @@ import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/inde
 const useUserSidebarConfig = (): SidebarConfig => {
   const { logout, isLoading } = useLogout();
 
-  return {
+  return React.useMemo(() => ({
     brand: {
       title: 'USER',
       accent: 'HUB',
@@ -61,7 +61,7 @@ const useUserSidebarConfig = (): SidebarConfig => {
     onLogout: logout,
     isLogoutLoading: isLoading,
     pillId: 'user-pill',
-  };
+  }), [logout, isLoading]);
 };
 
 export const UserLayout: React.FC = () => {

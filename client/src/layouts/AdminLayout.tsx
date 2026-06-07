@@ -62,9 +62,16 @@ const config: SidebarConfig = {
 export const AdminLayout: React.FC = () => {
   const { logout, isLoading } = useLogout();
   
+  const memoizedConfig = React.useMemo(() => ({
+    ...config,
+    showLogout: true,
+    onLogout: logout,
+    isLogoutLoading: isLoading
+  }), [logout, isLoading]);
+
   return (
     <AppDashboardLayout
-      sidebar={<DashboardSidebar config={{ ...config, showLogout: true, onLogout: logout, isLogoutLoading: isLoading }} />}
+      sidebar={<DashboardSidebar config={memoizedConfig} />}
       searchPlaceholder="Search global network (Movies, Theatres, IDs)..."
     />
   );

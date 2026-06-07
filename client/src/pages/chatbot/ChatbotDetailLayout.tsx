@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo, useCallback, useState } from 'react';
 import { useParams, useNavigate, Outlet, NavLink } from 'react-router-dom';
-import { ArrowLeft, Settings, Code, Tag, FileCode, Workflow, Menu as MenuIcon, Layout, Power, PowerOff, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Settings, Code, Tag, FileCode, Workflow, Menu as MenuIcon, Layout, Power, PowerOff, Loader2, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { useChatbotStore } from '../../store/chatbotStore.js';
 import { toast } from '../../utils/toast.js';
 import { chatbotApi } from '../../services/api/chatbot.api.js';
+import { ConfirmModal } from '../../components/common/ConfirmModal.js';
 
 export const ChatbotDetailLayout: React.FC = React.memo(() => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     currentChatbot: chatbot,
@@ -42,6 +45,21 @@ export const ChatbotDetailLayout: React.FC = React.memo(() => {
       toast.error('Failed to toggle status');
     }
   }, [id, chatbot, updateCurrentChatbotLocally, updateChatbotState]);
+
+  const handleDelete = useCallback(async () => {
+    if (!id) return;
+    setIsDeleting(true);
+    try {
+      await chatbotApi.remove(id);
+      toast.success('Chatbot and all associated data deleted successfully');
+      navigate('/chatbots');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete chatbot');
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+    }
+  }, [id, navigate]);
 
   const tabs = useMemo(() => {
     const defaultTabs = [
@@ -121,11 +139,19 @@ export const ChatbotDetailLayout: React.FC = React.memo(() => {
             onClick={toggleStatus}
             className={clsx(
               "btn-primary flex items-center justify-center space-x-2 py-2 flex-1 md:flex-none",
-              chatbot.isActive ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" : "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+              chatbot.isActive ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30" : "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
             )}
           >
             {chatbot.isActive ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
-            <span>{chatbot.isActive ? 'Deactivate Bot' : 'Activate Bot'}</span>
+            <span>{chatbot.isActive ? 'Deactivate' : 'Activate'}</span>
+          </button>
+          
+          <button
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="flex items-center justify-center space-x-2 py-2 px-4 rounded-lg font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors border border-rose-500/20"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Delete Bot</span>
           </button>
         </div>
       </div>
@@ -182,6 +208,18 @@ export const ChatbotDetailLayout: React.FC = React.memo(() => {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Chatbot"
+        message="Are you sure you want to delete this chatbot? This will permanently delete all associated keywords, templates, variables, flows, menus, and form fields. This action cannot be undone."
+        confirmText="Delete Chatbot"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 });

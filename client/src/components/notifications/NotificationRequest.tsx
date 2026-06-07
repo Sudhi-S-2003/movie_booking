@@ -1,21 +1,33 @@
 import React, { useCallback } from 'react';
 import { Bell, BellOff } from 'lucide-react';
-import { useNotification } from '../../providers/NotificationProvider.js';
+import { useBrowserNotification } from '../../hooks/useBrowserNotification.js';
+import { useNotificationStore } from '../../store/notificationStore.js';
+import { useNotificationAudio } from '../../hooks/useNotificationAudio.js';
+import { NotificationType } from '../../constants/enums.js';
 
 interface NotificationRequestProps {
   variant?: 'button' | 'icon';
 }
 
 export const NotificationRequest: React.FC<NotificationRequestProps> = ({ variant = 'button' }) => {
-  const { requestPermission, permissionStatus, testNotification } = useNotification();
+  const { requestPermission, permissionStatus } = useBrowserNotification();
+  const showToast = useNotificationStore(state => state.showToast);
+  const { playNotificationSound } = useNotificationAudio();
 
   const handleRequest = useCallback(async () => {
     if (permissionStatus === 'granted') {
-      testNotification();
+      playNotificationSound();
+      showToast({
+        id: crypto.randomUUID(),
+        title: 'Reliability Test',
+        message: 'If you see this, the production notification system is healthy.',
+        type: NotificationType.SYSTEM,
+        url: '/'
+      });
       return;
     }
     await requestPermission();
-  }, [permissionStatus, testNotification, requestPermission]);
+  }, [permissionStatus, requestPermission, playNotificationSound, showToast]);
 
   if (variant === 'icon') {
     return (

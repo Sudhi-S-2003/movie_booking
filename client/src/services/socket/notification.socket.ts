@@ -14,6 +14,10 @@ class NotificationSocketService {
     if (!this.socket.connected) this.socket.connect();
   }
 
+  get isConnected() {
+    return this.socket.connected;
+  }
+
   disconnect() {
     this.socket.disconnect();
   }

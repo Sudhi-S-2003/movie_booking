@@ -46,6 +46,14 @@
   html, body {
     @apply bg-background text-white antialiased font-sans selection:bg-accent-pink/30 selection:text-white h-full;
   }
+  
+  button:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed;
+  }
 }
 
 @utility glass-card {

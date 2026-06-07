@@ -54,9 +54,16 @@ const config: SidebarConfig = {
 export const OwnerLayout: React.FC = () => {
   const { logout, isLoading } = useLogout();
 
+  const memoizedConfig = React.useMemo(() => ({
+    ...config,
+    showLogout: true,
+    onLogout: logout,
+    isLogoutLoading: isLoading
+  }), [logout, isLoading]);
+
   return (
     <AppDashboardLayout
-      sidebar={<DashboardSidebar config={{ ...config, showLogout: true, onLogout: logout, isLogoutLoading: isLoading }} />}
+      sidebar={<DashboardSidebar config={memoizedConfig} />}
       wrapper={OwnerProvider}
       searchPlaceholder="Search theatres, screens, showtimes..."
     />

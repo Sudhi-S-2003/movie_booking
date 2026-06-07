@@ -1,18 +1,38 @@
 import React, { useState } from 'react';
 import { Bell, Volume2, VolumeX, Settings2, ShieldCheck, AlertCircle, Play } from 'lucide-react';
-import { useNotification } from '../../providers/NotificationProvider.js';
+import { useNotificationStore } from '../../store/notificationStore.js';
+import { useBrowserNotification } from '../../hooks/useBrowserNotification.js';
+import { useNotificationAudio } from '../../hooks/useNotificationAudio.js';
+import { NotificationType } from '../../constants/enums.js';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const NotificationSetup = React.memo(() => {
-  const { 
-    requestPermission, 
-    permissionStatus, 
-    isSoundEnabled, 
-    setSoundEnabled, 
-    testNotification 
-  } = useNotification();
+  const isSoundEnabled = useNotificationStore(state => state.isSoundEnabled);
+  const setSoundEnabled = useNotificationStore(state => state.setSoundEnabled);
+  const showToast = useNotificationStore(state => state.showToast);
+  const { requestPermission, permissionStatus, showBrowserNotification } = useBrowserNotification();
+  const { playNotificationSound } = useNotificationAudio();
 
   const [isOpen, setIsOpen] = useState(false);
+
+  const testNotification = () => {
+    playNotificationSound();
+    
+    const payload = {
+      id: crypto.randomUUID(),
+      title: 'Reliability Test',
+      message: 'If you see this, the production notification system is healthy.',
+      type: NotificationType.SYSTEM,
+      url: '/'
+    };
+
+    showToast(payload);
+    
+    // Explicitly test the browser notification even if the tab is focused
+    if (permissionStatus === 'granted') {
+      showBrowserNotification(payload, payload.title, payload.message);
+    }
+  };
 
   const handleEnableAll = async () => {
     // 1. Request Permission
