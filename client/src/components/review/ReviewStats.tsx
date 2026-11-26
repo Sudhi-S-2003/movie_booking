@@ -19,8 +19,8 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats, accentColor }) 
       {/* Main Stats */}
       <div className="md:col-span-4 bg-white/[0.03] border border-white/5 rounded-[40px] p-10 flex flex-col items-center justify-center text-center space-y-6">
         <div>
-          <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Average Rating</h3>
-          <p className="text-7xl font-black text-white tracking-tighter">{stats.averageRating ? stats.averageRating.toFixed(1) : '0.0'}</p>
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-4">Average Rating</h3>
+          <p className="text-7xl font-bold text-white tracking-tighter">{stats.averageRating ? stats.averageRating.toFixed(1) : '0.0'}</p>
         </div>
         <div className="flex gap-0.5">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((s) => (
@@ -41,13 +41,13 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats, accentColor }) 
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{stats.totalReviews} Verified Reviews</p>
+        <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">{stats.totalReviews} Verified Reviews</p>
       </div>
 
       {/* Breakdown Bars */}
       <div className="md:col-span-8 bg-white/[0.03] border border-white/5 rounded-[40px] p-10 space-y-4">
         <div className="flex items-center justify-between mb-6">
-          <h4 className="text-xs font-black text-white uppercase tracking-widest">Rating Distribution</h4>
+          <h4 className="text-xs font-bold text-white uppercase tracking-wide">Rating Distribution</h4>
           <div className="h-px flex-1 bg-white/5 mx-6" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3">
@@ -55,7 +55,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats, accentColor }) 
             const percentage = stats.totalReviews > 0 ? (count / stats.totalReviews) * 100 : 0;
             return (
               <div key={stars} className="flex items-center gap-4 group">
-                <span className="w-4 text-[10px] font-black text-gray-500 group-hover:text-white transition-colors">{stars}</span>
+                <span className="w-4 text-xs font-bold text-gray-500 group-hover:text-white transition-colors">{stars}</span>
                 <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
@@ -63,7 +63,7 @@ export const ReviewStats: React.FC<ReviewStatsProps> = ({ stats, accentColor }) 
                     className={`h-full bg-${accentColor}/60 group-hover:bg-${accentColor} transition-colors`}
                   />
                 </div>
-                <span className="w-8 text-[10px] font-black text-gray-600 text-right">{count}</span>
+                <span className="w-8 text-xs font-bold text-gray-600 text-right">{count}</span>
               </div>
             );
           })}

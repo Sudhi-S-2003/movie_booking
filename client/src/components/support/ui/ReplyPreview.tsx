@@ -45,10 +45,10 @@ export const ReplyPreview: React.FC<ReplyPreviewProps> = ({
       >
         <Reply size={9} className={`mt-0.5 flex-shrink-0 ${isOwn ? "text-white/50" : "text-accent-blue/50"}`} />
         <div className="min-w-0">
-          <span className={`text-[8px] font-bold uppercase tracking-wider block ${isOwn ? "text-white/50" : "text-accent-blue/60"}`}>
+          <span className={`text-[11px] font-bold uppercase tracking-wider block ${isOwn ? "text-white/50" : "text-accent-blue/60"}`}>
             {senderName}
           </span>
-          <span className={`text-[10px] line-clamp-1 block ${isOwn ? "text-white/60" : "text-white/30"}`}>
+          <span className={`text-xs line-clamp-1 block ${isOwn ? "text-white/60" : "text-white/30"}`}>
             {text}
           </span>
         </div>
@@ -61,10 +61,10 @@ export const ReplyPreview: React.FC<ReplyPreviewProps> = ({
       <div className="w-0.5 h-8 bg-accent-blue rounded-full flex-shrink-0" />
       <Reply size={12} className="text-accent-blue/50 flex-shrink-0" />
       <div className="min-w-0 flex-1">
-        <span className="text-[8px] font-bold text-accent-blue/70 uppercase tracking-wider block">
+        <span className="text-[11px] font-bold text-accent-blue/70 uppercase tracking-wider block">
           Replying to {senderName}
         </span>
-        <span className="text-[10px] text-white/40 line-clamp-1 block">{text}</span>
+        <span className="text-xs text-white/40 line-clamp-1 block">{text}</span>
       </div>
       {onDismiss && (
         <button

@@ -46,7 +46,7 @@ export const JoinRequestPanel = memo(({
         <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-300">
           <Clock size={18} />
         </div>
-        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-amber-300">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-amber-300">
           Request Sent
         </p>
         <p className="text-[11px] text-gray-500 max-w-xs">
@@ -66,12 +66,12 @@ export const JoinRequestPanel = memo(({
         className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-2xl text-[11px] text-white placeholder:text-white/20 outline-none focus:border-white/[0.15] transition-colors resize-none"
       />
       {error && (
-        <p className="text-[10px] font-bold text-rose-300">{error}</p>
+        <p className="text-xs font-bold text-rose-300">{error}</p>
       )}
       <button
         onClick={() => void handleSubmit()}
         disabled={submitting}
-        className="w-full py-3 bg-accent-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+        className="w-full py-3 bg-accent-blue text-white rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
       >
         <Send size={13} />
         {submitting ? 'Sending…' : 'Request to Join'}

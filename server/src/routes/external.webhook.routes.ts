@@ -26,22 +26,19 @@ import { validateWebhookSignature } from '../middleware/webhook.middleware.js';
 
 const router = Router();
 
-// Plain probe — default JSON body parser is fine.
-router.use('/telinfy/:id/:signature', json({ limit: '256kb' }), validateWebhookSignature, telinfy);
+// Exact-path POST routes only. (A prefix `router.use('/telinfy/:id/:signature')`
+// previously also captured `/…/signature`, so the HMAC-verified handler was
+// never reached and every method was accepted.) Most specific route first.
 
-
-// Signed — raw body capture so the handler can HMAC over the original bytes.
-router.use(
+// Signed: raw body capture so the handler can HMAC over the original bytes.
+router.post(
   '/telinfy/:id/:signature/signature',
   raw({ type: 'application/json', limit: '256kb' }),
   validateWebhookSignature,
   telinfySignature,
 );
 
-
-// Signed URL fallback — verifies the ID signature in the URL itself.
-router.post('/:type/:id/:signature', json({ limit: '256kb' }), validateWebhookSignature, telinfy);
-
+// URL-signature only probe.
+router.post('/telinfy/:id/:signature', json({ limit: '256kb' }), validateWebhookSignature, telinfy);
 
 export default router;
-

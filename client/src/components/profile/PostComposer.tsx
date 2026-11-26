@@ -60,7 +60,7 @@ export const PostComposer = ({ editing, onClose, onSaved }: PostComposerProps) =
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-2xl rounded-3xl bg-background border border-white/10 p-8 my-auto"
       >
-        <h2 className="text-2xl font-black text-white mb-6">
+        <h2 className="text-2xl font-bold text-white mb-6">
           {editing ? 'Edit post' : 'New post'}
         </h2>
         <input

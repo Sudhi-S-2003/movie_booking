@@ -6,6 +6,10 @@ import { OwnerProvider } from '../pages/dashboards/owner/context/OwnerContext.js
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
 
 import { useLogout } from '../hooks/useLogout.js';
+import { useAccount } from '../features/platform/useAccount.js';
+import { platformNavGroups } from '../features/platform/navigation.js';
+
+const PREFIX = '/owner';
 
 const config: SidebarConfig = {
   brand: {
@@ -54,18 +58,19 @@ const config: SidebarConfig = {
 export const OwnerLayout: React.FC = () => {
   const { logout, isLoading } = useLogout();
 
+  const { data: account } = useAccount();
   const memoizedConfig = React.useMemo(() => ({
     ...config,
+    groups: [...platformNavGroups(PREFIX, account), ...config.groups],
     showLogout: true,
     onLogout: logout,
     isLogoutLoading: isLoading
-  }), [logout, isLoading]);
+  }), [logout, isLoading, account]);
 
   return (
     <AppDashboardLayout
       sidebar={<DashboardSidebar config={memoizedConfig} />}
       wrapper={OwnerProvider}
-      searchPlaceholder="Search theatres, screens, showtimes..."
     />
   );
 };

@@ -53,7 +53,7 @@ export const ProfileHero = ({
             {profile.avatar ? (
               <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-tr from-accent-blue to-accent-purple flex items-center justify-center text-white text-6xl font-black">
+              <div className="w-full h-full bg-gradient-to-tr from-accent-blue to-accent-purple flex items-center justify-center text-white text-6xl font-bold">
                 {profile.name[0]}
               </div>
             )}
@@ -62,7 +62,7 @@ export const ProfileHero = ({
           {/* Identity + actions */}
           <div className="flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
                 {profile.name}
               </h1>
               <p className="text-gray-500 font-bold text-sm mt-1">

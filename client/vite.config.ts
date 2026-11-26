@@ -6,6 +6,9 @@ import tailwindcss from '@tailwindcss/vite';
 // Runtime aliases kept in sync with tsconfig.app.json -> compilerOptions.paths.
 // If you add or rename an alias, update BOTH files or imports will break
 // in either the type-checker (tsc) or the bundler (vite), not both.
+// Brand default so index.html's %VITE_APP_NAME% placeholders always resolve.
+process.env.VITE_APP_NAME ??= 'Nexus Platform';
+
 const resolveSrc = (sub: string) =>
   fileURLToPath(new URL(`./src/${sub}`, import.meta.url));
 

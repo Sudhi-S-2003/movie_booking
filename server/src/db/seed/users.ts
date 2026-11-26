@@ -7,9 +7,9 @@ import { log } from './helpers.js';
 
 export type UserDoc = HydratedDocument<IUser>;
 
-export const seedUsers = async (): Promise<UserDoc[]> => {
+export const seedUsers = async (plainPassword: string): Promise<UserDoc[]> => {
   log('👥', 'Seeding users...');
-  const password = await bcrypt.hash('password123', 10);
+  const password = await bcrypt.hash(plainPassword, 12);
   const rows = usersSeedData.map((u) => ({ ...u, password }));
   const created = await User.insertMany(rows);
   log('✅', `${created.length} users seeded`);

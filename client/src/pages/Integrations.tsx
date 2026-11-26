@@ -1,4 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ApiError } from '../services/api/http.js';
+import { errorMessage } from '../features/platform/format.js';
+import { toast } from '../utils/toast.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Puzzle,
@@ -14,47 +18,42 @@ import {
 import { integrationApi, type IntegrationRecord } from '../services/api/integration.api.js';
 import { clsx } from 'clsx';
 
+const INTEGRATIONS_KEY = ['integrations'] as const;
+
 export const Integrations = () => {
-  const [integrations, setIntegrations] = useState<IntegrationRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: INTEGRATIONS_KEY, queryFn: integrationApi.list, retry: false });
+  const integrations: IntegrationRecord[] = query.data ?? [];
+  const loading = query.isLoading;
+  // 403 = the Messaging Integrations service isn't enabled for this account.
+  const loadError = query.error
+    ? query.error instanceof ApiError && query.error.status === 403
+      ? 'Messaging Integrations is not enabled for your account. Ask your provider to enable it, or enable it on the Services page.'
+      : errorMessage(query.error, 'Could not load integrations.')
+    : null;
   const [toggling, setToggling] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    fetchIntegrations();
-  }, []);
-
-  const fetchIntegrations = async () => {
-    try {
-      const data = await integrationApi.list();
-      setIntegrations(data);
-    } catch (error) {
-      console.error('Failed to fetch integrations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToggle = async (type: string) => {
     setToggling(type);
     try {
       const updated = await integrationApi.toggle(type);
-      setIntegrations(prev => {
+      qc.setQueryData<IntegrationRecord[]>(INTEGRATIONS_KEY, (prev = []) => {
         const index = prev.findIndex(i => i.type === type);
         if (index === -1) return [...prev, updated];
-        const newArr = [...prev];
-        newArr[index] = updated;
-        return newArr;
+        const next = [...prev];
+        next[index] = updated;
+        return next;
       });
     } catch (error) {
-      console.error('Toggle failed:', error);
+      toast.error(errorMessage(error, 'Could not update the integration'));
     } finally {
       setToggling(null);
     }
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text).catch(() => toast.error('Copy failed'));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -70,15 +69,24 @@ export const Integrations = () => {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="max-w-2xl rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm text-amber-100" role="status">
+        <h1 className="mb-1 text-base font-semibold text-white">Integrations unavailable</h1>
+        {loadError}
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8">
+    <div className="max-w-5xl space-y-8">
       {/* Header */}
       <div className="flex flex-col space-y-2">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-accent-purple/10 rounded-lg">
             <Puzzle className="w-6 h-6 text-accent-purple" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Integrations</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Integrations</h1>
         </div>
         <p className="text-gray-400 text-sm max-w-2xl">
           Connect your account with external services to automate workflows and enhance your experience.
@@ -160,7 +168,7 @@ export const Integrations = () => {
               >
                 <div className="p-6 space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide flex items-center">
                       <Zap className="w-3 h-3 mr-1 text-yellow-500" />
                       Webhook Endpoint
                     </label>
@@ -176,7 +184,7 @@ export const Integrations = () => {
                       {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-[10px] text-gray-500 italic">
+                  <p className="text-xs text-gray-500 italic">
                     All requests must be signed using the signature provided in the URL.
                   </p>
                 </div>

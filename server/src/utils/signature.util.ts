@@ -1,70 +1,72 @@
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { env } from '../env.js';
 
 /**
- * Generate an HMAC signature for a conversation ID and an expiration timestamp.
+ * HMAC key for signed URLs / captcha / webhook URLs. Kept separate from the
+ * JWT key; when SIGNING_SECRET is unset we derive a distinct key from
+ * JWT_SECRET so the two are never byte-identical.
  */
-export const signConversation = (conversationId: string, expiresAt: number): string => {
-  return createHmac('sha256', env.JWT_SECRET)
-    .update(`${conversationId}:${expiresAt}`)
-    .digest('hex');
+const signingKey: Buffer = env.SIGNING_SECRET
+  ? Buffer.from(env.SIGNING_SECRET)
+  : createHash('sha256').update(`signing:${env.JWT_SECRET}`).digest();
+
+export const hmacHex = (payload: string): string =>
+  createHmac('sha256', signingKey).update(payload).digest('hex');
+
+/** Constant-time string comparison (false on length mismatch). */
+export const safeEqual = (a: string, b: string): boolean => {
+  const ba = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  if (ba.length !== bb.length) return false;
+  return timingSafeEqual(ba, bb);
+};
+
+/** Max lifetime for any signed guest link. */
+export const MAX_SIGNED_TTL_MINUTES = 7 * 24 * 60;
+export const clampTtlMinutes = (raw: unknown, fallback: number): number => {
+  const n = typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback;
+  return Math.min(Math.max(1, Math.floor(n)), MAX_SIGNED_TTL_MINUTES);
 };
 
 /**
- * Verify if a signature matches a conversation ID and hasn't expired.
+ * Access scope carried by a signed link. `read` links can only view;
+ * `write` links can also mutate. Encoded into the signed payload so a read
+ * link cannot be upgraded by editing the URL.
  */
+export type SignedScope = 'read' | 'write';
+
+export const signConversation = (conversationId: string, expiresAt: number): string =>
+  hmacHex(`conv:${conversationId}:${expiresAt}`);
+
 export const verifyConversationSignature = (
   conversationId: string,
   signature: string,
   expiresAt: number,
 ): boolean => {
-  // Check clock
-  if (Date.now() > expiresAt) return false;
-
-  const expected = signConversation(conversationId, expiresAt);
-  return expected === signature;
+  if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return false;
+  return safeEqual(signConversation(conversationId, expiresAt), signature);
 };
 
-/**
- * Sign an ID (like an integration ID) along with a timestamp for secure use in URLs.
- */
-export const signId = (id: string, timestamp: string | number): string => {
-  return createHmac('sha256', env.JWT_SECRET)
-    .update(`id:${id}:${timestamp}`)
-    .digest('hex')
-    .slice(0, 16); // Shortened for cleaner URLs, still high entropy
-};
+export const signId = (id: string, timestamp: string | number): string =>
+  hmacHex(`id:${id}:${timestamp}`);
 
-/**
- * Verify if a signature matches an ID and a specific timestamp.
- */
-export const verifyIdSignature = (id: string, signature: string, timestamp: string | number): boolean => {
-  const expected = signId(id, timestamp);
-  return expected === signature;
-};
+export const verifyIdSignature = (id: string, signature: string, timestamp: string | number): boolean =>
+  safeEqual(signId(id, timestamp), signature);
 
+export const signApiService = (
+  serviceId: string,
+  category: string,
+  expiresAt: number,
+  scope: SignedScope = 'write',
+): string => hmacHex(`service:${category}:${serviceId}:${expiresAt}:${scope}`);
 
-/**
- * Generate an HMAC signature for an API service ID, category, and an expiration timestamp.
- */
-export const signApiService = (serviceId: string, category: string, expiresAt: number): string => {
-  return createHmac('sha256', env.JWT_SECRET)
-    .update(`service:${category}:${serviceId}:${expiresAt}`)
-    .digest('hex');
-};
-
-/**
- * Verify if a signature matches an API service ID, category, and hasn't expired.
- */
 export const verifyApiServiceSignature = (
   serviceId: string,
   category: string,
   signature: string,
   expiresAt: number,
+  scope: SignedScope = 'write',
 ): boolean => {
-  // Check clock
-  if (Date.now() > expiresAt) return false;
-
-  const expected = signApiService(serviceId, category, expiresAt);
-  return expected === signature;
+  if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return false;
+  return safeEqual(signApiService(serviceId, category, expiresAt, scope), signature);
 };

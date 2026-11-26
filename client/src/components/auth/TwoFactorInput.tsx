@@ -126,7 +126,7 @@ export const TwoFactorInput: React.FC<TwoFactorInputProps> = ({
               onChange={(e) => handleTextChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={handlePaste}
-              className="w-12 h-14 bg-[#141416] border border-white/5 focus:border-accent-purple/35 focus:ring-1 focus:ring-accent-purple/35 rounded-2xl text-center text-xl font-black text-white focus:outline-none transition-all shadow-inner tracking-widest"
+              className="w-12 h-14 bg-[#141416] border border-white/5 focus:border-accent-purple/35 focus:ring-1 focus:ring-accent-purple/35 rounded-2xl text-center text-xl font-bold text-white focus:outline-none transition-all shadow-inner tracking-wide"
             />
             {/* Display a hyphen in the middle for backup code layout (e.g. XXXX-XXXX) */}
             {isBackupMode && length === 8 && index === 3 && (

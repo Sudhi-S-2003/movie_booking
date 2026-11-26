@@ -22,7 +22,7 @@ export const OwnerOverview = () => {
 
   const stats = statsRes?.stats;
 
-  if (contextLoading || statsLoading) return <div className="flex items-center justify-center min-h-[400px] font-black animate-pulse uppercase tracking-[1em] text-accent-pink/50">Loading...</div>;
+  if (contextLoading || statsLoading) return <div className="flex items-center justify-center min-h-[400px] font-bold animate-pulse uppercase tracking-wider text-accent-pink/50">Loading...</div>;
 
   return (
     <DashboardPage
@@ -48,10 +48,10 @@ export const OwnerOverview = () => {
                 <stat.icon size={24} />
               </div>
               <div>
-                <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">{stat.label}</p>
-                <h3 className="text-5xl font-black text-white mt-1 flex items-baseline gap-2">
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">{stat.label}</p>
+                <h3 className="text-5xl font-bold text-white mt-1 flex items-baseline gap-2">
                   {stat.value}
-                  <span className="text-sm text-gray-600 uppercase tracking-widest">{stat.unit}</span>
+                  <span className="text-sm text-gray-600 uppercase tracking-wide">{stat.unit}</span>
                 </h3>
               </div>
             </div>
@@ -63,7 +63,7 @@ export const OwnerOverview = () => {
               <BarChart3 size={40} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-black uppercase tracking-tight">Performance</h3>
+              <h3 className="text-2xl font-bold uppercase tracking-tight">Performance</h3>
               <p className="text-gray-500 text-sm max-w-md mx-auto">You have <strong>{stats?.totalShowtimes || 0} active shows</strong> across all locations.</p>
             </div>
         </div>

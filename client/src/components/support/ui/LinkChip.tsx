@@ -17,7 +17,7 @@ export const LinkChip: React.FC<LinkChipProps> = ({ href, text, isOwn }) => {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded-md text-[10px] font-medium no-underline transition-all duration-150 ${
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded-md text-xs font-medium no-underline transition-all duration-150 ${
         isOwn
           ? "bg-white/[0.08] hover:bg-white/[0.15] text-white/90 underline decoration-white/20 underline-offset-2"
           : "bg-accent-blue/10 hover:bg-accent-blue/20 text-accent-blue border border-accent-blue/15"
@@ -25,7 +25,7 @@ export const LinkChip: React.FC<LinkChipProps> = ({ href, text, isOwn }) => {
     >
       <ExternalLink size={9} className="flex-shrink-0 opacity-60" />
       <span className="truncate max-w-[200px]">{display}</span>
-      <span className={`text-[8px] opacity-40 flex-shrink-0 hidden sm:inline`}>
+      <span className={`text-[11px] opacity-40 flex-shrink-0 hidden sm:inline`}>
         {domain}
       </span>
     </a>

@@ -52,7 +52,7 @@ export const ConversationRow = memo(({
           }`}>
             {displayName}
           </span>
-          <span className={`text-[8px] flex-shrink-0 tabular-nums ${
+          <span className={`text-[11px] flex-shrink-0 tabular-nums ${
             unreadCount > 0 ? 'text-accent-blue font-bold' : 'text-white/20'
           }`}>
             {timeLabel}
@@ -60,7 +60,7 @@ export const ConversationRow = memo(({
         </div>
 
         <div className="flex items-center justify-between gap-2 mt-0.5">
-          <p className={`text-[10px] truncate line-clamp-1 ${
+          <p className={`text-xs truncate line-clamp-1 ${
             unreadCount > 0 ? 'text-white/50 font-medium' : 'text-white/25'
           }`}>
             {conversation.lastMessageSender && conversation.type !== 'direct' && (
@@ -70,7 +70,7 @@ export const ConversationRow = memo(({
           </p>
 
           {unreadCount > 0 && (
-            <span className="flex-shrink-0 min-w-[18px] h-[18px] px-1 bg-accent-blue rounded-full flex items-center justify-center text-[8px] font-bold text-white">
+            <span className="flex-shrink-0 min-w-[18px] h-[18px] px-1 bg-accent-blue rounded-full flex items-center justify-center text-[11px] font-bold text-white">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

@@ -44,8 +44,8 @@ export const InviteRow = memo(({ invite, onRevoke }: InviteRowProps) => {
   return (
     <li className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.015] transition-colors">
       <div className="flex-1 min-w-0 space-y-1">
-        <code className="block text-[10px] font-mono text-gray-300 truncate">{url}</code>
-        <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em]">
+        <code className="block text-xs font-mono text-gray-300 truncate">{url}</code>
+        <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-wide">
           <StatusBadge revoked={invite.revoked} expired={isExpired} exhausted={isExhausted} />
           <span className="text-gray-600">{formatUses(invite.usesCount, invite.maxUses)}</span>
           <span className="text-gray-600">expires {formatExpiry(invite.expiresAt)}</span>

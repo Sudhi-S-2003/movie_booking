@@ -67,7 +67,7 @@ export const InvitePreviewPage = () => {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="max-w-sm w-full bg-white/[0.02] border border-rose-500/20 rounded-3xl p-10 text-center space-y-3">
           <ShieldOff size={32} className="mx-auto text-rose-400/70" />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-300">
+          <p className="text-xs font-bold uppercase tracking-wider text-rose-300">
             Error {status ?? 500}
           </p>
           <p className="text-[11px] text-gray-400">{error ?? 'Invite unavailable'}</p>
@@ -96,17 +96,17 @@ export const InvitePreviewPage = () => {
       />
       <PublicChatCard conversation={conversation}>
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+          <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-gray-500">
             <span>Expires</span>
             <span className="text-gray-300">{formatExpiry(data.invite.expiresAt)}</span>
           </div>
-          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+          <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-gray-500">
             <span>Uses</span>
             <span className="text-gray-300">{formatUses(data.invite.usesCount, data.invite.maxUses)}</span>
           </div>
 
           {acceptError && (
-            <p className="text-[10px] font-bold text-rose-300">{acceptError}</p>
+            <p className="text-xs font-bold text-rose-300">{acceptError}</p>
           )}
 
           {!data.membership.authenticated ? (
@@ -115,7 +115,7 @@ export const InvitePreviewPage = () => {
                 const next = encodeURIComponent(`/chat/invite/${token}`);
                 navigate(`/login?next=${next}`);
               }}
-              className="w-full py-3 bg-accent-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-accent-blue/20"
+              className="w-full py-3 bg-accent-blue text-white rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-accent-blue/20"
             >
               <LogIn size={13} /> Sign in to accept
             </button>
@@ -123,7 +123,7 @@ export const InvitePreviewPage = () => {
             <button
               onClick={() => void handleAccept()}
               disabled={accepting}
-              className="w-full py-3 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full py-3 bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <UserPlus size={13} />
               {accepting ? 'Joining…' : 'Accept Invite'}

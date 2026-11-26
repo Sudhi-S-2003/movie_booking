@@ -76,7 +76,7 @@ export const LoginVerify2FA: React.FC = () => {
           <div className="w-16 h-16 rounded-3xl bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center text-accent-purple mb-4">
             <ShieldCheck size={32} />
           </div>
-          <h2 className="text-2xl font-black text-white">Security Verification</h2>
+          <h2 className="text-2xl font-bold text-white">Security Verification</h2>
           <p className="text-xs text-gray-400 mt-2 max-w-sm leading-relaxed">
             Your account is protected by Two-Factor Authentication. Please enter your 6-digit authenticator or single-use backup code.
           </p>
@@ -98,7 +98,7 @@ export const LoginVerify2FA: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4"
             >
-              <p className="text-red-400 text-[10px] font-black uppercase tracking-widest text-center animate-shake">
+              <p className="text-red-400 text-xs font-bold uppercase tracking-wide text-center animate-shake">
                 {error}
               </p>
             </motion.div>
@@ -108,14 +108,14 @@ export const LoginVerify2FA: React.FC = () => {
             <button
               type="button"
               onClick={handleBackToLogin}
-              className="flex-1 py-4 rounded-[20px] bg-white/5 border border-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+              className="flex-1 py-4 rounded-[20px] bg-white/5 border border-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-wide transition-all flex items-center justify-center gap-2"
             >
               <ArrowLeft size={14} /> Back to Login
             </button>
             <button
               type="submit"
               disabled={otpCode.length < 6 || loading || !tempToken}
-              className={`flex-1 py-4 rounded-[20px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 text-xs ${
+              className={`flex-1 py-4 rounded-[20px] font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2 text-xs ${
                 otpCode.length < 6 || loading || !tempToken
                   ? 'bg-white/5 text-gray-500 cursor-not-allowed'
                   : 'bg-accent-purple text-white hover:scale-[1.02] active:scale-[0.98]'

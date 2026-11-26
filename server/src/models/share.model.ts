@@ -22,12 +22,19 @@ const ShareSchema: Schema<IShare> = new Schema(
     data: {
       type: String,
       required: true,
+      maxlength: 2048,
     },
+
+    ownerId: { type: Schema.Types.ObjectId, ref: "User", index: true },
+
+    expiresAt: { type: Date },
   },
   {
     timestamps: true,
   }
 );
+
+ShareSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // compound unique index
 ShareSchema.index(

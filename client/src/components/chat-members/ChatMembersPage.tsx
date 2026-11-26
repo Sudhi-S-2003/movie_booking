@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { dashboardPrefix } from '../../features/platform/useAccount.js';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Inbox, Settings, UserPlus, Users, X } from 'lucide-react';
 import { chatApi } from '../../services/api/chat.api.js';
@@ -46,12 +47,7 @@ export const ChatMembersPage = () => {
   const [manageOpen,   setManageOpen]   = useState(false);
 
   const backPath = useMemo(() => {
-    const role = (user?.role ?? 'user').toString().toLowerCase();
-    const prefix = role === 'admin'
-      ? '/admin'
-      : role === 'theatre_owner'
-        ? '/owner'
-        : '/user';
+    const prefix = dashboardPrefix(user?.role);
     return `${prefix}/chat/${conversationId}`;
   }, [user, conversationId]);
 
@@ -104,19 +100,19 @@ export const ChatMembersPage = () => {
               <>
                 <button
                   onClick={() => setAddOpen(true)}
-                  className="px-6 py-3 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-accent-blue/15 transition-all"
+                  className="px-6 py-3 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 hover:bg-accent-blue/15 transition-all"
                 >
                   <UserPlus size={14} /> Add Members
                 </button>
                 <button
                   onClick={() => navigate(`${backPath.replace(/\/chat\/[^/]+$/, '')}/chat/${conversationId}/join-requests`)}
-                  className="px-6 py-3 bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-amber-500/15 transition-all"
+                  className="px-6 py-3 bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 hover:bg-amber-500/15 transition-all"
                 >
                   <Inbox size={14} /> Join Requests
                 </button>
                 <button
                   onClick={() => setManageOpen((v) => !v)}
-                  className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 transition-all"
+                  className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 hover:bg-white/10 transition-all"
                 >
                   <Settings size={14} /> {manageOpen ? 'Hide Settings' : 'Group Settings'}
                 </button>
@@ -124,7 +120,7 @@ export const ChatMembersPage = () => {
             )}
             <button
               onClick={() => navigate(backPath)}
-              className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 transition-all"
+              className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 hover:bg-white/10 transition-all"
             >
               <ArrowLeft size={14} /> Back to Chat
             </button>
@@ -154,15 +150,15 @@ export const ChatMembersPage = () => {
                   <Users size={18} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500">Total Members</p>
-                  <p className="text-2xl font-black tracking-tight text-white">{pagination.total}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Total Members</p>
+                  <p className="text-2xl font-bold tracking-tight text-white">{pagination.total}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500">Page</p>
-                <p className="text-2xl font-black tracking-tight text-white">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Page</p>
+                <p className="text-2xl font-bold tracking-tight text-white">
                   {pagination.page}
-                  <span className="text-gray-700 font-black"> / {pagination.totalPages}</span>
+                  <span className="text-gray-700 font-bold"> / {pagination.totalPages}</span>
                 </p>
               </div>
             </div>
@@ -201,7 +197,7 @@ export const ChatMembersPage = () => {
 
             {pagination.totalPages > 1 && (
               <div className="flex items-center justify-between gap-4 px-10 py-6 border-t border-white/5 flex-wrap">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
                   Showing {members.length} of {pagination.total}
                 </p>
                 <MembersPagination

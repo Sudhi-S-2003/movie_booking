@@ -17,9 +17,9 @@ export const BookingHeader = memo(({ movie, theatre, screen, showtime, onBack }:
       </button>
       <div>
         <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
-          <h1 className="text-2xl font-black tracking-tight">{movie.title}</h1>
-          <span className="px-2 py-0.5 bg-white/10 border border-white/15 rounded text-[10px] font-bold">{movie.certification}</span>
-          <span className="px-2 py-0.5 bg-accent-pink/15 border border-accent-pink/30 text-accent-pink rounded text-[10px] font-bold uppercase">{showtime.format}</span>
+          <h1 className="text-2xl font-bold tracking-tight">{movie.title}</h1>
+          <span className="px-2 py-0.5 bg-white/10 border border-white/15 rounded text-xs font-bold">{movie.certification}</span>
+          <span className="px-2 py-0.5 bg-accent-pink/15 border border-accent-pink/30 text-accent-pink rounded text-xs font-bold uppercase">{showtime.format}</span>
         </div>
         <div className="flex flex-wrap items-center gap-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
           <span className="flex items-center gap-1.5"><MapPin size={12} className="text-accent-pink" /> {theatre.name}, {theatre.city}</span>
@@ -31,8 +31,8 @@ export const BookingHeader = memo(({ movie, theatre, screen, showtime, onBack }:
 
     <div className="flex items-center gap-3">
       <div className="text-right hidden sm:block">
-        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Screen</p>
-        <h3 className="text-lg font-black text-white">{screen.name}</h3>
+        <p className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-0.5">Screen</p>
+        <h3 className="text-lg font-bold text-white">{screen.name}</h3>
       </div>
       <div className="w-11 h-11 rounded-xl bg-accent-pink/15 flex items-center justify-center border border-accent-pink/30">
         <Monitor size={20} className="text-accent-pink" />

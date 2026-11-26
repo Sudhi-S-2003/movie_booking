@@ -62,7 +62,7 @@ export const HashtagComposer = ({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-2xl rounded-3xl bg-background border border-white/10 p-8"
       >
-        <h2 className="text-2xl font-black text-white mb-6">New post in #{slug}</h2>
+        <h2 className="text-2xl font-bold text-white mb-6">New post in #{slug}</h2>
         {!user && (
           <p className="mb-4 text-sm text-red-400">You must be logged in to post.</p>
         )}

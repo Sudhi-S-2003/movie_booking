@@ -124,7 +124,7 @@ export const TwoFactorManager: React.FC = () => {
           <Shield size={32} />
         </div>
         <div>
-          <h2 className="text-2xl font-black text-white">Two-Factor Authentication</h2>
+          <h2 className="text-2xl font-bold text-white">Two-Factor Authentication</h2>
           <p className="text-sm text-gray-500 mt-1">TOTP protection on credential matches</p>
         </div>
       </div>
@@ -161,7 +161,7 @@ export const TwoFactorManager: React.FC = () => {
               <button
                 onClick={handleDisable}
                 disabled={code.length < 6 || loading}
-                className="w-full py-4 rounded-2xl bg-red-500 hover:bg-red-600 disabled:opacity-50 text-sm font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-2xl bg-red-500 hover:bg-red-600 disabled:opacity-50 text-sm font-bold uppercase tracking-wide text-white transition-all shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
               >
                 {loading ? 'Disabling...' : 'Verify & Disable'}
               </button>
@@ -179,15 +179,15 @@ export const TwoFactorManager: React.FC = () => {
 
               <div className="space-y-3">
                 <div className="flex items-start gap-4 p-4 bg-white/[0.01] rounded-2xl border border-white/5">
-                  <span className="w-6 h-6 rounded-full bg-accent-blue/10 text-accent-blue text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                  <span className="w-6 h-6 rounded-full bg-accent-blue/10 text-accent-blue text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                   <p className="text-xs text-gray-300 leading-relaxed">Scan the high-quality QR code with your security authenticator application.</p>
                 </div>
                 <div className="flex items-start gap-4 p-4 bg-white/[0.01] rounded-2xl border border-white/5">
-                  <span className="w-6 h-6 rounded-full bg-accent-blue/10 text-accent-blue text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                  <span className="w-6 h-6 rounded-full bg-accent-blue/10 text-accent-blue text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                   <p className="text-xs text-gray-300 leading-relaxed">Input the 6-digit verification code from your application to confirm setup.</p>
                 </div>
                 <div className="flex items-start gap-4 p-4 bg-white/[0.01] rounded-2xl border border-white/5">
-                  <span className="w-6 h-6 rounded-full bg-accent-blue/10 text-accent-blue text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                  <span className="w-6 h-6 rounded-full bg-accent-blue/10 text-accent-blue text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
                   <p className="text-xs text-gray-300 leading-relaxed">Save your one-time backup codes safely to recover your account if you lose your phone.</p>
                 </div>
               </div>
@@ -195,7 +195,7 @@ export const TwoFactorManager: React.FC = () => {
               <button
                 onClick={() => setStep('setup')}
                 disabled={loading || !qrCode}
-                className="w-full py-4 rounded-2xl bg-accent-purple hover:bg-accent-purple/90 disabled:opacity-50 text-sm font-black uppercase tracking-widest text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent-purple/20 mt-4"
+                className="w-full py-4 rounded-2xl bg-accent-purple hover:bg-accent-purple/90 disabled:opacity-50 text-sm font-bold uppercase tracking-wide text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent-purple/20 mt-4"
               >
                 {loading ? 'Preparing Setup...' : 'Get Started'}
               </button>
@@ -212,12 +212,12 @@ export const TwoFactorManager: React.FC = () => {
                     Generating...
                   </div>
                 )}
-                <p className="text-gray-500 text-[10px] uppercase font-bold mt-4 tracking-wider">Scan this QR Code</p>
+                <p className="text-gray-500 text-xs uppercase font-bold mt-4 tracking-wider">Scan this QR Code</p>
               </div>
 
               <div className="p-4 bg-[#141416]/30 border border-white/5 rounded-2xl flex items-center justify-between">
                 <div className="overflow-hidden mr-2">
-                  <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider">Manual Setup Key</p>
+                  <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Manual Setup Key</p>
                   <p className="text-xs font-mono text-white select-all break-all mt-1">{secret || 'Loading...'}</p>
                 </div>
                 <button
@@ -230,21 +230,21 @@ export const TwoFactorManager: React.FC = () => {
               </div>
 
               <div className="space-y-4 pt-2">
-                <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 text-center">Verify Code</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 text-center">Verify Code</h3>
                 <TwoFactorInput value={code} onChange={setCode} disabled={loading} />
               </div>
 
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => setStep('intro')}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-black uppercase tracking-widest text-white transition-colors"
+                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-bold uppercase tracking-wide text-white transition-colors"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleVerify}
                   disabled={code.length < 6 || loading}
-                  className="flex-1 py-3.5 rounded-2xl bg-accent-purple hover:bg-accent-purple/90 disabled:opacity-50 text-xs font-black uppercase tracking-widest text-white transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 rounded-2xl bg-accent-purple hover:bg-accent-purple/90 disabled:opacity-50 text-xs font-bold uppercase tracking-wide text-white transition-colors flex items-center justify-center gap-2"
                 >
                   {loading ? 'Verifying...' : 'Verify & Enable'}
                 </button>
@@ -277,14 +277,14 @@ export const TwoFactorManager: React.FC = () => {
               <div className="flex gap-3">
                 <button
                   onClick={handleCopyBackupCodes}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-bold uppercase tracking-wide text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2"
                 >
                   {copiedCodes ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
                   {copiedCodes ? 'Copied!' : 'Copy'}
                 </button>
                 <button
                   onClick={handleDownloadBackupCodes}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-bold uppercase tracking-wide text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2"
                 >
                   <Download size={14} /> Download TXT
                 </button>
@@ -292,7 +292,7 @@ export const TwoFactorManager: React.FC = () => {
 
               <button
                 onClick={() => setStep('intro')}
-                className="w-full py-4 rounded-2xl bg-accent-purple hover:bg-accent-purple/90 text-sm font-black uppercase tracking-widest text-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-accent-purple/20 mt-4"
+                className="w-full py-4 rounded-2xl bg-accent-purple hover:bg-accent-purple/90 text-sm font-bold uppercase tracking-wide text-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-accent-purple/20 mt-4"
               >
                 Setup Completed
               </button>

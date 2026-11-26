@@ -55,17 +55,17 @@ export const ApiKeyRow = memo(({ apiKey, onRevoke }: ApiKeyRowProps) => {
     }`}>
       <div className="flex-1 min-w-0 space-y-1.5">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[13px] font-black text-white truncate">{apiKey.name}</span>
-          <span className="px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+          <span className="text-[13px] font-bold text-white truncate">{apiKey.name}</span>
+          <span className="px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-[11px] font-bold uppercase tracking-wide text-gray-400">
             {CATEGORY_LABELS[apiKey.category] ?? apiKey.category}
           </span>
           {isRevoked && (
-            <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-[9px] font-black uppercase tracking-[0.2em] text-rose-300 flex items-center gap-1">
+            <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-[11px] font-bold uppercase tracking-wide text-rose-300 flex items-center gap-1">
               <ShieldOff size={9} /> Revoked
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 flex-wrap text-[10px] text-gray-500">
+        <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500">
           <code className="font-mono text-gray-400">{maskKeyId(apiKey.keyId)}</code>
           <span>·</span>
           <span>{formatLastUsed(apiKey.lastUsedAt)}</span>

@@ -50,7 +50,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   const [replyingTo, setReplyingTo] = useState<IssueMessage | null>(null);
 
   const userRole: ChatContextValue["userRole"] = user
-    ? user.role === "theatre_owner" ? "TheatreOwner" : "User"
+    ? "User"
     : "Guest";
 
   const sendReply = useCallback(async (text: string) => {
@@ -64,7 +64,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       text,
       senderId: user?.id,
       senderName: user?.name || "You",
-      senderRole: (userRole === "TheatreOwner" ? "TheatreOwner" : user?.role === "admin" ? "Admin" : "User") as IssueMessage["senderRole"],
+      senderRole: (user?.role === "admin" || user?.role === "super_admin" ? "Admin" : "User") as IssueMessage["senderRole"],
       isYou: true,
       _status: "sending",
       replyTo: replyRef,

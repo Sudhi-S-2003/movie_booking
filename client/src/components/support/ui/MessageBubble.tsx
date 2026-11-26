@@ -48,7 +48,7 @@ export const MessageBubble = memo(
         {showDateSeparator && (
           <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px bg-white/[0.06]" />
-            <span className="text-[8px] font-bold text-white/30 uppercase tracking-[0.15em] px-3 py-1 bg-white/[0.03] border border-white/[0.06] rounded-full">
+            <span className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] px-3 py-1 bg-white/[0.03] border border-white/[0.06] rounded-full">
               {dateLabel}
             </span>
             <div className="flex-1 h-px bg-white/[0.06]" />
@@ -72,7 +72,7 @@ export const MessageBubble = memo(
           <div className="w-7 h-7 flex-shrink-0">
             {!isSameGroupNext && (
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${isOwn
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white ${isOwn
                     ? "bg-gradient-to-br from-violet-600/90 to-indigo-700/90 shadow-sm shadow-violet-500/15"
                     : "bg-white/10 border border-white/10"
                   }`}
@@ -87,7 +87,7 @@ export const MessageBubble = memo(
             { }
             {!isSameGroupPrev && (
               <span
-                className={`text-[8px] font-bold uppercase tracking-widest mb-1 px-1 ${isOwn ? "text-violet-300/70" : "text-white/30"
+                className={`text-[11px] font-bold uppercase tracking-wide mb-1 px-1 ${isOwn ? "text-violet-300/70" : "text-white/30"
                   }`}
               >
                 {msg.senderName}
@@ -136,7 +136,7 @@ export const MessageBubble = memo(
             { }
             {!isSameGroupNext && (
               <div className={`flex items-center gap-1.5 mt-1 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
-                <span className="text-[8px] font-medium text-white/25 tabular-nums">
+                <span className="text-[11px] font-medium text-white/25 tabular-nums">
                   {new Date(msg.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -150,7 +150,7 @@ export const MessageBubble = memo(
                   />
                 )}
                 <span
-                  className={`text-[7px] font-bold px-1.5 py-px rounded ${isOwn
+                  className={`text-[11px] font-bold px-1.5 py-px rounded ${isOwn
                       ? "text-violet-300/50 bg-violet-500/10"
                       : "text-white/20 bg-white/[0.03]"
                     } uppercase tracking-wider`}

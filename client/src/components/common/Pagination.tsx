@@ -61,7 +61,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         {getPageNumbers().map((page, i) => {
           if (page === '...') {
             return (
-              <span key={`dots-${i}`} className="text-gray-600 px-1 font-black">
+              <span key={`dots-${i}`} className="text-gray-600 px-1 font-bold">
                 ...
               </span>
             );
@@ -74,7 +74,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               key={page}
               onClick={() => onPageChange(page as number)}
               disabled={isLoading}
-              className={`w-10 h-10 rounded-xl font-black text-[10px] transition-all ${
+              className={`w-10 h-10 rounded-xl font-bold text-xs transition-all ${
                 isCurrent
                   ? `${accentClasses[accentColor]} text-white shadow-lg`
                   : 'bg-white/5 border border-white/10 text-gray-500 hover:text-white hover:bg-white/10'

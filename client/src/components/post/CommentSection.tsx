@@ -155,7 +155,7 @@ export const CommentSection = ({
           <MessageCircle size={16} className="text-accent-blue" />
           <span className="text-sm font-bold text-white">Comments</span>
           {commentCount > 0 && (
-            <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-white/[0.06] text-[10px] font-bold text-gray-400 flex items-center justify-center">
+            <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-white/[0.06] text-xs font-bold text-gray-400 flex items-center justify-center">
               {commentCount.toLocaleString()}
             </span>
           )}

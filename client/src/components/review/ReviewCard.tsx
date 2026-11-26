@@ -22,19 +22,19 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
             {author?.avatar ? (
               <img src={author.avatar} className="w-full h-full object-cover" alt="" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-black text-gray-500">
+              <div className="w-full h-full bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-bold text-gray-500">
                 {author?.name?.[0] || '?'}
               </div>
             )}
           </div>
           <div>
-            <p className="font-black text-white text-lg tracking-tight">{author?.name || 'Anonymous'}</p>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">{new Date(review.createdAt).toLocaleDateString()}</p>
+            <p className="font-bold text-white text-lg tracking-tight">{author?.name || 'Anonymous'}</p>
+            <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">{new Date(review.createdAt).toLocaleDateString()}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-yellow-500/10 px-4 py-2 rounded-2xl border border-yellow-500/10">
           <Star size={14} className="text-yellow-500" fill="currentColor" />
-          <span className="text-sm font-black text-yellow-500">{review.rating}</span>
+          <span className="text-sm font-bold text-yellow-500">{review.rating}</span>
         </div>
       </div>
       <p className="text-gray-400 text-base italic leading-relaxed line-clamp-6">

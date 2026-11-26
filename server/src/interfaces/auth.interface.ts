@@ -11,7 +11,7 @@ import type { IUser } from './models.interface.js';
  */
 import type { ApiKeyCategory } from '../models/apiKey.model.js';
 
-export type AuthUser = HydratedDocument<IUser> & { _id: unknown };
+export type AuthUser = HydratedDocument<IUser>;
 
 /**
  * Global Express.Request augmentation.
@@ -47,6 +47,8 @@ declare global {
       apiServiceCategory?: ApiKeyCategory;
       apiKeyCategory?:     ApiKeyCategory;
       apiKeyId?:           string;
+      /** Scope of a verified signed guest link (`read` cannot mutate). */
+      signedScope?:        'read' | 'write';
       sessionId?:    string;
     }
   }

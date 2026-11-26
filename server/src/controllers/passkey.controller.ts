@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { UserStatus } from '../constants/enums.js';
 import jwt from 'jsonwebtoken';
 import {
   generateRegistrationOptions,
@@ -49,7 +50,7 @@ export const getRegistrationOptions = async (req: Request, res: Response) => {
       })),
       authenticatorSelection: {
         residentKey: 'required',
-        userVerification: 'preferred',
+        userVerification: 'required',
       },
     });
 
@@ -96,6 +97,7 @@ export const verifyRegistration = async (req: Request, res: Response) => {
       expectedChallenge: decodedChallenge,
       expectedOrigin: env.FRONTEND_URL,
       expectedRPID: rpID,
+      requireUserVerification: true,
     });
 
     const { verified, registrationInfo } = verification;
@@ -149,7 +151,7 @@ export const getAuthenticationOptions = async (req: Request, res: Response) => {
     const options = await generateAuthenticationOptions({
       rpID,
       allowCredentials,
-      userVerification: 'preferred',
+      userVerification: 'required',
     });
 
     // Generate a stateless challenge token to verify it in the next request
@@ -201,6 +203,9 @@ export const verifyAuthentication = async (req: Request, res: Response) => {
     }
 
     const user = await User.findById(passkey.userId);
+    if (user && user.status !== UserStatus.ACTIVE) {
+      return res.status(403).json({ success: false, code: 'ACCOUNT_INACTIVE', message: 'This account is suspended or closed' });
+    }
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -210,6 +215,9 @@ export const verifyAuthentication = async (req: Request, res: Response) => {
       expectedChallenge: decodedChallenge,
       expectedOrigin: env.FRONTEND_URL,
       expectedRPID: rpID,
+      // A passkey with verified user presence (biometric/PIN) is itself
+      // multi-factor, which is why this login may skip the TOTP step.
+      requireUserVerification: true,
       credential: {
         id: passkey.credentialID,
         publicKey: new Uint8Array(passkey.publicKey),

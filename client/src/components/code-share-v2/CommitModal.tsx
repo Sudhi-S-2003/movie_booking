@@ -73,7 +73,7 @@ export const CommitModal: React.FC<CommitModalProps> = ({
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-950/40">
-              <h3 className="text-sm font-black uppercase tracking-tight text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold uppercase tracking-tight text-white flex items-center gap-2">
                 <GitCommit size={14} className="text-white" />
                 Commit Staged Changes
               </h3>
@@ -90,7 +90,7 @@ export const CommitModal: React.FC<CommitModalProps> = ({
             <div className="p-5 flex-1 overflow-y-auto space-y-5 custom-scrollbar">
               {/* Message Input */}
               <div className="space-y-1.5">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 block mb-1">
+                <label className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 block mb-1">
                   Commit Message
                 </label>
                 <textarea
@@ -105,13 +105,13 @@ export const CommitModal: React.FC<CommitModalProps> = ({
                   className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder:text-zinc-600 outline-none focus:border-zinc-700 focus:bg-black transition-all resize-none font-inter"
                 />
                 {error && (
-                  <p className="text-[10px] font-bold text-rose-400 mt-1">{error}</p>
+                  <p className="text-xs font-bold text-rose-400 mt-1">{error}</p>
                 )}
               </div>
 
               {/* Staged Changes List */}
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 block">
+                <label className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 block">
                   Staged Files ({changesList.length})
                 </label>
 
@@ -157,7 +157,7 @@ export const CommitModal: React.FC<CommitModalProps> = ({
                             {item.path}
                           </span>
                         </div>
-                        <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 border rounded-md ${badgeBg}`}>
+                        <span className={`text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 border rounded-md ${badgeBg}`}>
                           {statusLabel}
                         </span>
                       </div>
@@ -173,7 +173,7 @@ export const CommitModal: React.FC<CommitModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isSaving}
-                className="flex-1 py-2.5 bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-40"
+                className="flex-1 py-2.5 bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800 rounded-xl font-bold text-xs uppercase tracking-wide transition-all disabled:opacity-40"
               >
                 Cancel
               </button>
@@ -181,7 +181,7 @@ export const CommitModal: React.FC<CommitModalProps> = ({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSaving}
-                className="flex-[1.5] py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-40 shadow-xl flex items-center justify-center gap-2"
+                className="flex-[1.5] py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-xs uppercase tracking-wide hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-40 shadow-xl flex items-center justify-center gap-2"
               >
                 {isSaving ? (
                   <>

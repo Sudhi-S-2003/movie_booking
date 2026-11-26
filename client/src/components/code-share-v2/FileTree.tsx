@@ -240,13 +240,13 @@ export const FileTree: React.FC<FileTreeProps> = ({
     let statusBadge = null;
     if (node.status === 'add' || node.status === 'create-folder') {
       statusBadge = (
-        <span className="w-3.5 h-3.5 flex items-center justify-center text-[8px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">
+        <span className="w-3.5 h-3.5 flex items-center justify-center text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">
           A
         </span>
       );
     } else if (node.status === 'modify') {
       statusBadge = (
-        <span className="w-3.5 h-3.5 flex items-center justify-center text-[8px] font-black bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded">
+        <span className="w-3.5 h-3.5 flex items-center justify-center text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded">
           M
         </span>
       );
@@ -423,7 +423,7 @@ export const FileTree: React.FC<FileTreeProps> = ({
     <div className="flex flex-col h-full bg-transparent">
       {/* Sidebar Explorer toolbar */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-zinc-800">
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Files Explorer</span>
+        <span className="text-xs font-bold uppercase tracking-wide text-zinc-400">Files Explorer</span>
         {!readOnly && (
           <div className="flex gap-1.5">
             <button

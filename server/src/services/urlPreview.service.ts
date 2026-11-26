@@ -1,4 +1,5 @@
 import { UrlPreview } from '../models/urlPreview.model.js';
+import { safeFetchText, UnsafeUrlError } from '../utils/safeFetch.util.js';
 
 export interface UrlMetadata {
   title?: string | undefined;
@@ -31,29 +32,21 @@ export class UrlPreviewService {
         };
       }
 
-      // 2. Fetch if not in cache
-      const response = await fetch(url, {
+      // 2. Fetch through the SSRF-safe fetcher (public hosts only, capped size).
+      const response = await safeFetchText(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+          'User-Agent': 'Mozilla/5.0 (compatible; PlatformLinkPreview/1.0)',
+          'Accept': 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.5',
           'Accept-Language': 'en-US,en;q=0.5',
         },
-        signal: AbortSignal.timeout(10000),
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch URL: ${response.statusText}`);
-      }
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('text/html')) {
+      if (response.status >= 400 || !response.body) {
         return { url };
       }
+      const html = response.body;
 
-      const html = await response.text();
-      
       // Use final URL after redirects for accurate base resolution
-      const finalUrl = response.url;
+      const finalUrl = response.finalUrl;
       const domain = new URL(finalUrl).origin;
 
       // Extract all meta and link tags for robust attribute parsing
@@ -110,6 +103,7 @@ export class UrlPreviewService {
 
       return metadata;
     } catch (error) {
+      if (error instanceof UnsafeUrlError) throw error;
       console.error('Error fetching URL metadata:', error);
       return { url };
     }
@@ -120,8 +114,8 @@ export class UrlPreviewService {
    */
   private static parseTags(html: string, tagName: string): Record<string, string>[] {
     const tags: Record<string, string>[] = [];
-    // This regex looks for tags and correctly handles attribute strings that might contain '>' inside quotes
-    const tagRegex = new RegExp(`<${tagName}\\s+([^>]*?(?:["'][^"']*?["'][^>]*?)*)>`, 'gi');
+    // Bounded, non-nested pattern (the previous nested quantifier allowed ReDoS).
+    const tagRegex = new RegExp(`<${tagName}\\s([^>]{0,2000})>`, 'gi');
     
     for (const match of html.matchAll(tagRegex)) {
       const attrsStr = match[1];

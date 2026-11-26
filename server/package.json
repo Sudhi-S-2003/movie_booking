@@ -13,7 +13,8 @@
     "start": "node dist/server.js",
     "worker": "node dist/worker.js",
     "worker:dev": "tsx watch src/worker.ts",
-    "test": "echo \"No tests\" && exit 0"
+    "test": "tsx --test --test-concurrency=1 test/*.test.ts",
+    "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
     "@simplewebauthn/server": "^13.3.0",

@@ -19,6 +19,13 @@ async function checkChatbotOwner(chatbotId: string, userId: string) {
   return chatbot;
 }
 
+/** Fields a client may never set on update (ownership / identity / operators). */
+const IMMUTABLE_KEYS = new Set(['_id', 'userId', 'chatbotId', 'createdAt', 'updatedAt', '__v']);
+const stripImmutable = (data: unknown): Record<string, unknown> =>
+  Object.fromEntries(
+    Object.entries((data ?? {}) as Record<string, unknown>).filter(([k]) => !IMMUTABLE_KEYS.has(k) && !k.startsWith('$')),
+  );
+
 // Chatbot CRUD
 export async function createChatbot(userId: string, data: any) {
   const chatbot = new Chatbot({
@@ -98,7 +105,7 @@ export async function getChatbotById(id: string, userId: string) {
 
 export async function updateChatbot(id: string, userId: string, data: any) {
   await checkChatbotOwner(id, userId);
-  const chatbot = await Chatbot.findByIdAndUpdate(id, data, { returnDocument: 'after' });
+  const chatbot = await Chatbot.findOneAndUpdate({ _id: id, userId }, stripImmutable(data), { returnDocument: 'after', runValidators: true });
   if (!chatbot) {
     throw new ApiError(404, 'Chatbot not found', 'NOT_FOUND');
   }
@@ -159,7 +166,7 @@ export async function updateKeyword(chatbotId: string, kwId: string, userId: str
   await checkChatbotOwner(chatbotId, userId);
   const keyword = await ChatbotKeyword.findOneAndUpdate(
     { _id: kwId, chatbotId },
-    data,
+    stripImmutable(data),
     { returnDocument: 'after' },
   );
   if (!keyword) {
@@ -214,7 +221,7 @@ export async function updateTemplate(chatbotId: string, tplId: string, userId: s
   await checkChatbotOwner(chatbotId, userId);
   const template = await ChatbotTemplate.findOneAndUpdate(
     { _id: tplId, chatbotId },
-    data,
+    stripImmutable(data),
     { returnDocument: 'after' },
   );
   if (!template) {
@@ -258,7 +265,7 @@ export async function updateVariable(
   await checkChatbotOwner(chatbotId, userId);
   const variable = await ChatbotVariable.findOneAndUpdate(
     { _id: varId, chatbotId },
-    data,
+    stripImmutable(data),
     { returnDocument: 'after' },
   );
   if (!variable) {
@@ -300,7 +307,7 @@ export async function updateFlowStep(
   await checkChatbotOwner(chatbotId, userId);
   const flowStep = await ChatbotFlow.findOneAndUpdate(
     { _id: stepId, chatbotId },
-    data,
+    stripImmutable(data),
     { returnDocument: 'after' },
   );
   if (!flowStep) {
@@ -346,7 +353,7 @@ export async function updateMenu(chatbotId: string, menuId: string, userId: stri
   await checkChatbotOwner(chatbotId, userId);
   const menu = await ChatbotMenu.findOneAndUpdate(
     { _id: menuId, chatbotId },
-    data,
+    stripImmutable(data),
     { returnDocument: 'after' },
   );
   if (!menu) {
@@ -388,7 +395,7 @@ export async function updateFormField(
   await checkChatbotOwner(chatbotId, userId);
   const field = await ChatbotFormField.findOneAndUpdate(
     { _id: fieldId, chatbotId },
-    data,
+    stripImmutable(data),
     { returnDocument: 'after' },
   );
   if (!field) {

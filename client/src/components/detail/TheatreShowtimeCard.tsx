@@ -45,18 +45,18 @@ export const TheatreShowtimeCard: React.FC<TheatreShowtimeCardProps> = ({ theatr
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h3 className="text-3xl font-black text-white tracking-tighter leading-none">{theatre.name}</h3>
+                <h3 className="text-3xl font-bold text-white tracking-tighter leading-none">{theatre.name}</h3>
                 <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 rounded-md border border-yellow-500/20">
                   <Star size={10} className="text-yellow-500 fill-yellow-500" />
-                  <span className="text-[10px] font-black text-yellow-500">4.8</span>
+                  <span className="text-xs font-bold text-yellow-500">4.8</span>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-gray-500">
-                <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent-blue/70">
+                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-accent-blue/70">
                   <MapPin size={12} /> {theatre.city} HUB
                 </p>
                 <div className="w-1 h-1 rounded-full bg-gray-800" />
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-relaxed">{theatre.address}</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide leading-relaxed">{theatre.address}</p>
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@ export const TheatreShowtimeCard: React.FC<TheatreShowtimeCardProps> = ({ theatr
           <div className="flex items-center gap-4">
             <Link 
               to={`/theatre/${theatre.id}${currentMovieId ? `?movieId=${currentMovieId}` : ''}`}
-              className="px-8 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10 transition-all"
+              className="px-8 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold uppercase tracking-wide text-white hover:bg-white/10 transition-all"
             >
               Theatre Info
             </Link>
@@ -83,8 +83,8 @@ export const TheatreShowtimeCard: React.FC<TheatreShowtimeCardProps> = ({ theatr
                   <Clock size={20} />
                 </div>
                 <div>
-                  <h4 className="text-lg font-black text-white uppercase tracking-wider">{screen.name}</h4>
-                  <p className="text-[10px] font-bold text-accent-pink bg-accent-pink/10 px-2 py-0.5 rounded-md border border-accent-pink/20 uppercase tracking-widest inline-block mt-1">{screen.format}</p>
+                  <h4 className="text-lg font-bold text-white uppercase tracking-wider">{screen.name}</h4>
+                  <p className="text-xs font-bold text-accent-pink bg-accent-pink/10 px-2 py-0.5 rounded-md border border-accent-pink/20 uppercase tracking-wide inline-block mt-1">{screen.format}</p>
                 </div>
               </div>
 
@@ -93,7 +93,7 @@ export const TheatreShowtimeCard: React.FC<TheatreShowtimeCardProps> = ({ theatr
                   <Link 
                     key={st.id}
                     to={`/booking/${st.id}`}
-                    className="group/time relative px-10 py-5 bg-white/[0.03] border border-white/5 rounded-2xl text-base font-black text-accent-blue transition-all hover:bg-accent-blue hover:text-white hover:scale-105 hover:shadow-[0_15px_30px_rgba(59,130,246,0.3)] shadow-xl"
+                    className="group/time relative px-10 py-5 bg-white/[0.03] border border-white/5 rounded-2xl text-base font-bold text-accent-blue transition-all hover:bg-accent-blue hover:text-white hover:scale-105 hover:shadow-[0_15px_30px_rgba(59,130,246,0.3)] shadow-xl"
                   >
                     {st.time}
                   </Link>

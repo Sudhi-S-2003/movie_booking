@@ -268,7 +268,7 @@ function formatDateLabel(dateStr: string): string {
 const UnreadDivider: React.FC = () => (
   <div className="flex items-center gap-3 my-4">
     <div className="flex-1 h-px bg-accent-blue/40" />
-    <span className="text-[9px] font-bold text-accent-blue uppercase tracking-[0.15em] px-3 py-1">
+    <span className="text-[11px] font-bold text-accent-blue uppercase tracking-[0.15em] px-3 py-1">
       Unread messages
     </span>
     <div className="flex-1 h-px bg-accent-blue/40" />

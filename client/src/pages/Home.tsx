@@ -28,13 +28,13 @@ export const Home = () => {
   const trending = trendingRes?.movies || [];
   const upcoming = upcomingRes?.movies || [];
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[1em] text-accent-pink/50">Loading movies...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-bold animate-pulse uppercase tracking-wider text-accent-pink/50">Loading movies...</div>;
 
   const heroMovie = trending[0] || upcoming[0];
   if (!heroMovie) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6">
       <Info size={48} className="text-gray-800" />
-      <p className="font-black uppercase tracking-[0.2em] text-gray-700">No movies found in your area</p>
+      <p className="font-bold uppercase tracking-wide text-gray-700">No movies found in your area</p>
     </div>
   );
 
@@ -65,10 +65,10 @@ export const Home = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="inline-block px-4 py-1.5 rounded-full bg-accent-pink/20 text-accent-pink text-xs font-black uppercase tracking-widest mb-4">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-accent-pink/20 text-accent-pink text-xs font-bold uppercase tracking-wide mb-4">
               Trending Now
             </span>
-            <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-white leading-tight">
+            <h1 className="text-6xl sm:text-8xl font-bold tracking-tighter text-white leading-tight">
               {heroMovie.title}
             </h1>
           </motion.div>
@@ -88,10 +88,10 @@ export const Home = () => {
             transition={{ delay: 0.8 }}
             className="flex items-center gap-4 pt-4"
           >
-            <button className="flex items-center gap-3 bg-white text-black px-8 py-4 rounded-2xl font-black hover:scale-105 transition-transform active:scale-95">
+            <button className="flex items-center gap-3 bg-white text-black px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-transform active:scale-95">
               <Play size={20} fill="currentColor" /> Watch Trailer
             </button>
-            <Link to={`/movie/${heroMovie._id}`} className="flex items-center gap-3 bg-white/10 backdrop-blur-md text-white border border-white/10 px-8 py-4 rounded-2xl font-black hover:bg-white/20 transition-all shadow-xl">
+            <Link to={`/movie/${heroMovie._id}`} className="flex items-center gap-3 bg-white/10 backdrop-blur-md text-white border border-white/10 px-8 py-4 rounded-2xl font-bold hover:bg-white/20 transition-all shadow-xl">
               <Info size={20} /> Booking Now
             </Link>
           </motion.div>
@@ -124,7 +124,7 @@ const Carousel = ({ title, movies }: { title: string; movies: any[] }) => {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between px-4 sm:px-0">
-        <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+        <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
           {title} <ChevronRight className="text-accent-pink" />
         </h2>
         <Link 
@@ -170,19 +170,19 @@ const Carousel = ({ title, movies }: { title: string; movies: any[] }) => {
                   {movie.showStatus === 'upcoming' ? (
                     <>
                       <Star size={12} className="text-accent-blue" fill="currentColor" />
-                      <span className="text-[10px] font-black text-white">{formatInterestCount(movie.interestedUsers?.length || 0)} Likes</span>
+                      <span className="text-xs font-bold text-white">{formatInterestCount(movie.interestedUsers?.length || 0)} Likes</span>
                     </>
                   ) : (
                     <>
                       <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                      <span className="text-[10px] font-black text-white">{movie.rating || 'N/A'}</span>
+                      <span className="text-xs font-bold text-white">{movie.rating || 'N/A'}</span>
                     </>
                   )}
                 </div>
               </div>
 
               <div className="mt-4 space-y-1">
-                <h3 className="font-black text-white group-hover:text-accent-pink transition-colors truncate">
+                <h3 className="font-bold text-white group-hover:text-accent-pink transition-colors truncate">
                   {movie.title}
                 </h3>
                 <p className="text-xs text-gray-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis">

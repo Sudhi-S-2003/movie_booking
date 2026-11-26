@@ -14,3 +14,4 @@ export { seedHashtagsAndPosts } from './hashtagsAndPosts.js';
 export { seedUserFollows } from './userFollows.js';
 export { seedChatbots } from './chatbots.js';
 
+export { seedPlatform } from './platform.js';

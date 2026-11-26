@@ -15,7 +15,7 @@ export const CodeShareLoading: React.FC = () => {
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px]"
+          className="text-white/40 font-bold uppercase tracking-wider text-xs"
         >
           Decrypting Stream
         </motion.h2>

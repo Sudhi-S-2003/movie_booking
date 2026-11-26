@@ -29,7 +29,7 @@ export const SeatButton = memo(({
       disabled={disabled}
       onClick={() => !disabled && onClick(seatId)}
       className={`
-        relative flex items-center justify-center font-black text-[10px] transition-all duration-200 select-none
+        relative flex items-center justify-center font-bold text-xs transition-all duration-200 select-none
         ${isRecliner ? 'w-11 h-10 rounded-xl' : 'w-9 h-9 rounded-lg'}
         border-2
         ${isSelected

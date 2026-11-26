@@ -55,7 +55,7 @@ export const Search = () => {
       
       {}
       <div className="space-y-4">
-        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter">
+        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tighter">
           Search results for "<span className="text-accent-pink">{query}</span>"
         </h1>
         <p className="text-gray-400 font-medium text-lg">
@@ -72,7 +72,7 @@ export const Search = () => {
             className="space-y-8"
           >
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
-              <h2 className="text-2xl font-black text-white flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                 Movies <span className="text-sm bg-accent-pink/20 text-accent-pink px-3 py-1 rounded-full">{results.movies.length}</span>
               </h2>
             </div>
@@ -109,19 +109,19 @@ export const Search = () => {
                         {movie.showStatus === 'upcoming' ? (
                           <>
                             <Star size={12} className="text-accent-blue" fill="currentColor" />
-                            <span className="text-[10px] font-black text-white">{formatInterestCount(movie.interestedUsers?.length || 0)} Likes</span>
+                            <span className="text-xs font-bold text-white">{formatInterestCount(movie.interestedUsers?.length || 0)} Likes</span>
                           </>
                         ) : (
                           <>
                             <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                            <span className="text-[10px] font-black text-white">{movie.rating || 'N/A'}</span>
+                            <span className="text-xs font-bold text-white">{movie.rating || 'N/A'}</span>
                           </>
                         )}
                       </div>
                     </div>
                     <div className="mt-4 space-y-1">
-                      <h3 className="font-black text-white truncate group-hover:text-accent-pink transition-colors">{movie.title}</h3>
-                      <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      <h3 className="font-bold text-white truncate group-hover:text-accent-pink transition-colors">{movie.title}</h3>
+                      <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wide">
                         <span>{movie.certification}</span>
                         <span>•</span>
                         <span className="text-accent-blue">{movie.language}</span>
@@ -144,7 +144,7 @@ export const Search = () => {
             className="space-y-8"
           >
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
-              <h2 className="text-2xl font-black text-white flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                 Theatres <span className="text-sm bg-accent-blue/20 text-accent-blue px-3 py-1 rounded-full">{results.theatres.length}</span>
               </h2>
             </div>
@@ -157,7 +157,7 @@ export const Search = () => {
                   className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 flex items-center justify-between group hover:bg-white/10 transition-all"
                 >
                   <div className="space-y-2">
-                    <h3 className="text-xl font-black text-white group-hover:text-accent-blue transition-colors">{theatre.name}</h3>
+                    <h3 className="text-xl font-bold text-white group-hover:text-accent-blue transition-colors">{theatre.name}</h3>
                     <div className="flex items-center gap-3 text-sm text-gray-400 font-medium">
                       <MapPin size={14} className="text-accent-pink" />
                       {theatre.address}, {theatre.city}
@@ -178,10 +178,10 @@ export const Search = () => {
             <SearchIcon size={40} className="text-gray-500" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-2xl font-black text-white italic opacity-50">No matches found...</h3>
+            <h3 className="text-2xl font-bold text-white italic opacity-50">No matches found...</h3>
             <p className="text-gray-500 font-medium">Try searching for something else, like "Batman" or "Mumbai"</p>
           </div>
-          <Link to="/" className="text-accent-pink font-black hover:underline underline-offset-8">Go back home</Link>
+          <Link to="/" className="text-accent-pink font-bold hover:underline underline-offset-8">Go back home</Link>
         </div>
       )}
 

@@ -32,8 +32,8 @@ export const TheatreDetails = () => {
   
 
 
-  if (theatreLoading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.5em] text-gray-500">Connecting to Theatre...</div>;
-  if (!theatre) return <div className="min-h-screen flex items-center justify-center font-black">THEATRE NOT FOUND</div>;
+  if (theatreLoading) return <div className="min-h-screen flex items-center justify-center font-bold animate-pulse uppercase tracking-wider text-gray-500">Connecting to Theatre...</div>;
+  if (!theatre) return <div className="min-h-screen flex items-center justify-center font-bold">THEATRE NOT FOUND</div>;
 
   return (
     <div className="pb-32">
@@ -57,14 +57,14 @@ export const TheatreDetails = () => {
             className="space-y-4"
           >
             <div className="flex items-center gap-3">
-              <span className="px-4 py-1.5 bg-accent-blue/20 text-accent-blue rounded-xl text-[10px] font-black uppercase tracking-[0.2em]">Verified Theatre</span>
+              <span className="px-4 py-1.5 bg-accent-blue/20 text-accent-blue rounded-xl text-xs font-bold uppercase tracking-wide">Verified Theatre</span>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => <Star key={star} size={10} className="text-yellow-500 fill-yellow-500" />)}
               </div>
             </div>
-            <h1 className="text-5xl sm:text-7xl font-black text-white tracking-tighter">{theatre.name}</h1>
+            <h1 className="text-5xl sm:text-7xl font-bold text-white tracking-tighter">{theatre.name}</h1>
             <div className="flex flex-wrap items-center gap-6 text-gray-400 font-medium">
-              <p className="flex items-center gap-2 font-black uppercase tracking-widest text-[10px] text-accent-blue/60 mt-2">{theatre.city} HUB</p>
+              <p className="flex items-center gap-2 font-bold uppercase tracking-wide text-xs text-accent-blue/60 mt-2">{theatre.city} HUB</p>
             </div>
           </motion.div>
         </div>
@@ -75,7 +75,7 @@ export const TheatreDetails = () => {
           {}
           <div className="lg:col-span-8 bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-[50px] p-10 space-y-8">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black uppercase tracking-tight">Theatre <span className="text-accent-blue">Amenities</span></h3>
+                    <h3 className="text-xl font-bold uppercase tracking-tight">Theatre <span className="text-accent-blue">Amenities</span></h3>
                     <Info size={20} className="text-gray-600" />
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -86,15 +86,15 @@ export const TheatreDetails = () => {
           {}
           <div className="lg:col-span-4 bg-white/[0.02] border border-white/5 rounded-[50px] p-10 flex flex-col justify-between">
                 <div className="space-y-6">
-                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Contact Information</h3>
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Contact Information</h3>
                     <div className="space-y-4">
                         <div className="flex gap-4">
                              <div className="w-10 h-10 rounded-2xl bg-accent-pink/10 flex items-center justify-center text-accent-pink border border-accent-pink/20">
                                 <MapPin size={20} />
                              </div>
                              <div>
-                                 <p className="text-sm font-black text-white">{theatre.city}</p>
-                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed mt-1">{theatre.address}</p>
+                                 <p className="text-sm font-bold text-white">{theatre.city}</p>
+                                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide leading-relaxed mt-1">{theatre.address}</p>
                              </div>
                         </div>
                         <div className="flex gap-4">
@@ -102,14 +102,14 @@ export const TheatreDetails = () => {
                                 <ShieldCheck size={20} />
                              </div>
                              <div>
-                                 <p className="text-sm font-black text-white">Verified Venue</p>
-                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed mt-1">{SITE_CONFIG.name} Standards</p>
+                                 <p className="text-sm font-bold text-white">Verified Venue</p>
+                                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide leading-relaxed mt-1">{SITE_CONFIG.name} Standards</p>
                              </div>
                         </div>
                     </div>
                 </div>
                 
-                <button className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2 mt-8">
+                <button className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-xs font-bold uppercase tracking-wide hover:bg-white/10 transition-all flex items-center justify-center gap-2 mt-8">
                     Get Directions <ExternalLink size={14} />
                 </button>
           </div>
@@ -121,13 +121,13 @@ export const TheatreDetails = () => {
           <div className="flex items-center gap-10">
             <button 
               onClick={() => setActiveTab('SHOWTIMES')}
-              className={`text-2xl font-black pb-3 transition-colors ${activeTab === 'SHOWTIMES' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
+              className={`text-2xl font-bold pb-3 transition-colors ${activeTab === 'SHOWTIMES' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
             >
               Movies & Showtimes
             </button>
             <button 
               onClick={() => setActiveTab('REVIEWS')}
-              className={`text-2xl font-black pb-3 transition-colors ${activeTab === 'REVIEWS' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
+              className={`text-2xl font-bold pb-3 transition-colors ${activeTab === 'REVIEWS' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
             >
               Reviews
             </button>
@@ -136,7 +136,7 @@ export const TheatreDetails = () => {
           {activeTab === 'REVIEWS' ? (
             <Link 
               to={`/theatre/${id}/reviews`}
-              className="text-[10px] font-black text-accent-pink uppercase tracking-widest bg-accent-pink/10 px-6 py-2.5 rounded-xl border border-accent-pink/20 hover:bg-accent-pink/20 transition-all"
+              className="text-xs font-bold text-accent-pink uppercase tracking-wide bg-accent-pink/10 px-6 py-2.5 rounded-xl border border-accent-pink/20 hover:bg-accent-pink/20 transition-all"
             >
               View All Reviews
             </Link>
@@ -179,7 +179,7 @@ export const TheatreDetails = () => {
                 ))
               ) : (
                 <div className="text-center py-32 bg-white/5 rounded-[60px] border border-dashed border-white/10">
-                  <p className="text-gray-500 font-black text-2xl italic opacity-50">No movies scheduled for today at this theatre.</p>
+                  <p className="text-gray-500 font-bold text-2xl italic opacity-50">No movies scheduled for today at this theatre.</p>
                 </div>
               )}
 

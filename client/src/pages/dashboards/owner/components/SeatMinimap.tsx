@@ -202,7 +202,7 @@ export const SeatMinimap = memo(({ rows, scrollRef }: SeatMinimapProps) => {
         style={{ transition: "left 0.05s, top 0.05s" }}
       />
       <div className="absolute top-1.5 left-2.5">
-        <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">Minimap</span>
+        <span className="text-[11px] font-bold text-white/30 uppercase tracking-wide">Minimap</span>
       </div>
     </div>
   );

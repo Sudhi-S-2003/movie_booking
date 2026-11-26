@@ -43,7 +43,7 @@ export const ActivityTimeline = ({ items }: ActivityTimelineProps) => {
             {icon(item.type)}
           </span>
           <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-4">
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
               <span className="text-accent-pink">{label(item.type)}</span>
               <span>·</span>
               <span>{timeAgo(item.createdAt)}</span>

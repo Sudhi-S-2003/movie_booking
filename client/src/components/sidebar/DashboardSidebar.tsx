@@ -1,5 +1,8 @@
 import React from 'react';
-import * as LucideIcons from 'lucide-react';
+import { Loader2, LogOut, ShieldCheck, User, Clapperboard, Building2, type LucideIcon } from 'lucide-react';
+
+/** Brand icons by name (explicit map keeps the icon bundle tree-shaken). */
+const BRAND_ICONS: Record<string, LucideIcon> = { ShieldCheck, User, Clapperboard, Building2 };
 import { SidebarItem } from './SidebarItem.js';
 import { SidebarGroup } from './SidebarGroup.js';
 import { SidebarBrand } from './SidebarBrand.js';
@@ -37,7 +40,7 @@ export const DashboardSidebar: React.FC<{ config: SidebarConfig }> = React.memo(
   const pillId = config.pillId ?? 'dash-pill';
 
   const BrandIcon = config.brand.iconName
-    ? (LucideIcons as any)[config.brand.iconName]
+    ? BRAND_ICONS[config.brand.iconName] ?? null
     : null;
 
   return (
@@ -56,7 +59,7 @@ export const DashboardSidebar: React.FC<{ config: SidebarConfig }> = React.memo(
       />
 
       {}
-      <div className="space-y-6 flex-1">
+      <nav aria-label="Dashboard" className="space-y-5 flex-1">
         {config.groups.map((group) => (
           <SidebarGroup key={group.label} label={group.label}>
             {group.items.map((item) => (
@@ -71,7 +74,7 @@ export const DashboardSidebar: React.FC<{ config: SidebarConfig }> = React.memo(
             ))}
           </SidebarGroup>
         ))}
-      </div>
+      </nav>
 
       {}
       {(config.bottomItems?.length || config.showLogout) && (
@@ -90,19 +93,17 @@ export const DashboardSidebar: React.FC<{ config: SidebarConfig }> = React.memo(
             <button
               onClick={config.onLogout}
               disabled={config.isLogoutLoading}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all ${
+              className={`w-full flex items-center gap-3 px-3 py-2 text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors ${
                 config.isLogoutLoading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
-              <div className="p-1.5 rounded-lg bg-white/5">
                 {config.isLogoutLoading ? (
-                  <LucideIcons.Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <LucideIcons.LogOut size={16} />
+                  <LogOut size={16} />
                 )}
-              </div>
-              <span className="font-bold text-[9px] uppercase tracking-widest">
-                {config.isLogoutLoading ? 'Signing Out...' : 'Sign Out'}
+              <span className="text-[13px] font-medium">
+                {config.isLogoutLoading ? "Signing out…" : "Sign out"}
               </span>
             </button>
           )}

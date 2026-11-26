@@ -1,10 +1,14 @@
 import React from 'react';
-import { BarChart3, Film, MapPin, Users, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle, ShieldCheck, CreditCard, Bot } from 'lucide-react';
+import { BarChart3, Film, MapPin, Users, Settings, LifeBuoy, MessageCircle, KeyRound, Puzzle, ShieldCheck, Bot } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
 
 import { useLogout } from '../hooks/useLogout.js';
+import { useAccount } from '../features/platform/useAccount.js';
+import { platformNavGroups } from '../features/platform/navigation.js';
+
+const PREFIX = '/admin';
 
 const config: SidebarConfig = {
   brand: {
@@ -36,7 +40,6 @@ const config: SidebarConfig = {
         { icon: MessageCircle, label: 'Messages', to: '/admin/chat', colorClass: 'text-emerald-400' },
         { icon: Bot, label: 'Chatbots', to: '/admin/chatbots', colorClass: 'text-accent-pink' },
         { icon: LifeBuoy, label: 'Support', to: '/admin/issues', colorClass: 'text-accent-pink' },
-        { icon: CreditCard, label: 'Sub Requests', to: '/admin/subscription-requests', colorClass: 'text-emerald-400' },
       ],
     },
     {
@@ -62,17 +65,18 @@ const config: SidebarConfig = {
 export const AdminLayout: React.FC = () => {
   const { logout, isLoading } = useLogout();
   
+  const { data: account } = useAccount();
   const memoizedConfig = React.useMemo(() => ({
     ...config,
+    groups: [...platformNavGroups(PREFIX, account), ...config.groups],
     showLogout: true,
     onLogout: logout,
     isLogoutLoading: isLoading
-  }), [logout, isLoading]);
+  }), [logout, isLoading, account]);
 
   return (
     <AppDashboardLayout
       sidebar={<DashboardSidebar config={memoizedConfig} />}
-      searchPlaceholder="Search global network (Movies, Theatres, IDs)..."
     />
   );
 };

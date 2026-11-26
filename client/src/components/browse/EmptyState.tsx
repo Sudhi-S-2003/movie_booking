@@ -16,10 +16,10 @@ export const EmptyState = ({ message, onReset, resetLabel = 'Reset filters' }: E
     <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-gray-700 mb-6">
       <Info size={36} />
     </div>
-    <p className="text-gray-500 font-black text-xl italic opacity-50">{message}</p>
+    <p className="text-gray-500 font-bold text-xl italic opacity-50">{message}</p>
     <button
       onClick={onReset}
-      className="mt-8 text-accent-pink font-black uppercase text-[10px] tracking-widest hover:underline"
+      className="mt-8 text-accent-pink font-bold uppercase text-xs tracking-wide hover:underline"
     >
       {resetLabel}
     </button>

@@ -1,7 +1,9 @@
 import { Conversation, ChatMessage } from '../../models/chat.model.js';
 import type { ChatMessageDoc } from '../../models/chat.model.js';
-import { guardTokens } from '../subscription/tokenGuard.js';
-import { withOptionalTransaction, withSession } from '../../utils/transaction.util.js';
+import { meterUserById, tokensForText, type MeterOutcome } from '../../modules/billing/meter.js';
+import { SERVICE_KEYS } from '../../modules/catalog/catalog.registry.js';
+import { withTransaction } from '../../db/transaction.js';
+import { withSession } from '../../utils/transaction.util.js';
 import { getChatMessagesNamespace, getChatListNamespace } from '../../socket/index.js';
 import { emitNewMessage, emitMessageDeleted } from '../../socket/channels/chat-messages.channel.js';
 import { emitChatUnreadChanged, emitConversationUpdated } from '../../socket/channels/chat-list.channel.js';
@@ -16,18 +18,23 @@ export const saveAndEmitMessage = async (
   normalizedMsg: any,
   previewText: string,
   meterInput: string,
-  res: any, // passed to guardTokens
+  res: any, // receives the 402/403 when billing rejects the message
   isGuest: boolean = false,
   billingUserId: string | null = null // used if guest
 ) => {
   const guardId = isGuest && billingUserId ? billingUserId : String(userId);
 
   type TxResult =
-    | { ok: true; message: ChatMessageDoc; tokens: any }
+    | { ok: true; message: ChatMessageDoc; tokens: MeterOutcome }
     | { ok: false; status: number; body: Record<string, unknown> };
 
-  const outcome = await withOptionalTransaction<TxResult>(async (session) => {
-    const tokens = await guardTokens(guardId, meterInput, res, { session });
+  const outcome = await withTransaction<TxResult>(async (session) => {
+    const tokens = await meterUserById(res, guardId, {
+      serviceKey: SERVICE_KEYS.CHAT,
+      units: tokensForText(meterInput),
+      description: isGuest ? 'Chat: guest message' : 'Chat: message',
+      session,
+    });
     if (!tokens) return { ok: false, status: 402, body: {} };
 
     const messageDoc: Record<string, unknown> = {

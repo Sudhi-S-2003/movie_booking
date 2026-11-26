@@ -26,17 +26,17 @@ export const BookingBottomBar = memo(({ selectedSeats, totalPrice, timeLeft, for
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-accent-pink/10 border border-accent-pink/20 rounded-xl">
                 <Timer size={14} className="text-accent-pink animate-pulse" />
-                <span className="text-sm font-black tabular-nums text-accent-pink">{formatTime(timeLeft)}</span>
+                <span className="text-sm font-bold tabular-nums text-accent-pink">{formatTime(timeLeft)}</span>
               </div>
               <div className="w-px h-10 bg-white/10" />
               <div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-white">₹{totalPrice}</span>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <span className="text-3xl font-bold text-white">₹{totalPrice}</span>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                     {selectedSeats.length} {selectedSeats.length === 1 ? 'ticket' : 'tickets'}
                   </span>
                 </div>
-                <p className="text-[10px] text-gray-500 font-bold mt-0.5 truncate max-w-[300px]">
+                <p className="text-xs text-gray-500 font-bold mt-0.5 truncate max-w-[300px]">
                   {selectedSeats.map(s => s.id).join(' · ')}
                 </p>
               </div>
@@ -45,13 +45,13 @@ export const BookingBottomBar = memo(({ selectedSeats, totalPrice, timeLeft, for
             <div className="flex gap-3 w-full md:w-auto">
               <button
                 onClick={onClear}
-                className="px-6 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-black text-sm transition-all"
+                className="px-6 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-sm transition-all"
               >
                 Clear
               </button>
               <button
                 onClick={onProceed}
-                className="flex-1 md:flex-none px-12 py-3.5 bg-accent-pink hover:bg-accent-pink/90 rounded-xl font-black text-sm transition-all shadow-lg shadow-accent-pink/20 hover:shadow-accent-pink/30 active:scale-[0.98] flex items-center justify-center gap-2"
+                className="flex-1 md:flex-none px-12 py-3.5 bg-accent-pink hover:bg-accent-pink/90 rounded-xl font-bold text-sm transition-all shadow-lg shadow-accent-pink/20 hover:shadow-accent-pink/30 active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 <Armchair size={16} />
                 Pay ₹{totalPrice}

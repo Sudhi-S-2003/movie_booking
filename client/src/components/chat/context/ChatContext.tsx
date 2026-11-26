@@ -11,7 +11,7 @@ import {
   useChatScroll,
   useConversationFilters,
 } from '../hooks/index.js';
-import { useSubscription } from '../hooks/useSubscription.js';
+import { useBilling } from '../../../providers/billingContext.js';
 import type {
   ConversationFiltersState,
   ConversationTypeFilter,
@@ -402,7 +402,7 @@ export const ChatProvider: React.FC<{
    * and `retryMessage` (manual retry from the failed tick) go through the
    * same code path — no duplicated body-building or error handling.
    */
-  const { merge: mergeSubscription } = useSubscription();
+  const { applyCharge } = useBilling();
 
   const dispatchSend = useCallback(async (optimistic: ChatMessage) => {
     // Build the request body from the optimistic message — this lets
@@ -429,24 +429,19 @@ export const ChatProvider: React.FC<{
       const res = guestSession
         ? await chatApi.sendGuestMessage(optimistic.conversationId, body, guestSession)
         : await chatApi.sendMessage(optimistic.conversationId, body);
-      const { message, tokens } = res;
+      const { message, billing } = res;
       confirmOptimistic(optimistic._id, { ...message, isYou: true, deliveryStatus: 'sent' });
 
       // Feed the authoritative post-debit balance straight into the subscription
       // provider so the header pill updates instantly without a refetch. On
       // guest pages the provider is guest-scoped (API-key owner's pool), so
       // the merged values still reflect the right subject.
-      if (tokens) {
-        mergeSubscription({
-          plan:      tokens.plan,
-          remaining: { plan: tokens.plan, ...tokens.remaining },
-        });
-      }
+      applyCharge(billing);
     } catch (e) {
       console.error('[ChatContext] dispatchSend failed:', e);
       confirmOptimistic(optimistic._id, { ...optimistic, _status: 'failed' });
     }
-  }, [confirmOptimistic, guestSession, mergeSubscription]);
+  }, [confirmOptimistic, guestSession, applyCharge]);
 
   /**
    * Upload a text payload > 1000 chars via the chunked longtext pipeline.
@@ -516,7 +511,7 @@ export const ChatProvider: React.FC<{
         };
       }
 
-      const { message, tokens } = guestSession
+      const { message, billing } = guestSession
         ? await chatApi.longtextCompleteGuest(
             optimistic.conversationId,
             body,
@@ -525,19 +520,14 @@ export const ChatProvider: React.FC<{
         : await chatApi.longtextComplete(optimistic.conversationId, body);
       confirmOptimistic(optimistic._id, { ...message, isYou: true, deliveryStatus: 'sent' });
 
-      if (tokens) {
-        mergeSubscription({
-          plan:      tokens.plan,
-          remaining: { plan: tokens.plan, ...tokens.remaining },
-        });
-      }
+      applyCharge(billing);
     } catch (e) {
       console.error('[ChatContext] longtext send failed:', e);
       confirmOptimistic(optimistic._id, { ...optimistic, _status: 'failed' });
     } finally {
       setSendProgress(null);
     }
-  }, [confirmOptimistic, mergeSubscription, guestSession]);
+  }, [confirmOptimistic, applyCharge, guestSession]);
 
   const sendMessage = useCallback(async (
     payload: SendMessagePayload | string,

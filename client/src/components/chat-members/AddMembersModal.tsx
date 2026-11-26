@@ -138,7 +138,7 @@ export const AddMembersModal = memo(({
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-              <h3 className="text-sm font-black uppercase tracking-tight text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold uppercase tracking-tight text-white flex items-center gap-2">
                 <UserPlus size={14} className="text-accent-blue" />
                 Add Members
               </h3>
@@ -158,7 +158,7 @@ export const AddMembersModal = memo(({
                   <span
                     key={u._id}
                     onClick={() => toggleSelect(u)}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-accent-blue/20 border border-accent-blue/30 rounded-full text-[9px] text-accent-blue font-bold cursor-pointer hover:bg-accent-blue/30 transition-all"
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-accent-blue/20 border border-accent-blue/30 rounded-full text-[11px] text-accent-blue font-bold cursor-pointer hover:bg-accent-blue/30 transition-all"
                   >
                     {u.name}
                     <X size={10} />
@@ -192,9 +192,9 @@ export const AddMembersModal = memo(({
 
               {!searching && query.trim() && visibleResults.length === 0 && (
                 <div className="py-8 text-center space-y-1">
-                  <p className="text-[10px] text-white/30">No users available to add</p>
+                  <p className="text-xs text-white/30">No users available to add</p>
                   {alreadyMemberCount > 0 && (
-                    <p className="text-[9px] text-white/20">
+                    <p className="text-[11px] text-white/20">
                       {alreadyMemberCount} already in this group
                     </p>
                   )}
@@ -214,7 +214,7 @@ export const AddMembersModal = memo(({
                     <ChatAvatar participant={u} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-bold text-white truncate">{u.name}</p>
-                      <p className="text-[9px] text-white/30 truncate">@{u.username}</p>
+                      <p className="text-[11px] text-white/30 truncate">@{u.username}</p>
                     </div>
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                       isSelected ? 'bg-accent-blue border-accent-blue' : 'border-white/15'
@@ -233,7 +233,7 @@ export const AddMembersModal = memo(({
             {/* Search pagination */}
             {query.trim() && searchTotalPages > 1 && (
               <div className="flex items-center justify-between gap-2 px-4 py-2 border-t border-white/[0.04] bg-white/[0.015]">
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-white/30">
                   {searchTotal} match{searchTotal === 1 ? '' : 'es'}
                   {alreadyMemberCount > 0 && (
                     <span className="text-white/20"> · {alreadyMemberCount} already in</span>
@@ -251,7 +251,7 @@ export const AddMembersModal = memo(({
 
             {submitError && (
               <div className="px-4 py-2 border-t border-rose-500/20 bg-rose-500/5">
-                <p className="text-[10px] font-bold text-rose-200">{submitError}</p>
+                <p className="text-xs font-bold text-rose-200">{submitError}</p>
               </div>
             )}
 
@@ -259,14 +259,14 @@ export const AddMembersModal = memo(({
             <div className="p-4 pt-2 border-t border-white/[0.06] flex items-center gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2.5 bg-white/[0.04] text-white/60 border border-white/[0.06] rounded-xl font-bold text-[10px] uppercase tracking-widest hover:text-white transition-all"
+                className="flex-1 py-2.5 bg-white/[0.04] text-white/60 border border-white/[0.06] rounded-xl font-bold text-xs uppercase tracking-wide hover:text-white transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={() => void handleSubmit()}
                 disabled={selected.length === 0 || submitting || loadingExisting}
-                className="flex-[1.5] py-2.5 bg-accent-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="flex-[1.5] py-2.5 bg-accent-blue text-white rounded-xl font-bold text-xs uppercase tracking-wide hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {submitting
                   ? 'Adding…'

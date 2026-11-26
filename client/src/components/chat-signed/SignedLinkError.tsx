@@ -32,16 +32,16 @@ export const SignedLinkError: React.FC<SignedLinkErrorProps> = ({ kind, detail }
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-xl font-black tracking-tight">{title}</h1>
+          <h1 className="text-xl font-bold tracking-tight">{title}</h1>
           <p className="text-[13px] leading-relaxed text-white/60">{message}</p>
           {detail && (
-            <p className="text-[10px] text-white/25 font-mono mt-3 px-3 py-2 bg-white/[0.02] border border-white/[0.06] rounded-md inline-block">
+            <p className="text-xs text-white/25 font-mono mt-3 px-3 py-2 bg-white/[0.02] border border-white/[0.06] rounded-md inline-block">
               {detail}
             </p>
           )}
         </div>
 
-        <p className="text-[10px] uppercase tracking-[0.3em] text-white/25">
+        <p className="text-xs uppercase tracking-wider text-white/25">
           Ask for a new link to continue
         </p>
       </div>

@@ -59,7 +59,7 @@ export const RevealSecretModal = memo(({ created, onClose }: RevealSecretModalPr
             className="w-full max-w-md bg-[#0c0c0c] border border-emerald-500/30 rounded-2xl shadow-2xl overflow-hidden"
           >
             <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-              <h3 className="text-sm font-black uppercase tracking-tight text-white">
+              <h3 className="text-sm font-bold uppercase tracking-tight text-white">
                 Key Created
               </h3>
               <button
@@ -99,13 +99,13 @@ export const RevealSecretModal = memo(({ created, onClose }: RevealSecretModalPr
             <div className="p-4 pt-0 flex gap-3">
               <button
                 onClick={download}
-                className="flex-1 py-2.5 bg-white/[0.04] border border-white/10 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 bg-white/[0.04] border border-white/10 text-white rounded-xl font-bold text-xs uppercase tracking-wide hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
               >
                 <Download size={14} /> Download .env
               </button>
               <button
                 onClick={onClose}
-                className="flex-[1.5] py-2.5 bg-accent-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20"
+                className="flex-[1.5] py-2.5 bg-accent-blue text-white rounded-xl font-bold text-xs uppercase tracking-wide hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20"
               >
                 I've saved the secret
               </button>
@@ -131,7 +131,7 @@ interface FieldProps {
 
 const Field: React.FC<FieldProps> = ({ label, value, copied, onCopy, highlight }) => (
   <div>
-    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-1">
+    <label className="text-[11px] font-bold uppercase tracking-wide text-gray-500 block mb-1">
       {label}
     </label>
     <div className={`flex items-center gap-2 p-3 rounded-xl border ${

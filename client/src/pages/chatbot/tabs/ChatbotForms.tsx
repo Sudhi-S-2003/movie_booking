@@ -168,7 +168,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Variable Key Name *
             </label>
             <input
@@ -180,7 +180,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Prompt Question Label *
             </label>
             <input
@@ -192,7 +192,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Field Input Type
             </label>
             <select
@@ -212,7 +212,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border-t border-white/5 pt-4">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Input Placeholder
             </label>
             <input
@@ -224,7 +224,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Validation Regular Expression
             </label>
             <input
@@ -236,7 +236,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Validation Error message
             </label>
             <input
@@ -251,7 +251,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
 
         {newFieldForm.fieldType === 'select' && (
           <div className="space-y-2 border-t border-white/5 pt-4">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
               Select options (comma-separated list) *
             </label>
             <input
@@ -279,7 +279,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
             </label>
 
             <div className="flex items-center space-x-2">
-              <span className="text-[9px] uppercase font-bold text-gray-400">Order:</span>
+              <span className="text-[11px] uppercase font-bold text-gray-400">Order:</span>
               <input
                 type="number"
                 value={newFieldForm.order}
@@ -323,7 +323,7 @@ export const ChatbotForms: React.FC = React.memo(() => {
                       {field.label}
                     </span>
                     {field.required && (
-                      <span className="px-1.5 py-0.5 bg-rose-500/10 text-rose-400 rounded text-[9px] uppercase font-bold border border-rose-500/20">
+                      <span className="px-1.5 py-0.5 bg-rose-500/10 text-rose-400 rounded text-[11px] uppercase font-bold border border-rose-500/20">
                         Required
                       </span>
                     )}

@@ -1,5 +1,7 @@
 import type { Namespace } from 'socket.io';
 import { socketAuthMiddleware } from '../socketAuth.middleware.js';
+import mongoose from 'mongoose';
+import { ConversationParticipant } from '../../models/chat.model.js';
 
 /**
  * Chat / Messages channel — per-conversation room.
@@ -17,29 +19,45 @@ export const registerChatMessagesHandlers = (namespace: Namespace) => {
     const userId   = socket.data.userId as string;
     console.log(`💬 [CHAT-MSG] Client connected: ${socket.id} (user: ${userId})`);
 
-    socket.on('join_conversation', (conversationId: string) => {
-      // Security: if guest, verify they are joining the conversation they have a signature for.
-      if (socket.data.isGuest && socket.data.allowedConversationId !== conversationId) {
-        console.warn(`⚠️ [CHAT-MSG] Guest ${socket.id} attempted to join unauthorized room: ${conversationId}`);
-        return;
+    const canJoin = async (conversationId: unknown): Promise<boolean> => {
+      if (typeof conversationId !== 'string' || !mongoose.isValidObjectId(conversationId)) return false;
+      // Guests may only join the single conversation their signed link covers.
+      if (socket.data.isGuest) return socket.data.allowedConversationId === conversationId;
+      // Registered users must be participants of the conversation.
+      return !!(await ConversationParticipant.exists({ conversationId, userId: socket.data.userId }));
+    };
+
+    socket.on('join_conversation', async (conversationId: string) => {
+      try {
+        if (!(await canJoin(conversationId))) {
+          console.warn(`⚠️ [CHAT-MSG] ${socket.id} denied join for room ${String(conversationId)}`);
+          return;
+        }
+        socket.join(`conv:${conversationId}`);
+      } catch (err) {
+        console.error('[CHAT-MSG] join failed:', err);
       }
-      socket.join(`conv:${conversationId}`);
     });
 
     socket.on('leave_conversation', (conversationId: string) => {
       socket.leave(`conv:${conversationId}`);
     });
 
-    // Typing — use server-side user identity, ignore client-sent userId/name
+    // Typing is only relayed to rooms this socket has actually joined.
+    const inRoom = (conversationId: unknown) =>
+      typeof conversationId === 'string' && socket.rooms.has(`conv:${conversationId}`);
+
     socket.on('typing', (payload: { conversationId: string }) => {
+      if (!inRoom(payload?.conversationId)) return;
       socket.to(`conv:${payload.conversationId}`).emit('user_typing', {
         conversationId: payload.conversationId,
-        userId:         socket.data.userId, // May be null for guests
+        userId:         socket.data.userId,
         name:           socket.data.userName,
       });
     });
 
     socket.on('stop_typing', (payload: { conversationId: string }) => {
+      if (!inRoom(payload?.conversationId)) return;
       socket.to(`conv:${payload.conversationId}`).emit('user_stop_typing', {
         conversationId: payload.conversationId,
         userId,

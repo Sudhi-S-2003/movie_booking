@@ -26,8 +26,8 @@ const OtpCodeDisplay = ({ code }: { code: string }) => {
       onClick={handleCopy}
       className="group relative flex flex-col items-center justify-center p-4 rounded-xl bg-slate-950/40 hover:bg-slate-900/60 transition-all border border-dashed border-white/20 text-center font-mono tracking-wider shadow-inner cursor-pointer"
     >
-      <div className="text-[9px] text-gray-500 uppercase tracking-widest font-black mb-1.5 select-none transition-colors group-hover:text-gray-400">Verification Code</div>
-      <div className="text-xl font-black text-accent-blue tracking-[0.2em] flex items-center justify-center gap-3">
+      <div className="text-[11px] text-gray-500 uppercase tracking-wide font-bold mb-1.5 select-none transition-colors group-hover:text-gray-400">Verification Code</div>
+      <div className="text-xl font-bold text-accent-blue tracking-wide flex items-center justify-center gap-3">
         <span>{code}</span>
         <button 
           title="Copy code"
@@ -177,7 +177,7 @@ export const ChatbotTemplateBubble = memo(({
             // Unknown / custom key → labeled row
             return (
               <div key={idx} className="space-y-0.5">
-                <span className="font-bold text-white/50 text-[9px] uppercase tracking-wider block">
+                <span className="font-bold text-white/50 text-[11px] uppercase tracking-wider block">
                   {h.key.replace(/_/g, ' ')}
                 </span>
                 <div className="font-bold text-[13px] tracking-wide text-white/95 leading-normal">
@@ -213,7 +213,7 @@ export const ChatbotTemplateBubble = memo(({
                 <div key={idx} className="relative p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/25 text-white overflow-hidden shadow-inner">
                   <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-950 border-r border-indigo-500/25 rounded-full" />
                   <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-950 border-l border-indigo-500/25 rounded-full" />
-                  <div className="text-[9px] text-indigo-400 font-bold uppercase tracking-widest mb-2 select-none border-b border-indigo-500/15 pb-1 flex justify-between">
+                  <div className="text-[11px] text-indigo-400 font-bold uppercase tracking-wide mb-2 select-none border-b border-indigo-500/15 pb-1 flex justify-between">
                     <span>🎟️ Cinema Ticket</span>
                     <span>Receipt</span>
                   </div>
@@ -240,7 +240,7 @@ export const ChatbotTemplateBubble = memo(({
             // Unknown / custom body key → labeled row
             return (
               <div key={idx} className="space-y-0.5 animate-fade-in">
-                <span className="font-bold text-white/70 text-[9px] uppercase tracking-wider block">
+                <span className="font-bold text-white/70 text-[11px] uppercase tracking-wider block">
                   {b.key.replace(/_/g, ' ')}
                 </span>
                 <MessageText text={b.value} isOwn={isOwn} />
@@ -252,7 +252,7 @@ export const ChatbotTemplateBubble = memo(({
 
       {/* ── FOOTERS ─────────────────────────────────────────────────────── */}
       {sortedFooters.length > 0 && (
-        <div className="flex flex-col gap-1 mt-2.5 pt-2 border-t border-white/[0.06] text-[10px] text-white/40 italic leading-tight">
+        <div className="flex flex-col gap-1 mt-2.5 pt-2 border-t border-white/[0.06] text-xs text-white/40 italic leading-tight">
           {sortedFooters.map((f, idx) => {
             if (f.key === 'terms_link' && f.value.startsWith('http')) {
               return (
@@ -275,7 +275,7 @@ export const ChatbotTemplateBubble = memo(({
             // Unknown / custom footer key → small labeled row
             return (
               <div key={idx}>
-                <span className="font-semibold text-white/30 uppercase text-[9px] tracking-wider mr-1">
+                <span className="font-semibold text-white/30 uppercase text-[11px] tracking-wider mr-1">
                   {f.key.replace(/_/g, ' ')}:
                 </span>
                 {f.value}

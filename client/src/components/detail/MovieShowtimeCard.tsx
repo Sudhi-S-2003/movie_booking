@@ -49,7 +49,7 @@ export const MovieShowtimeCard: React.FC<MovieShowtimeCardProps> = ({ movie }) =
             <div className="absolute inset-0 flex items-end p-6 translate-y-4 group-hover/poster:translate-y-0 opacity-0 group-hover/poster:opacity-100 transition-all duration-300">
               <Link 
                 to={`/movie/${movie.id}`} 
-                className="w-full py-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-accent-pink hover:border-accent-pink transition-all text-center"
+                className="w-full py-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-xs font-bold uppercase tracking-wide text-white hover:bg-accent-pink hover:border-accent-pink transition-all text-center"
               >
                 View Details
               </Link>
@@ -57,15 +57,15 @@ export const MovieShowtimeCard: React.FC<MovieShowtimeCardProps> = ({ movie }) =
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-3xl font-black text-white leading-none tracking-tighter">{movie.title}</h3>
+            <h3 className="text-3xl font-bold text-white leading-none tracking-tighter">{movie.title}</h3>
             <div className="flex flex-wrap gap-2">
               <div className="flex items-center gap-1.5 px-3 py-1 bg-accent-blue/10 rounded-lg border border-accent-blue/20">
                 <ShieldCheck size={10} className="text-accent-blue" />
-                <span className="text-[10px] font-black text-accent-blue uppercase">{movie.certification}</span>
+                <span className="text-xs font-bold text-accent-blue uppercase">{movie.certification}</span>
               </div>
               {movie.genres?.slice(0, 2).map(genre => (
                 <div key={genre} className="px-3 py-1 bg-white/5 rounded-lg border border-white/10">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{genre}</span>
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">{genre}</span>
                 </div>
               ))}
             </div>
@@ -76,7 +76,7 @@ export const MovieShowtimeCard: React.FC<MovieShowtimeCardProps> = ({ movie }) =
         <div className="lg:col-span-9 space-y-10">
           <div className="flex items-center gap-4 text-gray-500 mb-2">
             <div className="h-px flex-1 bg-white/5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">Available Screens</span>
+            <span className="text-xs font-bold uppercase tracking-wider whitespace-nowrap">Available Screens</span>
             <div className="h-px flex-1 bg-white/5" />
           </div>
 
@@ -89,18 +89,18 @@ export const MovieShowtimeCard: React.FC<MovieShowtimeCardProps> = ({ movie }) =
                       <Zap size={24} className="fill-accent-blue/20" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-black text-white uppercase tracking-wider">{screen.name}</h4>
+                      <h4 className="text-lg font-bold text-white uppercase tracking-wider">{screen.name}</h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-bold text-accent-pink bg-accent-pink/10 px-2 py-0.5 rounded-md border border-accent-pink/20 uppercase tracking-widest">{screen.format}</span>
+                        <span className="text-xs font-bold text-accent-pink bg-accent-pink/10 px-2 py-0.5 rounded-md border border-accent-pink/20 uppercase tracking-wide">{screen.format}</span>
                         <div className="w-1 h-1 rounded-full bg-gray-700" />
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Premium Audio & Visuals</p>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Premium Audio & Visuals</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="hidden sm:flex items-center gap-2 text-gray-600">
                     <Info size={14} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Pricing Varies</span>
+                    <span className="text-xs font-bold uppercase tracking-wide">Pricing Varies</span>
                   </div>
                 </div>
                 
@@ -112,7 +112,7 @@ export const MovieShowtimeCard: React.FC<MovieShowtimeCardProps> = ({ movie }) =
                       className="group/time relative flex flex-col items-center justify-center py-5 bg-white/[0.03] border border-white/5 rounded-2xl transition-all hover:bg-accent-blue hover:border-accent-blue hover:scale-105 hover:shadow-[0_15px_30px_rgba(59,130,246,0.3)]"
                     >
                       <Clock size={12} className="text-gray-500 mb-1 group-hover/time:text-white/60" />
-                      <span className="text-base font-black text-white group-hover/time:scale-110 transition-transform">{st.time}</span>
+                      <span className="text-base font-bold text-white group-hover/time:scale-110 transition-transform">{st.time}</span>
                     </Link>
                   ))}
                 </div>

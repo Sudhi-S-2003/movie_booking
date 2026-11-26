@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { requireService } from '../modules/catalog/catalog.middleware.js';
+import { SERVICE_KEYS } from '../modules/catalog/catalog.registry.js';
 import { isAuthenticatedApiKey, isChatSignatureValid } from '../middleware/api.key.middleware.js';
 import {
     getGuestConversation,
@@ -22,8 +24,9 @@ const router = Router();
 
 
 // 1. Management API (Authenticated)
-router.post("/conversation", isAuthenticatedApiKey, createChatConversation);
-router.post("/conversation/signed-url", isAuthenticatedApiKey, getSignedChatConversation);
+// Management API (API key) — the key owner must have the Chat service.
+router.post("/conversation", isAuthenticatedApiKey, requireService(SERVICE_KEYS.CHAT), createChatConversation);
+router.post("/conversation/signed-url", isAuthenticatedApiKey, requireService(SERVICE_KEYS.CHAT), getSignedChatConversation);
 
 // 2. Guest API (Signature Protected)
 

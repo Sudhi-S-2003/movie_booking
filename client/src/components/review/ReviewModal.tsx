@@ -49,13 +49,13 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           >
             <div className="flex-1 space-y-8">
               <div>
-                <h3 className="text-3xl font-black text-white uppercase tracking-tight mb-2">Share your experience</h3>
+                <h3 className="text-3xl font-bold text-white uppercase tracking-tight mb-2">Share your experience</h3>
                 <p className="text-gray-500 text-sm font-medium">How would you rate your time at {targetName}?</p>
               </div>
 
               <div className="space-y-6">
                 <div className="flex flex-col gap-3">
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Select Rating (1-10)</span>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Select Rating (1-10)</span>
                   <div className="flex items-center gap-4">
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(star => (
@@ -90,7 +90,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
                         </div>
                       ))}
                     </div>
-                    <span className="text-2xl font-black text-yellow-500 bg-yellow-500/10 px-4 py-1 rounded-2xl border border-yellow-500/10">
+                    <span className="text-2xl font-bold text-yellow-500 bg-yellow-500/10 px-4 py-1 rounded-2xl border border-yellow-500/10">
                       {hoverRating || newReview.rating}
                     </span>
                   </div>
@@ -98,7 +98,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-3">
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Detailed Feedback</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Detailed Feedback</span>
                     <textarea 
                       value={newReview.comment}
                       onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
@@ -111,14 +111,14 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
                     <button 
                       type="submit"
                       disabled={isSubmitting}
-                      className={`flex-1 bg-${accentColor} text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-xl disabled:opacity-50`}
+                      className={`flex-1 bg-${accentColor} text-white py-5 rounded-2xl font-bold uppercase tracking-wide text-xs hover:opacity-90 transition-all shadow-xl disabled:opacity-50`}
                     >
                       {isSubmitting ? "Submitting..." : "Post Review"}
                     </button>
                     <button 
                       type="button"
                       onClick={onClose}
-                      className="px-8 bg-white/5 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all"
+                      className="px-8 bg-white/5 text-white py-5 rounded-2xl font-bold uppercase tracking-wide text-xs hover:bg-white/10 transition-all"
                     >
                       Cancel
                     </button>
@@ -129,7 +129,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
             {/* Tips Sidebar */}
             <div className="hidden md:block w-64 bg-white/5 rounded-[32px] p-8 space-y-6">
-              <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Review Tips</h4>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wide">Review Tips</h4>
               <ul className="space-y-4">
                 {[
                   "Be descriptive and honest",

@@ -46,20 +46,20 @@ export const ManageInvitesPanel = memo(({ conversationId }: ManageInvitesPanelPr
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
         <Link2 size={12} /> Invite Links
       </div>
 
       {/* Creator form */}
       <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
         <div className="space-y-1">
-          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">Expires</label>
+          <label className="text-[11px] font-bold uppercase tracking-wide text-gray-600">Expires</label>
           <div className="flex flex-wrap gap-1.5">
             {EXPIRY_PRESETS.map((p) => (
               <button
                 key={p.label}
                 onClick={() => setExpiryMs(p.ms)}
-                className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all ${
+                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all ${
                   expiryMs === p.ms
                     ? 'bg-accent-blue/15 border-accent-blue/30 text-accent-blue'
                     : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white'
@@ -72,7 +72,7 @@ export const ManageInvitesPanel = memo(({ conversationId }: ManageInvitesPanelPr
         </div>
 
         <div className="space-y-1">
-          <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">Max uses</label>
+          <label className="text-[11px] font-bold uppercase tracking-wide text-gray-600">Max uses</label>
           <input
             value={maxUses}
             onChange={(e) => setMaxUses(e.target.value.replace(/[^0-9]/g, ''))}
@@ -85,14 +85,14 @@ export const ManageInvitesPanel = memo(({ conversationId }: ManageInvitesPanelPr
         <button
           onClick={() => void handleCreate()}
           disabled={creating}
-          className="self-end px-4 py-2 bg-accent-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="self-end px-4 py-2 bg-accent-blue text-white rounded-xl font-bold text-xs uppercase tracking-wide flex items-center gap-2 hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           <Plus size={12} /> {creating ? 'Creating…' : 'Create Link'}
         </button>
       </div>
 
       {invites.error && (
-        <p className="text-[10px] font-bold text-rose-300">{invites.error}</p>
+        <p className="text-xs font-bold text-rose-300">{invites.error}</p>
       )}
 
       {/* List */}
@@ -103,7 +103,7 @@ export const ManageInvitesPanel = memo(({ conversationId }: ManageInvitesPanelPr
           </div>
         ) : invites.invites.length === 0 ? (
           <div className="p-10 text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-700">
               No invite links yet
             </p>
           </div>
@@ -117,7 +117,7 @@ export const ManageInvitesPanel = memo(({ conversationId }: ManageInvitesPanelPr
 
         {invites.pagination.totalPages > 1 && (
           <div className="flex items-center justify-between gap-4 px-6 py-3 border-t border-white/[0.04] flex-wrap">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-600">
               {invites.pagination.total} total
             </p>
             <MembersPagination

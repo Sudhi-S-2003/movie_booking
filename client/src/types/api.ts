@@ -266,6 +266,8 @@ export interface CreateIssueBody {
 }
 
 export interface IssueResponse {
+  /** Returned once for guest tickets; proves ownership on later requests. */
+  guestToken?: string;
   issue: Issue;
 }
 

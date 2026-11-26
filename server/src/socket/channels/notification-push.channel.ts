@@ -34,12 +34,12 @@ export const registerNotificationHandlers = (namespace: Namespace) => {
     }
 
     // 4. Role-specific rooms
-    if (socket.data.role === UserRole.ADMIN) {
+    if (socket.data.role === UserRole.ADMIN || socket.data.role === UserRole.SUPER_ADMIN) {
       socket.join('admins');
       console.log(`🛡️ [NOTIFICATION] ${socket.id} joined 'admins' room`);
-    } else if (socket.data.role === UserRole.THEATRE_OWNER) {
-      socket.join('owners');
-      console.log(`🎭 [NOTIFICATION] ${socket.id} joined 'owners' room`);
+    } else if (socket.data.role === UserRole.RESELLER) {
+      socket.join('resellers');
+      console.log(`🎭 [NOTIFICATION] ${socket.id} joined 'resellers' room`);
     }
 
     socket.on('disconnect', () => {

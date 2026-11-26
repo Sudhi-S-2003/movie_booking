@@ -79,7 +79,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ targetId, targetTy
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
             <Filter size={14} className="text-gray-500" />
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Sort By</span>
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Sort By</span>
           </div>
           <div className="flex gap-2">
             {[
@@ -90,7 +90,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ targetId, targetTy
               <button
                 key={opt.id}
                 onClick={() => setSort(opt.id as any)}
-                className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${sort === opt.id ? `bg-white/10 text-white shadow-lg` : 'text-gray-500 hover:text-white'}`}
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${sort === opt.id ? `bg-white/10 text-white shadow-lg` : 'text-gray-500 hover:text-white'}`}
               >
                 {opt.label}
               </button>
@@ -101,7 +101,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ targetId, targetTy
         {isAuthenticated && (
           <button 
             onClick={() => setIsOverlayOpen(true)}
-            className={`w-full sm:w-auto px-10 py-4 bg-${accentColor} text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:opacity-90 transition-all shadow-xl ${shadowColor}`}
+            className={`w-full sm:w-auto px-10 py-4 bg-${accentColor} text-white rounded-2xl font-bold uppercase tracking-wide text-xs hover:opacity-90 transition-all shadow-xl ${shadowColor}`}
           >
             Write Review
           </button>
@@ -132,7 +132,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ targetId, targetTy
           ) : (
             <div className="text-center py-32 bg-white/[0.02] rounded-[60px] border border-dashed border-white/10">
               <MessageSquare size={64} className="text-gray-800 mx-auto mb-6 opacity-30" />
-              <p className="text-gray-500 font-black text-2xl italic opacity-50 uppercase tracking-[0.2em]">No reviews yet</p>
+              <p className="text-gray-500 font-bold text-2xl italic opacity-50 uppercase tracking-wide">No reviews yet</p>
             </div>
           )}
         </AnimatePresence>
@@ -147,7 +147,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ targetId, targetTy
             >
               <ChevronLeft size={20} />
             </button>
-            <span className="font-black text-white text-sm uppercase tracking-widest">
+            <span className="font-bold text-white text-sm uppercase tracking-wide">
               Page {page} <span className="text-gray-500">of</span> {pagination.totalPages}
             </span>
             <button 

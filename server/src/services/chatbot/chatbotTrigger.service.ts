@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { safeRegexTest, escapeRegex } from '../../utils/safeRegex.util.js';
 import {
   STOP_VERBS,
   START_VERBS,
@@ -39,7 +40,7 @@ async function compileText(
   // 2. Session variables
   if (sessionData) {
     for (const [key, value] of sessionData.entries()) {
-      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+      const regex = new RegExp(`\\{\\{${escapeRegex(key)}\\}\\}`, 'g');
       compiled = compiled.replace(regex, value || '');
     }
   }
@@ -47,7 +48,7 @@ async function compileText(
   // 3. Chatbot default variables
   const defaultVars = await ChatbotVariable.find({ chatbotId });
   for (const v of defaultVars) {
-    const regex = new RegExp(`\\{\\{${v.name}\\}\\}`, 'g');
+    const regex = new RegExp(`\\{\\{${escapeRegex(v.name)}\\}\\}`, 'g');
     compiled = compiled.replace(regex, v.defaultValue || '');
   }
 
@@ -114,7 +115,7 @@ async function sendChatbotResponse(
   sessionData?: Map<string, string>,
   context: { senderName: string; chatbotName: string } = { senderName: '', chatbotName: '' },
 ): Promise<void> {
-  const template = await ChatbotTemplate.findById(templateId);
+  const template = await ChatbotTemplate.findOne({ _id: templateId, chatbotId: chatbot._id });
   if (!template) return;
 
   const headers = [];
@@ -440,8 +441,7 @@ export async function handleChatbotTrigger(
       let matchedStep = null;
       for (const step of nextSteps) {
         if (step.condition) {
-          const regex = new RegExp(step.condition, 'i');
-          if (regex.test(messageText)) {
+          if (safeRegexTest(step.condition, messageText, 'i')) {
             matchedStep = step;
             break;
           }
@@ -458,7 +458,7 @@ export async function handleChatbotTrigger(
         await sendChatbotResponse(conversationId, chatbot, matchedStep.templateId, session.data, context);
 
         // Check if next step points to end (i.e. template has no nextFlowStepId)
-        const template = await ChatbotTemplate.findById(matchedStep.templateId);
+        const template = await ChatbotTemplate.findOne({ _id: matchedStep.templateId, chatbotId: chatbot._id });
         if (!template || !template.nextFlowStepId) {
           await ChatbotSession.deleteOne({ _id: session._id });
         }
@@ -482,7 +482,7 @@ export async function handleChatbotTrigger(
         return;
       }
 
-      const menu = await ChatbotMenu.findById(activeMenuId);
+      const menu = await ChatbotMenu.findOne({ _id: activeMenuId, chatbotId: chatbot._id });
       if (!menu) {
         await ChatbotSession.deleteOne({ _id: session._id });
         return;
@@ -509,7 +509,7 @@ export async function handleChatbotTrigger(
           await sendChatbotResponse(conversationId, chatbot, matchedItem.templateId, session.data, context);
           await ChatbotSession.deleteOne({ _id: session._id });
         } else if (matchedItem.actionType === 'flow' && matchedItem.flowStepId) {
-          const step = await ChatbotFlow.findById(matchedItem.flowStepId);
+          const step = await ChatbotFlow.findOne({ _id: matchedItem.flowStepId, chatbotId: chatbot._id });
           if (step) {
             session.currentStepId = step._id as mongoose.Types.ObjectId;
             await session.save();
@@ -518,7 +518,7 @@ export async function handleChatbotTrigger(
             await ChatbotSession.deleteOne({ _id: session._id });
           }
         } else if (matchedItem.actionType === 'menu' && matchedItem.subMenuId) {
-          const subMenu = await ChatbotMenu.findById(matchedItem.subMenuId);
+          const subMenu = await ChatbotMenu.findOne({ _id: matchedItem.subMenuId, chatbotId: chatbot._id });
           if (subMenu) {
             session.data.set('active_menu_id', String(subMenu._id));
             await session.save();
@@ -571,8 +571,7 @@ export async function handleChatbotTrigger(
         isValid = !isNaN(Number(messageText.trim()));
       } else if (currentField.validationRegex) {
         try {
-          const regex = new RegExp(currentField.validationRegex);
-          isValid = regex.test(messageText);
+          isValid = safeRegexTest(currentField.validationRegex, messageText);
         } catch {
           isValid = false;
         }
@@ -690,8 +689,7 @@ export async function handleChatbotTrigger(
       }
     } else if (kw.matchType === 'regex') {
       try {
-        const regex = new RegExp(kw.keyword, 'i');
-        if (regex.test(messageText)) {
+        if (safeRegexTest(kw.keyword, messageText, 'i')) {
           matchedKeyword = kw;
           break;
         }

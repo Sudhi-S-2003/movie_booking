@@ -5,7 +5,7 @@ import { Users } from 'lucide-react';
 export const MembersEmpty = memo(() => (
   <div className="p-20 text-center space-y-4">
     <Users size={48} className="mx-auto text-gray-800" />
-    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">
+    <p className="text-xs font-bold uppercase tracking-wider text-gray-700">
       No members found on this page
     </p>
   </div>

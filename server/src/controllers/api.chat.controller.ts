@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { createApiConversation } from '../services/chat/conversationCreator.service.js';
-import { signConversation } from '../utils/signature.util.js';
+import { signConversation, clampTtlMinutes } from '../utils/signature.util.js';
 import { env } from '../env.js';
 import {
   Conversation,
@@ -29,7 +29,9 @@ import {
 } from '../socket/index.js';
 import { emitChatReceipts } from '../socket/channels/chat-messages.channel.js';
 import { validateIncomingMessage, buildPreviewText } from '../services/chat/contentTypeValidator.js';
-import { getSummary as getSubscriptionSummary } from '../services/subscription/subscription.service.js';
+import { resolveAccess } from '../modules/catalog/entitlement.service.js';
+import { canAfford } from '../modules/billing/charge.service.js';
+import { SERVICE_KEYS } from '../modules/catalog/catalog.registry.js';
 import * as ChatActionService from '../services/chat/chatAction.service.js';
 
 // ── Conversations ────────────────────────────────────────────────────────────
@@ -53,7 +55,7 @@ export const createChatConversation = async (req: Request, res: Response) => {
     });
 
     const conversationId = String(conversation._id);
-    const ttlMinutes = typeof req.body.expiryMinutes === 'number' ? req.body.expiryMinutes : 5;
+    const ttlMinutes = clampTtlMinutes(req.body.expiryMinutes, 5);
     const expiresAt = Date.now() + ttlMinutes * 60 * 1000;
 
     const signature = signConversation(conversationId, expiresAt);
@@ -86,8 +88,16 @@ export const getSignedChatConversation = async (req: Request, res: Response) => 
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    const ttlMinutes = typeof expiryMinutes === 'number' ? expiryMinutes : 5;
-    const expiresAt = Date.now() + ttlMinutes * 60 * 1000;
+    // Only the account that created this API conversation may sign links to it.
+    if (typeof conversationId !== 'string' || !mongoose.isValidObjectId(conversationId)) {
+      return res.status(400).json({ success: false, message: 'Invalid conversation ID' });
+    }
+    const owned = await Conversation.exists({ _id: conversationId, type: 'api', createdBy: apiKeyUser._id });
+    if (!owned) {
+      return res.status(404).json({ success: false, message: 'Conversation not found' });
+    }
+
+    const expiresAt = Date.now() + clampTtlMinutes(expiryMinutes, 5) * 60 * 1000;
 
     const signature = signConversation(conversationId, expiresAt);
     const signedUrl = `${env.FRONTEND_URL}/chat/${conversationId}?signature=${signature}&expiresAt=${expiresAt}`;
@@ -287,7 +297,7 @@ export const sendGuestMessage = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: decorated,
-      tokens: { remaining: tokens.remaining, plan: tokens.plan, cost: tokens.cost },
+      billing: { cost: tokens.cost, units: tokens.units, balance: tokens.balance },
     });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
@@ -396,34 +406,20 @@ export const deleteGuestMessage = async (req: Request, res: Response) => {
  */
 export const getGuestSubscription = async (req: Request, res: Response) => {
   try {
-    const identity = req.externalUser;
-    if (!identity) return res.status(401).json({ success: false, message: 'Not authenticated' });
-
-    const conversationId = req.params.id as string;
-    const conversation = await Conversation
-      .findById(conversationId, { createdBy: 1 })
-      .lean();
-
-    if (!conversation || !conversation.createdBy) {
+    if (!req.externalUser) return res.status(401).json({ success: false, message: 'Not authenticated' });
+    const conversation = await Conversation.findById(req.params.id as string, { createdBy: 1 }).lean();
+    if (!conversation?.createdBy) {
       return res.status(404).json({ success: false, message: 'Conversation or owner not found' });
     }
-
-    const summary = await getSubscriptionSummary(conversation.createdBy);
-    res.json({
-      success: true,
-      subscription: {
-        plan:         summary.sub.plan,
-        billingCycle: summary.sub.billingCycle ?? null,
-        status:       summary.sub.status,
-        startsAt:     summary.sub.startsAt,
-        expiresAt:    summary.sub.expiresAt ?? null,
-        customMonthlyLimit:   summary.sub.customMonthlyLimit   ?? null,
-        customDurationMonths: summary.sub.customDurationMonths ?? null,
-        purchasesCount:       summary.sub.purchasesCount ?? 0,
-      },
-      remaining: summary.remaining,
-    });
+    const owner = await User.findById(conversation.createdBy);
+    if (!owner) return res.status(404).json({ success: false, message: 'Conversation owner not found' });
+    // Guests only learn whether messaging is currently possible — never the
+    // owner's balance, plan or pricing.
+    const access = await resolveAccess(owner, SERVICE_KEYS.CHAT);
+    const funds = access.usable ? await canAfford(owner, SERVICE_KEYS.CHAT, 1) : { ok: false };
+    res.json({ success: true, data: { canSend: access.usable && funds.ok } });
   } catch (e: unknown) {
-    res.status(500).json({ success: false, message: getErrorMessage(e) });
+    console.error('[guest chat] availability check failed:', e);
+    res.status(500).json({ success: false, message: 'Internal error' });
   }
 };

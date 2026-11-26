@@ -71,12 +71,12 @@ export const AdminMovies = () => {
               placeholder="Search movies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 py-3 pl-14 pr-6 rounded-2xl outline-none focus:border-accent-pink/50 transition-all font-bold text-[10px] uppercase tracking-widest"
+              className="w-full bg-white/5 border border-white/10 py-3 pl-14 pr-6 rounded-2xl outline-none focus:border-accent-pink/50 transition-all font-bold text-xs uppercase tracking-wide"
             />
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-8 py-3 bg-accent-pink text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-accent-pink/20 hover:scale-105 transition-all"
+            className="px-8 py-3 bg-accent-pink text-white rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 shadow-xl shadow-accent-pink/20 hover:scale-105 transition-all"
           >
             <Plus size={18} /> Add Movie
           </button>
@@ -87,7 +87,7 @@ export const AdminMovies = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-8">
             <Film size={80} className="text-white/5 animate-spin duration-[4s]" />
-            <p className="text-[10px] font-black uppercase tracking-[1em] text-gray-800">Loading...</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-800">Loading...</p>
         </div>
       ) : (
         <>
@@ -98,15 +98,15 @@ export const AdminMovies = () => {
                           <img src={movie.posterUrl} className="w-full h-full object-cover opacity-40 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" />
                           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
                           
-                          <div className="absolute top-6 right-6 px-4 py-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-[8px] font-black uppercase tracking-widest text-white shadow-2xl">
+                          <div className="absolute top-6 right-6 px-4 py-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-[11px] font-bold uppercase tracking-wide text-white shadow-2xl">
                               {movie.certification}
                           </div>
 
                           <div className="absolute bottom-6 left-8 right-8">
-                               <h3 className="text-2xl font-black text-white tracking-tight line-clamp-1">{movie.title}</h3>
+                               <h3 className="text-2xl font-bold text-white tracking-tight line-clamp-1">{movie.title}</h3>
                                <div className="flex gap-4 mt-2">
-                                   <span className="text-[9px] font-black text-accent-pink uppercase tracking-widest">{movie.showStatus}</span>
-                                   <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest underline underline-offset-4 decoration-accent-pink/40">{movie.language}</span>
+                                   <span className="text-[11px] font-bold text-accent-pink uppercase tracking-wide">{movie.showStatus}</span>
+                                   <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide underline underline-offset-4 decoration-accent-pink/40">{movie.language}</span>
                                </div>
                           </div>
                       </div>
@@ -120,8 +120,8 @@ export const AdminMovies = () => {
                               ].map((spec, i) => (
                                   <div key={i} className="flex flex-col gap-1.5 p-3 bg-white/5 rounded-2xl border border-white/5">
                                       <spec.icon size={12} className="text-gray-600" />
-                                      <span className="text-[9px] font-black text-white">{spec.value}</span>
-                                      <span className="text-[7px] font-bold text-gray-700 uppercase">{spec.label}</span>
+                                      <span className="text-[11px] font-bold text-white">{spec.value}</span>
+                                      <span className="text-[11px] font-bold text-gray-700 uppercase">{spec.label}</span>
                                   </div>
                               ))}
                           </div>
@@ -129,7 +129,7 @@ export const AdminMovies = () => {
                           <div className="mt-auto flex items-center gap-3 pt-4 border-t border-white/5">
                               <button className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 py-3 rounded-xl flex items-center justify-center gap-2 transition-all group/btn">
                                   <Edit2 size={14} className="text-gray-500 group-hover/btn:text-accent-blue" />
-                                   <span className="text-[9px] font-black uppercase text-gray-400 group-hover/btn:text-white">Edit</span>
+                                   <span className="text-[11px] font-bold uppercase text-gray-400 group-hover/btn:text-white">Edit</span>
                               </button>
                               <button className="p-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500 transition-all group/trash rounded-xl text-red-500 hover:text-white shadow-xl shadow-red-500/0 hover:shadow-red-500/20">
                                   <Trash2 size={16} />
@@ -166,13 +166,13 @@ export const AdminMovies = () => {
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-pink to-transparent opacity-50" />
                 <button onClick={() => setShowAddModal(false)} className="absolute top-10 right-10 p-4 hover:bg-white/5 rounded-full transition-all text-gray-500 hover:text-white"><Plus size={24} className="rotate-45" /></button>
                 
-                <h2 className="text-4xl font-black uppercase tracking-tight mb-4">Add New Movie</h2>
-                <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest mb-12">Add a new movie to the list.</p>
+                <h2 className="text-4xl font-bold uppercase tracking-tight mb-4">Add New Movie</h2>
+                <p className="text-gray-500 font-bold text-xs uppercase tracking-wide mb-12">Add a new movie to the list.</p>
 
                 <form onSubmit={handleAddMovie} className="grid grid-cols-2 gap-12">
                    <div className="space-y-6">
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Title</label>
+                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Title</label>
                          <input 
                             required
                             placeholder="Movie title..." 
@@ -183,7 +183,7 @@ export const AdminMovies = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Duration (min)</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Duration (min)</label>
                             <input 
                                 required
                                 type="number" 
@@ -194,7 +194,7 @@ export const AdminMovies = () => {
                             />
                          </div>
                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Language</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Language</label>
                             <input 
                                 required
                                 placeholder="English" 
@@ -207,7 +207,7 @@ export const AdminMovies = () => {
                    </div>
                    <div className="space-y-6">
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Poster URL</label>
+                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Poster URL</label>
                          <input 
                             required
                             placeholder="https://..." 
@@ -217,7 +217,7 @@ export const AdminMovies = () => {
                          />
                       </div>
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Show Status</label>
+                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Show Status</label>
                          <select 
                             value={newMovie.showStatus}
                             onChange={(e) => setNewMovie({...newMovie, showStatus: e.target.value})}
@@ -231,8 +231,8 @@ export const AdminMovies = () => {
                    </div>
 
                    <div className="col-span-2 mt-16 flex gap-6">
-                      <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:bg-white/10 shadow-2xl">Cancel</button>
-                      <button type="submit" className="flex-[2] py-5 bg-accent-pink text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-accent-pink/40 hover:scale-[1.02] active:scale-[0.98] transition-all">Add Movie</button>
+                      <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 bg-white/5 border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wide transition-all hover:bg-white/10 shadow-2xl">Cancel</button>
+                      <button type="submit" className="flex-[2] py-5 bg-accent-pink text-white rounded-2xl font-bold text-xs uppercase tracking-wide shadow-2xl shadow-accent-pink/40 hover:scale-[1.02] active:scale-[0.98] transition-all">Add Movie</button>
                    </div>
                 </form>
              </motion.div>

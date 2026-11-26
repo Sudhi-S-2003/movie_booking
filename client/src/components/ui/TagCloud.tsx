@@ -28,7 +28,7 @@ export const TagCloud = ({ tags, variant = 'pink', showHash = true }: TagCloudPr
           >
             <Link
               to={`/hashtag/${cleanTag}`}
-              className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${colorMap[variant]}`}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-1.5 ${colorMap[variant]}`}
             >
               {showHash && <Hash size={10} className="stroke-[3]" />}
               {cleanTag.replace(/_/g, ' ')}

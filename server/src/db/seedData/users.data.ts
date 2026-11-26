@@ -31,7 +31,9 @@ export const usersSeedData: Partial<IUser>[] = [
     name: 'Theatre Owner',
     username: 'grand_owner',
     email: 'owner@cinemaconnect.com',
-    role: UserRole.THEATRE_OWNER,
+    role: UserRole.USER,
+    // Movie-service operator: a permission, not a platform role.
+    permissions: ['movies.operate'],
     authProvider: AuthProvider.LOCAL,
     avatar: avatar('grand_owner'),
     coverImageUrl: cover('grand_owner'),

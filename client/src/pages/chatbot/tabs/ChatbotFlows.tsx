@@ -147,7 +147,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Step Name
             </label>
             <input
@@ -159,7 +159,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Step Description
             </label>
             <input
@@ -171,7 +171,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Response Template
             </label>
             <AsyncSelect
@@ -187,7 +187,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border-t border-white/5 pt-4">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
               Previous Step Node
             </label>
             <select
@@ -208,7 +208,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
               Previous Link Type
             </label>
             <select
@@ -222,7 +222,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Enter Condition (Keyword/Regex)
             </label>
             <input
@@ -235,7 +235,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Order Value
             </label>
             <input
@@ -268,7 +268,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
         </div>
 
         <div className="flex flex-col items-center max-w-lg mx-auto space-y-4">
-          <div className="bg-slate-950 border border-dashed border-white/10 rounded-xl p-4 text-center w-full text-xs text-gray-500 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+          <div className="bg-slate-950 border border-dashed border-white/10 rounded-xl p-4 text-center w-full text-xs text-gray-500 font-bold uppercase tracking-wide flex items-center justify-center gap-2">
             <MessageSquare className="w-4 h-4" />
             <span>🔑 User Keyword Match Trigger</span>
           </div>
@@ -286,7 +286,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
                   <div className="glass-card p-5 w-full relative group border-accent-purple/10">
                     <div className="flex items-start justify-between">
                       <div>
-                        <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 bg-accent-purple/10 text-accent-purple border border-accent-purple/20 rounded mr-2">
+                        <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 bg-accent-purple/10 text-accent-purple border border-accent-purple/20 rounded mr-2">
                           Node #{idx + 1}
                         </span>
                         <h4 className="text-white font-bold inline-block text-sm">{step.stepName}</h4>
@@ -303,7 +303,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
                     {/* Node Metadata indicators */}
                     <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/5 text-[11px] font-semibold text-gray-400">
                       <div>
-                        <span className="text-gray-500 font-bold uppercase tracking-wider text-[9px] block">
+                        <span className="text-gray-500 font-bold uppercase tracking-wider text-[11px] block">
                           Linked Response
                         </span>
                         <span className="text-accent-blue font-bold">
@@ -311,7 +311,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-500 font-bold uppercase tracking-wider text-[9px] block">
+                        <span className="text-gray-500 font-bold uppercase tracking-wider text-[11px] block">
                           Criteria Condition
                         </span>
                         <span className="font-mono text-emerald-400">
@@ -330,7 +330,7 @@ export const ChatbotFlows: React.FC = React.memo(() => {
           )}
 
           <div className="w-0.5 h-6 bg-white/5" />
-          <div className="bg-slate-950 border border-white/5 rounded-xl p-3 text-center w-full text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+          <div className="bg-slate-950 border border-white/5 rounded-xl p-3 text-center w-full text-xs text-gray-500 font-bold uppercase tracking-wider">
             🏁 Dialogue Session Ends / Repeats
           </div>
         </div>

@@ -33,15 +33,16 @@ interface MessagesResponse {
   lastReadMessageId?: string | null;
 }
 
-interface TokenResponse {
-  plan:      'free' | 'pro';
-  cost:      number;
-  remaining: { daily?: number; weekly?: number; monthly?: number };
+/** Billing outcome of a metered message (micros). `balance` is null for postpaid / unlimited. */
+interface MessageBilling {
+  cost:    number;
+  units:   number;
+  balance: number | null;
 }
 
 interface SendMessageResponse {
   message: ChatMessage;
-  tokens?: TokenResponse;
+  billing?: MessageBilling;
 }
 
 interface UnreadCountsResponse {

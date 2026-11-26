@@ -73,7 +73,7 @@ export const ChatbotCreate = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+          <h1 className="text-2xl font-bold text-white tracking-tight uppercase">
             Create Chatbot
           </h1>
           <p className="text-gray-500 text-xs font-semibold">WIZARD</p>
@@ -108,7 +108,7 @@ export const ChatbotCreate = () => {
               </div>
               <span
                 className={clsx(
-                  'text-[10px] uppercase font-bold tracking-wider mt-2 transition-colors duration-300',
+                  'text-xs uppercase font-bold tracking-wider mt-2 transition-colors duration-300',
                   step === s.num ? 'text-accent-purple' : 'text-gray-500'
                 )}
               >
@@ -142,7 +142,7 @@ export const ChatbotCreate = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
                     Chatbot Name *
                   </label>
                   <input
@@ -156,7 +156,7 @@ export const ChatbotCreate = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
                     Language
                   </label>
                   <div className="relative">
@@ -176,7 +176,7 @@ export const ChatbotCreate = () => {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
                     Avatar URL
                   </label>
                   <input
@@ -189,7 +189,7 @@ export const ChatbotCreate = () => {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
                     Description
                   </label>
                   <textarea
@@ -297,13 +297,13 @@ export const ChatbotCreate = () => {
 
               <div className="bg-slate-950 border border-white/5 rounded-2xl p-6 space-y-4 font-semibold text-sm">
                 <div className="flex items-center justify-between py-2 border-b border-white/5">
-                  <span className="text-gray-500 font-bold uppercase tracking-wider text-[10px]">
+                  <span className="text-gray-500 font-bold uppercase tracking-wider text-xs">
                     Name
                   </span>
                   <span className="text-white font-bold">{formData.name}</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-white/5">
-                  <span className="text-gray-500 font-bold uppercase tracking-wider text-[10px]">
+                  <span className="text-gray-500 font-bold uppercase tracking-wider text-xs">
                     Language
                   </span>
                   <span className="text-white uppercase font-bold tracking-wider">
@@ -311,7 +311,7 @@ export const ChatbotCreate = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-white/5">
-                  <span className="text-gray-500 font-bold uppercase tracking-wider text-[10px]">
+                  <span className="text-gray-500 font-bold uppercase tracking-wider text-xs">
                     Type
                   </span>
                   <span className="text-accent-blue uppercase font-bold tracking-wider">
@@ -320,7 +320,7 @@ export const ChatbotCreate = () => {
                 </div>
                 {formData.description && (
                   <div className="py-2">
-                    <span className="text-gray-500 font-bold uppercase tracking-wider text-[10px] block mb-1">
+                    <span className="text-gray-500 font-bold uppercase tracking-wider text-xs block mb-1">
                       Description
                     </span>
                     <p className="text-gray-400 text-xs font-normal leading-relaxed">

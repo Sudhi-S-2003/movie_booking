@@ -133,7 +133,7 @@ export const CodeShareEditor: React.FC<CodeShareEditorProps> = ({
                   <div className="w-1.5 h-10 bg-zinc-700 animate-pulse rounded-full delay-75" />
                   <div className="w-1.5 h-4 bg-zinc-800 animate-pulse rounded-full delay-150" />
                 </div>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Fetching Next Sequence</span>
+                <span className="text-xs text-zinc-500 uppercase tracking-wide font-medium">Fetching Next Sequence</span>
               </div>
             )}
           </div>

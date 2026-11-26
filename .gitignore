@@ -99,3 +99,7 @@ vite.config.*.timestamp-*
 .temp/
 tmp/
 temp/
+
+# Local credential dumps (never commit)
+api_key_share-*.env
+*.credentials.env

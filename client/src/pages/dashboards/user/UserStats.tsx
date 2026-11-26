@@ -35,7 +35,7 @@ export const UserStats = () => {
         <div className="bg-white/5 border border-white/10 p-10 rounded-[40px] space-y-6">
           <BarChart3 className="text-accent-pink" size={32} />
           <div>
-            <h3 className="text-xl font-black uppercase tracking-tight">Movie Master</h3>
+            <h3 className="text-xl font-bold uppercase tracking-tight">Movie Master</h3>
             <p className="text-sm text-gray-500 mt-2">
               You've watched <span className="text-white font-bold">{bookingCount}</span> movies this month! Keep it up!
             </p>
@@ -53,13 +53,13 @@ export const UserStats = () => {
         <div className="bg-white/5 border border-white/10 p-10 rounded-[40px] space-y-6">
           <User className="text-accent-blue" size={32} />
           <div>
-            <h3 className="text-xl font-black uppercase tracking-tight">Loyalty Points</h3>
-            <p className="text-4xl font-black text-white mt-4">
+            <h3 className="text-xl font-bold uppercase tracking-tight">Loyalty Points</h3>
+            <p className="text-4xl font-bold text-white mt-4">
               {bookingCount * 120}{' '}
-              <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Points</span>
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-wide">Points</span>
             </p>
           </div>
-          <button className="w-full py-4 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl font-black text-[10px] uppercase tracking-widest text-accent-blue hover:bg-accent-blue/20 transition-colors">
+          <button className="w-full py-4 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl font-bold text-xs uppercase tracking-wide text-accent-blue hover:bg-accent-blue/20 transition-colors">
             Redeem Rewards
           </button>
         </div>

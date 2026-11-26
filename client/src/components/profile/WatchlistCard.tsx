@@ -34,7 +34,7 @@ export const WatchlistCard = ({ movie }: WatchlistCardProps) => (
         <p className="text-white font-bold text-sm truncate group-hover:text-accent-pink transition-colors">
           {movie.title}
         </p>
-        <div className="mt-1 flex items-center gap-3 text-[10px] text-gray-500">
+        <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
           {typeof movie.rating === 'number' && (
             <span className="flex items-center gap-1">
               <Star size={10} className="text-accent-pink" fill="currentColor" />

@@ -1,4 +1,6 @@
 import { useState, useRef, memo } from 'react';
+import { SITE_CONFIG } from '../../config/site.config.js';
+import { dashboardPrefix } from '../../features/platform/useAccount.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, ChevronDown, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -51,8 +53,8 @@ export const Navbar = memo(() => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-4 sm:gap-10">
-              <Link to="/" className="text-xl sm:text-2xl font-black tracking-tighter text-white hover:opacity-80 transition-opacity whitespace-nowrap group">
-                CINEMA<span className="text-accent-pink group-hover:text-accent-pink/80 transition-colors">CONNECT</span>
+              <Link to="/" className="text-xl sm:text-2xl font-bold tracking-tighter text-white hover:opacity-80 transition-opacity whitespace-nowrap group">
+                {SITE_CONFIG.firstName}<span className="text-accent-pink group-hover:text-accent-pink/80 transition-colors">{SITE_CONFIG.lastName}</span>
               </Link>
 
               {/* Desktop City Trigger */}
@@ -64,7 +66,7 @@ export const Navbar = memo(() => {
                   <MapPin size={16} className="text-accent-blue" />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 leading-none mb-1">Location Hub</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-500 leading-none mb-1">Location Hub</p>
                   <p className="text-sm font-bold leading-none">{selectedCity || 'Anywhere'}</p>
                 </div>
                 <ChevronDown size={14} className="ml-2 group-hover:translate-y-0.5 transition-transform text-gray-500" />
@@ -79,9 +81,9 @@ export const Navbar = memo(() => {
                     transition={{ duration: 0.2 }}
                     className="hidden lg:flex items-center gap-8 border-l border-white/10 pl-10"
                   >
-                    <Link to="/movies" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-pink transition-colors">Movies</Link>
-                    <Link to="/cinemas" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-blue transition-colors">Cinemas</Link>
-                    <Link to="/subscription" className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent-pink transition-colors">Pricing</Link>
+                    <Link to="/movies" className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-accent-pink transition-colors">Movies</Link>
+                    <Link to="/cinemas" className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-accent-blue transition-colors">Cinemas</Link>
+                    <Link to="/pricing" className="text-xs font-bold uppercase tracking-wide text-gray-400 hover:text-accent-pink transition-colors">Pricing</Link>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -124,25 +126,25 @@ export const Navbar = memo(() => {
               {isAuthenticated ? (
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-3 bg-white/5 pr-3 rounded-2xl border border-white/5">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-accent-pink to-accent-purple flex items-center justify-center text-sm font-black text-white shadow-lg shadow-accent-pink/20">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-accent-pink to-accent-purple flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-accent-pink/20">
                       {user?.name[0]}
                     </div>
                     <div className="hidden xl:block">
-                      <p className="text-xs font-black text-white leading-none mb-0.5">{user?.name}</p>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{user?.role}</p>
+                      <p className="text-xs font-bold text-white leading-none mb-0.5">{user?.name}</p>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{user?.role}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Link
-                      to={user?.role === 'admin' ? '/admin' : user?.role === 'theatre_owner' ? '/owner' : '/user'}
-                      className="text-[10px] font-black uppercase tracking-widest text-accent-blue hover:text-white transition-colors whitespace-nowrap"
+                      to={dashboardPrefix(user?.role)}
+                      className="text-xs font-bold uppercase tracking-wide text-accent-blue hover:text-white transition-colors whitespace-nowrap"
                     >
                       Dashboard
                     </Link>
                     <button
                       onClick={logout}
                       disabled={isLoading}
-                      className={`text-[10px] font-black uppercase tracking-widest transition-colors whitespace-nowrap ${isLoading ? 'text-gray-700 cursor-not-allowed' : 'text-gray-500 hover:text-red-400'
+                      className={`text-xs font-bold uppercase tracking-wide transition-colors whitespace-nowrap ${isLoading ? 'text-gray-700 cursor-not-allowed' : 'text-gray-500 hover:text-red-400'
                         }`}
                     >
                       {isLoading ? 'Wait...' : 'Logout'}
@@ -153,7 +155,7 @@ export const Navbar = memo(() => {
                 <Link
                   to="/login"
                   onClick={handleAccessAccount}
-                  className="bg-accent-pink hover:bg-accent-pink/80 text-white text-[10px] font-black uppercase tracking-widest px-8 py-3.5 rounded-2xl transition-all active:scale-95 shadow-xl shadow-accent-pink/20 whitespace-nowrap"
+                  className="bg-accent-pink hover:bg-accent-pink/80 text-white text-xs font-bold uppercase tracking-wide px-8 py-3.5 rounded-2xl transition-all active:scale-95 shadow-xl shadow-accent-pink/20 whitespace-nowrap"
                 >
                   Sign In
                 </Link>
@@ -206,7 +208,7 @@ export const Navbar = memo(() => {
                   {[
                     { name: 'Movies', to: '/movies', color: 'bg-accent-pink' },
                     { name: 'Cinemas', to: '/cinemas', color: 'bg-accent-blue' },
-                    { name: 'Pricing', to: '/subscription', color: 'bg-accent-pink' }
+                    { name: 'Pricing', to: '/pricing', color: 'bg-accent-pink' }
                   ].map((item) => (
                     <Link
                       key={item.name}
@@ -229,12 +231,12 @@ export const Navbar = memo(() => {
                         </div>
                         <div>
                           <p className="text-white font-bold">{user?.name}</p>
-                          <p className="text-xs text-gray-500 uppercase tracking-widest">{user?.role}</p>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">{user?.role}</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <Link
-                          to={user?.role === 'admin' ? '/admin' : user?.role === 'theatre_owner' ? '/owner' : '/user'}
+                          to={dashboardPrefix(user?.role)}
                           onClick={() => setIsMenuOpen(false)}
                           className="flex items-center justify-center h-12 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold text-accent-blue transition-all"
                         >

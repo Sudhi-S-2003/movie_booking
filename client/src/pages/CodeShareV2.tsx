@@ -203,7 +203,7 @@ export const CodeShareV2 = () => {
                 <h1 className="text-xs font-bold truncate text-zinc-100 uppercase tracking-wider">
                   {project?.title || 'Untitled Workspace'}
                 </h1>
-                <div className="flex items-center gap-1.5 text-[9px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">
+                <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 font-bold uppercase tracking-wide mt-0.5">
                   <GitBranch size={10} className="text-zinc-600" />
                   {isReadOnly ? `COMMIT: ${activeCommitId?.slice(-7)}` : 'HEAD / DRAFT'}
                 </div>
@@ -212,7 +212,7 @@ export const CodeShareV2 = () => {
 
             {/* Read-Only Banner / Warning */}
             {isReadOnly && (
-              <span className="hidden md:flex items-center gap-1.5 px-2.5 py-0.5 border border-zinc-800/80 bg-zinc-900/60 rounded-md text-[9px] font-black uppercase tracking-wider text-zinc-400">
+              <span className="hidden md:flex items-center gap-1.5 px-2.5 py-0.5 border border-zinc-800/80 bg-zinc-900/60 rounded-md text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                 <Clock size={10} />
                 Historical view (Read Only)
               </span>
@@ -225,7 +225,7 @@ export const CodeShareV2 = () => {
               <>
                 <button
                   onClick={discardChanges}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white transition-all"
                   title="Discard changes"
                 >
                   <RotateCcw size={12} />
@@ -233,7 +233,7 @@ export const CodeShareV2 = () => {
                 </button>
                 <button
                   onClick={() => setIsCommitModalOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white text-black hover:bg-zinc-200 transition-all hover:scale-[1.02]"
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-zinc-200 transition-all hover:scale-[1.02]"
                 >
                   <GitCommit size={12} />
                   Commit ({activeChangesCount})
@@ -245,7 +245,7 @@ export const CodeShareV2 = () => {
             {!isReadOnly && selectedPath && (
               <button
                 onClick={() => setPreviewLocalDiff(!previewLocalDiff)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all ${
                   previewLocalDiff 
                     ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                     : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white'
@@ -263,7 +263,7 @@ export const CodeShareV2 = () => {
             <button
               onClick={handleCopy}
               disabled={!selectedPath}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all disabled:opacity-40 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all disabled:opacity-40 ${
                 copied 
                   ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                   : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white'
@@ -276,7 +276,7 @@ export const CodeShareV2 = () => {
             <button
               onClick={downloadWorkspace}
               disabled={isDownloading}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title="Download workspace ZIP"
             >
               {isDownloading ? (
@@ -314,7 +314,7 @@ export const CodeShareV2 = () => {
                 <div className="flex border-b border-zinc-800 p-1.5 gap-1 bg-zinc-950">
                   <button
                     onClick={() => setActiveTab('files')}
-                    className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide transition-all ${
                       activeTab === 'files' 
                         ? 'bg-zinc-900 text-white border border-zinc-800' 
                         : 'text-zinc-500 hover:text-zinc-300'
@@ -324,7 +324,7 @@ export const CodeShareV2 = () => {
                   </button>
                   <button
                     onClick={() => setActiveTab('history')}
-                    className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide transition-all ${
                       activeTab === 'history' 
                         ? 'bg-zinc-900 text-white border border-zinc-800' 
                         : 'text-zinc-500 hover:text-zinc-300'
@@ -364,13 +364,13 @@ export const CodeShareV2 = () => {
               /* Commit Diffs Inspector Sidebar */
               <div className="flex-grow flex flex-col overflow-hidden min-h-0">
                 <div className="flex items-center justify-between p-3.5 border-b border-zinc-800 bg-zinc-950">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1">
+                  <span className="text-xs font-bold uppercase tracking-wide text-zinc-400 flex items-center gap-1">
                     <GitPullRequest size={12} className="text-zinc-500" />
                     Commit Changes
                   </span>
                   <button
                     onClick={() => useCodeShareStoreV2.setState({ viewedCommit: null, selectedDiffPath: null })}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[8px] uppercase tracking-wider font-black text-zinc-400 hover:text-white"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[11px] uppercase tracking-wider font-bold text-zinc-400 hover:text-white"
                   >
                     Close
                   </button>
@@ -404,11 +404,11 @@ export const CodeShareV2 = () => {
                         <span className="text-xs font-mono truncate mr-2">{change.path}</span>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           {/* Code ratio stats */}
-                          <span className="font-mono text-[9px] font-bold">
+                          <span className="font-mono text-[11px] font-bold">
                             {change.additions > 0 && <span className="text-emerald-500">+{change.additions}</span>}
                             {change.deletions > 0 && <span className="text-rose-500">-{change.deletions}</span>}
                           </span>
-                          <span className={`w-4 h-4 flex items-center justify-center text-[9px] font-black border rounded ${badgeColor}`}>
+                          <span className={`w-4 h-4 flex items-center justify-center text-[11px] font-bold border rounded ${badgeColor}`}>
                             {badgeLabel}
                           </span>
                         </div>
@@ -425,7 +425,7 @@ export const CodeShareV2 = () => {
             {isLoading && (
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-3">
                 <div className="w-8 h-8 border-2 border-zinc-800 border-t-white rounded-full animate-spin" />
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Loading Workspace...</span>
+                <span className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">Loading Workspace...</span>
               </div>
             )}
 
@@ -435,7 +435,7 @@ export const CodeShareV2 = () => {
                 isFileLoading && !fileContents[selectedPath] ? (
                   <div className="flex-grow flex flex-col items-center justify-center gap-3">
                     <div className="w-7 h-7 border-2 border-zinc-800 border-t-white rounded-full animate-spin" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+                    <span className="text-xs font-bold uppercase tracking-wide text-zinc-500">
                       Streaming Content... {fileLoadingProgress[selectedPath] || 0}%
                     </span>
                   </div>
@@ -480,7 +480,7 @@ export const CodeShareV2 = () => {
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <GitBranch size={28} className="text-zinc-800 mb-3 animate-pulse" />
                   <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Empty Workspace</p>
-                  <p className="text-zinc-600 text-[10px] mt-1 max-w-[200px] leading-relaxed">
+                  <p className="text-zinc-600 text-xs mt-1 max-w-[200px] leading-relaxed">
                     Create a file in the sidebar explorer to begin coding.
                   </p>
                 </div>
@@ -494,11 +494,11 @@ export const CodeShareV2 = () => {
                     <h3 className="text-sm font-bold text-white pr-2 truncate leading-tight select-none">
                       {viewedCommit.message}
                     </h3>
-                    <span className="font-mono text-[9px] px-2 py-0.5 bg-zinc-900 border border-zinc-800 text-zinc-500 rounded font-semibold select-all">
+                    <span className="font-mono text-[11px] px-2 py-0.5 bg-zinc-900 border border-zinc-800 text-zinc-500 rounded font-semibold select-all">
                       COMMIT {viewedCommit._id}
                     </span>
                   </div>
-                  <div className="text-[10px] text-zinc-500">
+                  <div className="text-xs text-zinc-500">
                     Committed by <span className="font-bold text-zinc-400">{viewedCommit.createdBy}</span> on{' '}
                     {new Date(viewedCommit.createdAt).toLocaleString(undefined, {
                       month: 'short',
@@ -518,13 +518,13 @@ export const CodeShareV2 = () => {
                       return change ? (
                         <DiffViewer diffData={change.diff || '[]'} filename={selectedDiffPath} />
                       ) : (
-                        <div className="text-zinc-600 text-xs text-center py-10 uppercase tracking-widest font-bold">
+                        <div className="text-zinc-600 text-xs text-center py-10 uppercase tracking-wide font-bold">
                           Error loading diff
                         </div>
                       );
                     })()
                   ) : (
-                    <div className="text-zinc-600 text-xs text-center py-10 uppercase tracking-widest font-bold">
+                    <div className="text-zinc-600 text-xs text-center py-10 uppercase tracking-wide font-bold">
                       Select a file to inspect diff
                     </div>
                   )}
@@ -535,7 +535,7 @@ export const CodeShareV2 = () => {
         </div>
 
         {/* Footer Area */}
-        <footer className="px-5 py-3.5 border-t border-zinc-850 bg-zinc-950 flex items-center justify-between text-[10px] tracking-wider text-zinc-500 font-bold uppercase select-none">
+        <footer className="px-5 py-3.5 border-t border-zinc-850 bg-zinc-950 flex items-center justify-between text-xs tracking-wider text-zinc-500 font-bold uppercase select-none">
           <div className="flex items-center gap-4">
             <span>FILES: {files.length}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />

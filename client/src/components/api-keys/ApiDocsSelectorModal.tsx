@@ -71,10 +71,10 @@ export const ApiDocsSelectorModal = memo(({ open, onClose }: ApiDocsSelectorModa
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/[0.06] shrink-0">
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider text-white">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white">
                   Select API Documentation
                 </h3>
-                <p className="text-[10px] text-gray-500 mt-1 font-medium">
+                <p className="text-xs text-gray-500 mt-1 font-medium">
                   Choose a service documentation package to review
                 </p>
               </div>
@@ -100,10 +100,10 @@ export const ApiDocsSelectorModal = memo(({ open, onClose }: ApiDocsSelectorModa
                       <opt.icon size={18} />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-black uppercase tracking-tight text-white group-hover:text-accent-blue transition-colors">
+                      <h4 className="text-xs font-bold uppercase tracking-tight text-white group-hover:text-accent-blue transition-colors">
                         {opt.title}
                       </h4>
-                      <p className="text-[10px] text-gray-500 leading-relaxed font-medium">
+                      <p className="text-xs text-gray-500 leading-relaxed font-medium">
                         {opt.desc}
                       </p>
                     </div>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Filter, Hammer } from "lucide-react";
 import { SearchableSelect } from "../../ui/SearchableSelect.js";
 import { moviesApi, adminApi, supportApi } from "../../../services/api/index.js";
+import { rememberGuestTicket } from "../../../services/api/support.api.js";
 import { CATEGORIES } from "../constants.js";
 import type { User } from "../../../store/authStore.js";
 import { PAGE_SIZE } from "../../../constants/pagination.js";
@@ -87,11 +88,8 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
       const res = await supportApi.create(payload);
       const newIssue = res.issue;
 
-      if (!user) {
-        const guestTickets = localStorage.getItem("myGuestTickets");
-        const updatedTickets = guestTickets ? `${guestTickets},${newIssue._id}` : newIssue._id;
-        localStorage.setItem("myGuestTickets", updatedTickets);
-        localStorage.setItem(`guest_session_${newIssue._id}`, "true");
+      if (!user && res.guestToken) {
+        rememberGuestTicket(newIssue._id, res.guestToken);
       }
 
       onCreated();
@@ -120,7 +118,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent-blue to-transparent opacity-50" />
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black uppercase tracking-tight">New Support Ticket</h2>
+              <h2 className="text-2xl font-bold uppercase tracking-tight">New Support Ticket</h2>
               <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
                 <X size={24} />
               </button>
@@ -130,7 +128,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
               {!user && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Your Name</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Your Name</label>
                     <input
                       name="guestName"
                       required
@@ -140,7 +138,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Contact Email</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Contact Email</label>
                     <input
                       name="guestEmail"
                       required
@@ -155,7 +153,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Category</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Category</label>
                   <select
                     name="category"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-accent-blue transition-all appearance-none cursor-pointer text-xs font-bold"
@@ -168,7 +166,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Priority</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Priority</label>
                   <select
                     name="priority"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-accent-blue transition-all appearance-none cursor-pointer text-xs font-bold"
@@ -182,7 +180,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Subject</label>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Subject</label>
                 <input
                   name="title"
                   required
@@ -192,7 +190,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Description</label>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Description</label>
                 <textarea
                   name="description"
                   required
@@ -205,13 +203,13 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
               <div className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl space-y-6">
                 <div className="flex items-center gap-2 mb-2">
                   <Filter size={12} className="text-accent-blue" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Add Details (Optional)</span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-gray-400">Add Details (Optional)</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {userRole === "TheatreOwner" && (
                     <div className="space-y-2">
-                      <label className="text-[8px] font-black text-gray-600 uppercase tracking-[0.2em]">Theatre</label>
+                      <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide">Theatre</label>
                       <SearchableSelect
                         options={manualTheatres.map((t) => ({ id: t._id, name: t.name }))}
                         onSearch={searchTheatres}
@@ -225,7 +223,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                   )}
 
                   <div className="space-y-2">
-                    <label className="text-[8px] font-black text-gray-600 uppercase tracking-[0.2em]">Movie</label>
+                    <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide">Movie</label>
                     <SearchableSelect
                       options={manualMovies.map((m) => ({ id: m._id, name: m.title }))}
                       onSearch={searchMovies}
@@ -241,12 +239,12 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
 
               {Object.keys(contextMetadata).length > 0 && (
                 <div className="p-4 bg-accent-blue/5 border border-accent-blue/10 rounded-2xl">
-                  <span className="text-[8px] font-black text-accent-blue uppercase block mb-2 tracking-widest flex items-center gap-2 underline underline-offset-4">
+                  <span className="text-[11px] font-bold text-accent-blue uppercase block mb-2 tracking-wide flex items-center gap-2 underline underline-offset-4">
                     <Hammer size={10} /> Extra Info
                   </span>
                   <div className="flex flex-wrap gap-4 opacity-50">
                     {Object.entries(contextMetadata).map(([k, v]) => (
-                      <div key={k} className="flex gap-2 text-[8px] font-black uppercase text-gray-400">
+                      <div key={k} className="flex gap-2 text-[11px] font-bold uppercase text-gray-400">
                         <span className="text-gray-600">{k}:</span> {String(v).slice(-8)}
                       </div>
                     ))}
@@ -258,14 +256,14 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all"
+                  className="flex-1 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wide hover:bg-white/10 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-8 py-4 bg-accent-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-accent-blue/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                  className="flex-1 px-8 py-4 bg-accent-blue text-white rounded-2xl font-bold text-xs uppercase tracking-wide shadow-xl shadow-accent-blue/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                 >
                   {loading ? "Sending..." : "Submit Ticket"}
                 </button>

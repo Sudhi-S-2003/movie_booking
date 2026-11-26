@@ -88,7 +88,7 @@ export const ChatbotVariables: React.FC = React.memo(() => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs font-semibold">
             <thead>
-              <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest text-[10px]">
+              <tr className="border-b border-white/5 text-gray-500 uppercase tracking-wide text-xs">
                 <th className="py-3 px-4">Placeholder</th>
                 <th className="py-3 px-4">Description</th>
                 <th className="py-3 px-4">Default Value</th>
@@ -109,11 +109,11 @@ export const ChatbotVariables: React.FC = React.memo(() => {
                     <td className="py-4 px-4 font-mono text-gray-400">{v.defaultValue || '—'}</td>
                     <td className="py-4 px-4 text-center">
                       {v.required ? (
-                        <span className="px-2 py-0.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[9px] uppercase font-bold rounded-full">
+                        <span className="px-2 py-0.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] uppercase font-bold rounded-full">
                           Required
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 bg-gray-500/10 border border-white/5 text-gray-500 text-[9px] uppercase font-bold rounded-full">
+                        <span className="px-2 py-0.5 bg-gray-500/10 border border-white/5 text-gray-500 text-[11px] uppercase font-bold rounded-full">
                           Optional
                         </span>
                       )}
@@ -141,13 +141,13 @@ export const ChatbotVariables: React.FC = React.memo(() => {
 
         {/* Add Variable inline form */}
         <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 space-y-4">
-          <h4 className="text-xs uppercase font-bold tracking-widest text-white flex items-center gap-2">
+          <h4 className="text-xs uppercase font-bold tracking-wide text-white flex items-center gap-2">
             <Plus className="w-4 h-4 text-accent-purple" /> Add Custom Variable
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="space-y-2 md:col-span-2">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Variable Key
               </label>
               <input
@@ -159,7 +159,7 @@ export const ChatbotVariables: React.FC = React.memo(() => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Description
               </label>
               <input
@@ -171,7 +171,7 @@ export const ChatbotVariables: React.FC = React.memo(() => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Default Fallback Value
               </label>
               <input

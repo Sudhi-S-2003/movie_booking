@@ -71,7 +71,7 @@ export const LocationBubble = memo(({ msg, isOwn }: LocationBubbleProps) => {
         </div>
         
         {/* Decorative Compass corner */}
-        <div className="absolute bottom-2 right-2 text-[8px] font-bold text-white/20 select-none">
+        <div className="absolute bottom-2 right-2 text-[11px] font-bold text-white/20 select-none">
           N ↑
         </div>
       </div>

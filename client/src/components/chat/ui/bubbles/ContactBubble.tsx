@@ -81,7 +81,7 @@ export const ContactBubble = memo(({ msg, isOwn }: ContactBubbleProps) => {
                   initial={{ opacity: 0, scale: 0.5, x: 0 }}
                   animate={{ opacity: 1, scale: 1, x: 10 }}
                   exit={{ opacity: 0, scale: 0.5 }}
-                  className="absolute left-full ml-2 text-[9px] font-black text-emerald-400 uppercase tracking-widest whitespace-nowrap"
+                  className="absolute left-full ml-2 text-[11px] font-bold text-emerald-400 uppercase tracking-wide whitespace-nowrap"
                 >
                   Copied!
                 </motion.span>
@@ -98,7 +98,7 @@ export const ContactBubble = memo(({ msg, isOwn }: ContactBubbleProps) => {
           className="flex flex-col items-center justify-center gap-1 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl min-h-[52px] transition-all active:scale-95"
         >
           <Phone size={14} className="opacity-80" />
-          <span className="text-[10px] font-bold uppercase tracking-tight">Call</span>
+          <span className="text-xs font-bold uppercase tracking-tight">Call</span>
         </a>
         
         <a
@@ -108,7 +108,7 @@ export const ContactBubble = memo(({ msg, isOwn }: ContactBubbleProps) => {
           className="flex flex-col items-center justify-center gap-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/20 text-emerald-300 rounded-xl min-h-[52px] transition-all active:scale-95"
         >
           <MessageCircle size={14} />
-          <span className="text-[10px] font-bold uppercase tracking-tight">Chat</span>
+          <span className="text-xs font-bold uppercase tracking-tight">Chat</span>
         </a>
 
         <button
@@ -123,7 +123,7 @@ export const ContactBubble = memo(({ msg, isOwn }: ContactBubbleProps) => {
           ) : (
             <Copy size={14} className="opacity-80" />
           )}
-          <span className="text-[10px] font-bold uppercase tracking-tight">
+          <span className="text-xs font-bold uppercase tracking-tight">
             {copied ? 'Done' : 'Copy'}
           </span>
         </button>

@@ -58,7 +58,7 @@ export const CharCounter: React.FC<CharCounterProps> = ({
   return (
     <span
       aria-live="polite"
-      className={`absolute ${pos} select-none pointer-events-none text-[10px] tabular-nums font-semibold ${cls}`}
+      className={`absolute ${pos} select-none pointer-events-none text-xs tabular-nums font-semibold ${cls}`}
     >
       {len}/{max}
     </span>

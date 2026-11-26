@@ -281,7 +281,7 @@ export const CodeShare = () => {
               >
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-10 h-10 border-2 border-zinc-800 border-t-white rounded-full animate-spin" />
-                  <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400">
+                  <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                     {isSaving ? `Uploading... ${uploadProgress}%` : 'Retrieving Full Content...'}
                   </span>
                 </div>

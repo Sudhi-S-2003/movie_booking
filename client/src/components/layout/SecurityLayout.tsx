@@ -6,7 +6,7 @@ import { SEO } from '../common/SEO.js';
 export const SecurityLayout: React.FC = () => {
   // Helper to determine active tab class names
   const getTabClass = (isActive: boolean) => {
-    const base = "flex items-center justify-center gap-2.5 px-6 py-3 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-1 sm:flex-none ";
+    const base = "flex items-center justify-center gap-2.5 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-wide transition-all duration-300 flex-1 sm:flex-none ";
     if (isActive) {
       return base + "bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 border-accent-purple/40 text-white shadow-[0_0_20px_rgba(168,85,247,0.15)] scale-[1.02]";
     }
@@ -24,7 +24,7 @@ export const SecurityLayout: React.FC = () => {
         {/* Sleek Header & Glowing Tabs at the top */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border-b border-white/5 pb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">Account Protection</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight uppercase">Account Protection</h1>
             <p className="text-xs text-gray-500 mt-1">Strengthen your dashboard and credentials with enterprise MFA and passkeys.</p>
           </div>
 

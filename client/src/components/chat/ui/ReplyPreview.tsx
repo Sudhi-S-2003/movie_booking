@@ -42,10 +42,10 @@ export const ReplyPreview = memo(({ senderName, text, isOwn, compact, onClick }:
         <Reply size={10} className={`mt-0.5 flex-shrink-0 ${isOwn ? 'text-white/40' : 'text-accent-blue/40'}`} />
       )}
       <div className="min-w-0 flex-1">
-        <p className={`text-[9px] font-bold ${isOwn ? 'text-white/60' : 'text-accent-blue/70'}`}>
+        <p className={`text-[11px] font-bold ${isOwn ? 'text-white/60' : 'text-accent-blue/70'}`}>
           {senderName}
         </p>
-        <p className={`text-[10px] ${isOwn ? 'text-white/40' : 'text-white/30'} line-clamp-1`}>
+        <p className={`text-xs ${isOwn ? 'text-white/40' : 'text-white/30'} line-clamp-1`}>
           {text}
         </p>
       </div>

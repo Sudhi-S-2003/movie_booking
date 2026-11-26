@@ -18,7 +18,7 @@ export const SocialChip: React.FC<SocialChipProps> = ({ mention, isOwn }) => {
       href={meta.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded-md text-[10px] font-semibold no-underline transition-all duration-150 ${
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded-md text-xs font-semibold no-underline transition-all duration-150 ${
         isOwn
           ? "bg-black/20 hover:bg-black/30 text-white/95 ring-1 ring-inset ring-white/10"
           : "hover:bg-white/[0.12] border border-white/[0.08]"

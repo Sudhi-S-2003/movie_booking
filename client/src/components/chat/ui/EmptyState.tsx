@@ -14,10 +14,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, subtitle, a
       {icon ?? <MessageCircle size={28} />}
     </div>
     <div className="space-y-1.5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/25">
+      <p className="text-xs font-bold uppercase tracking-wide text-white/25">
         {title}
       </p>
-      <p className="text-[9px] text-white/15 font-medium max-w-xs">
+      <p className="text-[11px] text-white/15 font-medium max-w-xs">
         {subtitle}
       </p>
     </div>

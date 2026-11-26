@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { resolveSeatPrices } from '../modules/movies/seatPricing.js';
 import jwt from 'jsonwebtoken';
 import { env } from '../env.js';
 import { Showtime } from '../models/showtime.model.js';
@@ -150,18 +151,23 @@ export const getShowtimesByMovie = async (req: Request, res: Response) => {
 
 export const lockSeat = async (req: AuthRequest, res: Response) => {
   try {
-    const { showtimeId, seatId, seatIds, price, prices } = req.body;
+    const { showtimeId, seatId, seatIds } = req.body ?? {};
     const userId = req.user!.id;
 
-    // Support both single seat and bulk: seatIds = ['A-1','A-2'] or seatId = 'A-1'
-    const seatsToLock: { id: string; price: number }[] = [];
-    if (Array.isArray(seatIds)) {
-      seatIds.forEach((sid: string, i: number) => {
-        seatsToLock.push({ id: sid, price: Array.isArray(prices) ? (prices[i] || 0) : (price || 0) });
-      });
-    } else if (seatId) {
-      seatsToLock.push({ id: seatId, price: price || 0 });
+    // Support both single seat and bulk: seatIds = ['A-1','A-2'] or seatId = 'A-1'.
+    const requested: string[] = Array.isArray(seatIds)
+      ? seatIds.filter((s: unknown): s is string => typeof s === 'string').slice(0, 20)
+      : typeof seatId === 'string' ? [seatId] : [];
+    if (requested.length === 0 || typeof showtimeId !== 'string') {
+      return res.status(400).json({ success: false, message: 'No seats provided' });
     }
+
+    // Prices come from the showtime/screen configuration, never the client.
+    const prices = await resolveSeatPrices(showtimeId, requested);
+    if (!prices) {
+      return res.status(400).json({ success: false, message: 'Showtime unavailable or seat does not exist' });
+    }
+    const seatsToLock = requested.map((id) => ({ id, price: prices.get(id)! }));
 
     if (seatsToLock.length === 0) {
       return res.status(400).json({ success: false, message: 'No seats provided' });

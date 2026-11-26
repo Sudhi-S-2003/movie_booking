@@ -35,7 +35,7 @@ export const MyBookings = () => {
       <SEO title="My Bookings" description="View and manage your past and upcoming movie ticket bookings." />
 
       <div className="space-y-2">
-        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter">
+        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tighter">
           My <span className="text-accent-blue">Bookings</span>
         </h1>
         <p className="text-gray-400 font-medium">View your tickets and booking history.</p>
@@ -68,10 +68,10 @@ export const MyBookings = () => {
                   {}
                   <div className="flex-1 space-y-4 text-center md:text-left">
                     <div>
-                      <h3 className="text-2xl font-black text-white group-hover:text-accent-blue transition-colors">
+                      <h3 className="text-2xl font-bold text-white group-hover:text-accent-blue transition-colors">
                         {booking.showtimeId.movieId.title}
                       </h3>
-                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-1 text-sm text-gray-400 font-bold uppercase tracking-widest">
+                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-1 text-sm text-gray-400 font-bold uppercase tracking-wide">
                         <span className="flex items-center gap-2 text-accent-pink"><Clock size={14} /> {new Date(booking.showtimeId.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         <span>•</span>
                         <span className="flex items-center gap-2"><Calendar size={14} /> {new Date(booking.showtimeId.startTime).toLocaleDateString([], { day: 'numeric', month: 'short' })}</span>
@@ -79,7 +79,7 @@ export const MyBookings = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <p className="text-white font-black flex items-center justify-center md:justify-start gap-2">
+                      <p className="text-white font-bold flex items-center justify-center md:justify-start gap-2">
                         <MapPin size={16} className="text-accent-blue" />
                         {booking.showtimeId.theatreId.name}
                       </p>
@@ -91,14 +91,14 @@ export const MyBookings = () => {
                     <div className="pt-4 flex flex-col md:flex-row items-center justify-between gap-6 border-t border-white/5">
                       <div className="flex items-center gap-6">
                         <div className="space-y-1">
-                          <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Seats</p>
-                          <p className="text-sm font-black text-white bg-white/5 px-3 py-1 rounded-lg border border-white/10 uppercase tracking-tighter">
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Seats</p>
+                          <p className="text-sm font-bold text-white bg-white/5 px-3 py-1 rounded-lg border border-white/10 uppercase tracking-tighter">
                             {booking.seats.join(', ')}
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Total Price</p>
-                          <p className="text-sm font-black text-accent-blue">₹{booking.totalPrice}</p>
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Total Price</p>
+                          <p className="text-sm font-bold text-accent-blue">₹{booking.totalPrice}</p>
                         </div>
                       </div>
 
@@ -116,10 +116,10 @@ export const MyBookings = () => {
                 <Ticket size={40} className="text-gray-600" />
               </div>
               <div className="space-y-2">
-                <p className="text-xl font-black text-white italic opacity-50">You haven't booked any movies yet.</p>
+                <p className="text-xl font-bold text-white italic opacity-50">You haven't booked any movies yet.</p>
                 <p className="text-gray-500 font-medium">Movies are better with friends! Grab some tickets now.</p>
               </div>
-              <Link to="/" className="inline-block px-10 py-4 bg-accent-blue text-white rounded-2xl font-black hover:scale-105 transition-all">
+              <Link to="/" className="inline-block px-10 py-4 bg-accent-blue text-white rounded-2xl font-bold hover:scale-105 transition-all">
                 Browse Movies
               </Link>
             </div>

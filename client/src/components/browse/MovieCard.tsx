@@ -38,14 +38,14 @@ export const MovieCard = ({ movie }: MovieCardProps) => (
           {movie.showStatus === 'upcoming' ? (
             <>
               <Star size={11} className="text-accent-blue" fill="currentColor" />
-              <span className="text-[10px] font-black text-white">
+              <span className="text-xs font-bold text-white">
                 {formatCount(movie.interestedUsers?.length || 0)}
               </span>
             </>
           ) : (
             <>
               <Star size={11} className="text-yellow-400 fill-yellow-400" />
-              <span className="text-[10px] font-black text-white">{movie.rating || 'N/A'}</span>
+              <span className="text-xs font-bold text-white">{movie.rating || 'N/A'}</span>
             </>
           )}
         </div>
@@ -53,15 +53,15 @@ export const MovieCard = ({ movie }: MovieCardProps) => (
 
       {/* Info */}
       <div className="mt-3 space-y-1 px-1">
-        <h3 className="font-black text-white group-hover:text-accent-pink transition-colors truncate text-sm">
+        <h3 className="font-bold text-white group-hover:text-accent-pink transition-colors truncate text-sm">
           {movie.title}
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-[9px] font-black text-accent-blue uppercase tracking-widest">
+          <span className="text-[11px] font-bold text-accent-blue uppercase tracking-wide">
             {movie.certification}
           </span>
           <span className="w-1 h-1 rounded-full bg-white/20" />
-          <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest truncate">
+          <span className="text-[11px] text-gray-500 font-bold uppercase tracking-wide truncate">
             {movie.genres?.slice(0, 2).join(', ')}
           </span>
         </div>

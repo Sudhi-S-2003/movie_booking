@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Volume2, VolumeX, Settings2, ShieldCheck, AlertCircle, Play } from 'lucide-react';
+import { Bell, Volume2, VolumeX, ShieldCheck, AlertCircle, Play } from 'lucide-react';
 import { useNotificationStore } from '../../store/notificationStore.js';
 import { useBrowserNotification } from '../../hooks/useBrowserNotification.js';
 import { useNotificationAudio } from '../../hooks/useNotificationAudio.js';
@@ -50,16 +50,15 @@ export const NotificationSetup = React.memo(() => {
       {/* Main Setup Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-center gap-2 px-3.5 py-2.5 sm:px-5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl hover:shadow-2xl active:scale-95 ${
-          permissionStatus === 'granted'
-            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-500/50'
-        }`}
+        aria-label={permissionStatus === "granted" ? "Notification settings" : "Set up notifications"}
+        aria-expanded={isOpen}
+        title={permissionStatus === "granted" ? "Notification settings" : "Set up notifications"}
+        className="relative flex w-9 h-9 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
       >
-        <Settings2 size={16} className={isOpen ? 'rotate-90 transition-transform' : 'transition-transform'} />
-        <span className="hidden sm:inline">
-          {permissionStatus === 'granted' ? 'Notification Settings' : 'Setup Notifications'}
-        </span>
+        <Bell size={16} aria-hidden />
+        {permissionStatus !== "granted" && (
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-sky-400" aria-hidden />
+        )}
       </button>
 
       {/* Settings Dropdown/Panel */}
@@ -88,7 +87,7 @@ export const NotificationSetup = React.memo(() => {
                 {/* Permission Status */}
                 <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tight">Status</span>
+                    <span className="text-xs text-slate-400 uppercase font-bold tracking-tight">Status</span>
                     <span className={`text-xs font-bold ${permissionStatus === 'granted' ? 'text-emerald-400' : 'text-amber-400'}`}>
                       {permissionStatus === 'granted' ? 'Active & Ready' : 'Permissions Needed'}
                     </span>
@@ -98,7 +97,7 @@ export const NotificationSetup = React.memo(() => {
                   ) : (
                     <button
                       onClick={handleEnableAll}
-                      className="px-3 py-1 bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-bold rounded-lg transition-colors"
+                      className="px-3 py-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold rounded-lg transition-colors"
                     >
                       Enable
                     </button>
@@ -108,7 +107,7 @@ export const NotificationSetup = React.memo(() => {
                 {/* Sound Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tight">Sound Effects</span>
+                    <span className="text-xs text-slate-400 uppercase font-bold tracking-tight">Sound Effects</span>
                     <span className="text-xs font-bold text-white">
                       {isSoundEnabled ? 'Crystal Clear' : 'Silent Mode'}
                     </span>
@@ -128,8 +127,8 @@ export const NotificationSetup = React.memo(() => {
                   <div className="flex gap-2">
                     <AlertCircle className="text-amber-500 shrink-0" size={16} />
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-amber-500/80 uppercase font-bold tracking-tight italic">Pro Tip</span>
-                      <p className="text-[10px] text-slate-400 leading-tight mt-1">
+                      <span className="text-xs text-amber-500/80 uppercase font-bold tracking-tight italic">Pro Tip</span>
+                      <p className="text-xs text-slate-400 leading-tight mt-1">
                         Ensure "Pop-ups and redirects" are allowed in your browser settings for a seamless experience.
                       </p>
                     </div>
@@ -140,7 +139,7 @@ export const NotificationSetup = React.memo(() => {
                 <button
                   onClick={testNotification}
                   disabled={permissionStatus !== 'granted'}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-[11px] font-bold uppercase tracking-wide hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
                   <Play size={14} className="fill-current" />
                   Run Diagnostic Test
@@ -149,7 +148,7 @@ export const NotificationSetup = React.memo(() => {
 
               {/* Bottom Decoration */}
               <div className="mt-4 pt-4 border-t border-white/5 flex justify-center">
-                <span className="text-[9px] text-slate-600 uppercase font-black tracking-[0.2em]">
+                <span className="text-[11px] text-slate-600 uppercase font-bold tracking-wide">
                   Production Grade Secure
                 </span>
               </div>

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+
+/**
+ * Pages that manage their own internal scrolling (chat threads, support
+ * tickets). They get a viewport-bounded content area so their message list
+ * scrolls inside the page instead of the whole page growing and scrolling.
+ */
+const FILL_VIEWPORT = /\/(chat|issues|support)(\/|$)/;
 
 interface DashboardLayoutProps {
   sidebar: React.ReactNode;
@@ -17,6 +25,7 @@ interface DashboardLayoutProps {
  *                       via the `location` effect below).
  */
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ sidebar, children }) => {
+  const fillViewport = FILL_VIEWPORT.test(useLocation().pathname);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Escape to close.
@@ -94,7 +103,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ sidebar, child
           <Menu size={18} />
         </button>
 
-        <div className="p-3 sm:p-5 lg:p-8 pb-16 sm:pb-20 lg:pb-24 w-full min-h-full relative flex flex-col">
+        <div className={fillViewport
+          ? "p-3 sm:p-5 lg:p-6 w-full h-full min-h-0 relative flex flex-col overflow-hidden"
+          : "p-3 sm:p-5 lg:p-8 pb-16 sm:pb-20 lg:pb-24 w-full min-h-full relative flex flex-col"}>
           {children}
         </div>
 

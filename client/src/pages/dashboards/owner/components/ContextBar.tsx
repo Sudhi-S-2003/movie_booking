@@ -47,7 +47,7 @@ export const ContextBar: React.FC<ContextBarProps> = ({
           layout
           onClick={onSaveLayout}
           disabled={!selectedScreenId || saveStatus === 'saving'}
-          className={`px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl transition-all flex items-center gap-3 ${
+          className={`px-10 py-4 rounded-2xl font-bold text-xs uppercase tracking-wide shadow-2xl transition-all flex items-center gap-3 ${
             saveStatus === 'success' ? 'bg-green-500 text-white' : 
             saveStatus === 'error' ? 'bg-red-500 text-white' : 
             'bg-accent-pink text-white shadow-accent-pink/20 hover:scale-105 active:scale-95 disabled:opacity-30'

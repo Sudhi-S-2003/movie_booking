@@ -35,7 +35,7 @@ export const UsersGrid = ({ users, hasMore, sentinelRef, emptyLabel }: UsersGrid
               {u.avatar ? (
                 <img src={u.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-blue to-accent-purple flex items-center justify-center text-white font-black">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold">
                   {u.name?.[0] ?? '?'}
                 </div>
               )}

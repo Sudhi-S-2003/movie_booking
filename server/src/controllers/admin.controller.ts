@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express';
+import { ownsTheatre, ownsScreen, ownsShowtime, pickShowtimeFields } from '../modules/movies/ownership.js';
 import { Theatre } from '../models/theatre.model.js';
 import { Screen } from '../models/screen.model.js';
 import { Showtime } from '../models/showtime.model.js';
 import { parsePage, buildPageEnvelope } from '../utils/pagination.js';
 import { Movie } from '../models/movie.model.js';
-import { SubscriptionRequest } from '../models/subscriptionRequest.model.js';
 import type { AuthRequest } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 
@@ -72,7 +72,9 @@ export const getMyTheatres = async (req: AuthRequest, res: Response) => {
 
 export const createScreen = async (req: Request, res: Response) => {
   try {
-    const screen = await Screen.create(req.body);
+    const { theatreId, name, layout, totalCapacity } = req.body ?? {};
+    if (!(await ownsTheatre(req, theatreId))) return res.status(404).json({ success: false, message: 'Theatre not found' });
+    const screen = await Screen.create({ theatreId, name, layout, totalCapacity });
     res.status(201).json({ success: true, screen });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
@@ -82,6 +84,7 @@ export const createScreen = async (req: Request, res: Response) => {
 export const getScreensByTheatre = async (req: Request, res: Response) => {
   try {
     const { theatreId } = req.params;
+    if (!(await ownsTheatre(req, theatreId))) return res.status(404).json({ success: false, message: 'Theatre not found' });
     const filter = { theatreId } as Record<string, unknown>;
     const page = parsePage(req);
 
@@ -98,7 +101,8 @@ export const getScreensByTheatre = async (req: Request, res: Response) => {
 
 export const updateScreenLayout = async (req: Request, res: Response) => {
   try {
-    const { layout, totalCapacity } = req.body;
+    const { layout, totalCapacity } = req.body ?? {};
+    if (!(await ownsScreen(req, req.params.id))) return res.status(404).json({ success: false, message: 'Screen not found' });
     const screen = await Screen.findByIdAndUpdate(
       req.params.id,
       { layout, totalCapacity },
@@ -219,7 +223,7 @@ export const updateShowtime = async (req: AuthRequest, res: Response) => {
       req.body.endTime = end;
     }
 
-    const updatedShowtime = await Showtime.findByIdAndUpdate(id, req.body, { returnDocument: 'after' });
+    const updatedShowtime = await Showtime.findByIdAndUpdate(id, pickShowtimeFields(req.body ?? {}), { returnDocument: 'after', runValidators: true });
     res.status(200).json({ success: true, showtime: updatedShowtime });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
@@ -229,6 +233,7 @@ export const updateShowtime = async (req: AuthRequest, res: Response) => {
 export const deleteShowtime = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    if (!(await ownsShowtime(req, id))) return res.status(404).json({ success: false, message: 'Showtime not found' });
     const showtime = await Showtime.findByIdAndDelete(id);
     if (!showtime) {
       return res.status(404).json({ success: false, message: 'Showtime not found' });
@@ -241,105 +246,3 @@ export const deleteShowtime = async (req: Request, res: Response) => {
 
 /* ---------------- SUBSCRIPTION REQUESTS MANAGEMENT ---------------- */
 
-export const getSubscriptionRequests = async (req: Request, res: Response) => {
-  try {
-    const page = parsePage(req);
-    const { status } = req.query;
-
-    const filter: Record<string, unknown> = {};
-    if (status) {
-      filter.status = status;
-    }
-
-    const [requests, total] = await Promise.all([
-      SubscriptionRequest.find(filter)
-        .populate('userId', 'name email')
-        .sort({ createdAt: -1 })
-        .skip(page.skip)
-        .limit(page.limit),
-      SubscriptionRequest.countDocuments(filter),
-    ]);
-
-    res.status(200).json({ success: true, requests, pagination: buildPageEnvelope(total, page) });
-  } catch (error: unknown) {
-    res.status(500).json({ success: false, message: getErrorMessage(error) });
-  }
-};
-
-/** PATCH /api/admin/subscription-requests/:id — approve/reject enterprise quotes */
-export const updateSubscriptionRequest = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { status, adminNote, discountPct } = req.body ?? {};
-
-    if (status !== 'approved' && status !== 'rejected') {
-      return res.status(400).json({ success: false, message: 'status must be approved or rejected' });
-    }
-
-    const request = await SubscriptionRequest.findById(id);
-    if (!request) {
-      return res.status(404).json({ success: false, message: 'Request not found' });
-    }
-    if (request.status !== 'pending') {
-      return res.status(400).json({ success: false, message: 'Request is already processed' });
-    }
-
-    request.status = status;
-    if (typeof adminNote === 'string') request.adminNote = adminNote;
-    
-    // Only apply discount if approved and a valid number is provided
-    let finalDiscountPct = 0;
-    if (status === 'approved' && typeof discountPct === 'number' && discountPct >= 0 && discountPct <= 100) {
-      request.discountPct = discountPct;
-      finalDiscountPct = discountPct;
-    }
-
-    await request.save();
-
-    if (status === 'approved') {
-      // If approved, create a payment intent immediately so the user can just checkout
-      const { paymentIntentsStore } = await import('./payment.controller.js');
-      const { computeEnterprisePricing } = await import('../services/subscription/subscriptionPlans.js');
-      
-      const pricing = computeEnterprisePricing(request.monthlyLimit, request.durationMonths);
-      
-      // Apply the admin's custom discount on top of the base duration discount
-      let priceInPaise = pricing.priceInPaise;
-      if (finalDiscountPct > 0) {
-        priceInPaise = Math.round(priceInPaise * (100 - finalDiscountPct) / 100);
-      }
-      
-      const amount = priceInPaise;
-      const currency = 'INR';
-      
-      const crypto = await import('crypto');
-      const generateId = (prefix: string) => `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
-      const paymentIntentId = generateId('pi');
-      const clientSecret    = generateId('secret');
-
-      paymentIntentsStore.set(paymentIntentId, {
-        paymentIntentId,
-        clientSecret,
-        amount,
-        currency,
-        status:   'requires_payment',
-        kind:     'subscription',
-        userId:   String(request.userId),
-        createdAt: new Date(),
-        metadata: {
-          plan: 'enterprise',
-          customMonthlyLimit:   request.monthlyLimit,
-          customDurationMonths: request.durationMonths,
-          promoPct:       finalDiscountPct,
-          originalPrice:  pricing.priceInPaise,
-        },
-      });
-      // Optionally attach paymentIntentId to request or notify user
-    }
-
-    res.json({ success: true, request });
-  } catch (e: unknown) {
-    const { getErrorMessage } = await import('../utils/error.utils.js');
-    res.status(500).json({ success: false, message: getErrorMessage(e) });
-  }
-};

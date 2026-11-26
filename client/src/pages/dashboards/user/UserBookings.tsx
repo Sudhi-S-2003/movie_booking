@@ -57,7 +57,7 @@ export const UserBookings = () => {
           <NotificationSetup />
           <Link
             to="/"
-            className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all"
+            className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wide hover:bg-white/10 transition-all"
           >
             Book More
           </Link>
@@ -84,8 +84,8 @@ export const UserBookings = () => {
               />
               <div className="flex-1 space-y-4">
                 <div>
-                  <h3 className="text-2xl font-black">{booking.showtimeId.movieId.title}</h3>
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">
+                  <h3 className="text-2xl font-bold">{booking.showtimeId.movieId.title}</h3>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mt-1">
                     {new Date(booking.showtimeId.startTime).toLocaleDateString([], {
                       weekday: 'long',
                       day: 'numeric',
@@ -100,12 +100,12 @@ export const UserBookings = () => {
                 </div>
                 <div className="flex items-center gap-6 pt-4 border-t border-white/5">
                   <div>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Seats</p>
-                    <p className="text-sm font-black text-white">{booking.seats.join(', ')}</p>
+                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Seats</p>
+                    <p className="text-sm font-bold text-white">{booking.seats.join(', ')}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Theatre</p>
-                    <p className="text-sm font-black text-white">{booking.showtimeId.theatreId.name}</p>
+                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Theatre</p>
+                    <p className="text-sm font-bold text-white">{booking.showtimeId.theatreId.name}</p>
                   </div>
                 </div>
               </div>
@@ -122,11 +122,11 @@ export const UserBookings = () => {
                       includeMargin={false}
                     />
                   </div>
-                  <span className="text-xs md:text-[9px] text-black font-black uppercase tracking-[0.2em] md:tracking-tighter">View Ticket</span>
+                  <span className="text-xs md:text-[11px] text-black font-bold uppercase tracking-wide md:tracking-tighter">View Ticket</span>
                 </Link>
                 <button
                   onClick={() => handleDownload(booking._id, booking.showtimeId.movieId.title)}
-                  className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all"
+                  className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wide transition-all"
                 >
                   <Download size={14} /> Download
                 </button>
@@ -136,7 +136,7 @@ export const UserBookings = () => {
         ) : (
           <div className="py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10 text-center space-y-4">
             <Ticket size={60} className="mx-auto text-gray-700 opacity-30" />
-            <p className="text-xl font-black italic opacity-40">No active bookings found</p>
+            <p className="text-xl font-bold italic opacity-40">No active bookings found</p>
           </div>
         )}
       </div>

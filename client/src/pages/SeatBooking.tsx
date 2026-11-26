@@ -32,7 +32,7 @@ export const SeatBooking = () => {
   if (!showtime) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black">
       <div className="w-16 h-16 border-4 border-accent-pink border-t-transparent rounded-full animate-spin mb-4" />
-      <h2 className="text-xl font-black text-white uppercase tracking-widest">Loading Seats...</h2>
+      <h2 className="text-xl font-bold text-white uppercase tracking-wide">Loading Seats...</h2>
     </div>
   );
 

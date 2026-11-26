@@ -28,7 +28,7 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
     <div className="flex flex-col h-full bg-transparent">
       {/* Commits Explorer Header */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-zinc-800">
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+        <span className="text-xs font-bold uppercase tracking-wide text-zinc-400 flex items-center gap-1.5">
           <GitBranch size={12} className="text-zinc-500" />
           Commits Log ({commits.length})
         </span>
@@ -36,7 +36,7 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
         {activeCommitId && (
           <button
             onClick={() => onCheckout(null)}
-            className="flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[9px] uppercase tracking-wider font-black text-white transition-all hover:scale-[1.02]"
+            className="flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[11px] uppercase tracking-wider font-bold text-white transition-all hover:scale-[1.02]"
             title="Return to HEAD"
           >
             <ArrowLeft size={10} />
@@ -86,18 +86,18 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
                   <h4 className="text-xs font-semibold truncate leading-tight select-none pr-1">
                     {c.message}
                   </h4>
-                  <span className="font-mono text-[9px] px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-500 font-bold select-all flex-shrink-0 shadow-inner">
+                  <span className="font-mono text-[11px] px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-500 font-bold select-all flex-shrink-0 shadow-inner">
                     {shortHash}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-zinc-500 font-normal mt-0.5">
+                <div className="flex items-center justify-between text-xs text-zinc-500 font-normal mt-0.5">
                   <div className="truncate pr-2">
                     {c.createdBy} • {formattedDate}
                   </div>
                   
                   {/* File stats additions/deletions indicator */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0 font-mono text-[9px] font-bold">
+                  <div className="flex items-center gap-1.5 flex-shrink-0 font-mono text-[11px] font-bold">
                     {c.totalAdditions > 0 && (
                       <span className="text-emerald-500">+{c.totalAdditions}</span>
                     )}
@@ -113,7 +113,7 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
                     e.stopPropagation();
                     onInspectCommit(c._id);
                   }}
-                  className="mt-2 flex items-center gap-1 self-start px-2 py-1 rounded bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[9px] uppercase tracking-wider font-bold text-zinc-400 hover:text-white transition-all shadow-inner"
+                  className="mt-2 flex items-center gap-1 self-start px-2 py-1 rounded bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[11px] uppercase tracking-wider font-bold text-zinc-400 hover:text-white transition-all shadow-inner"
                   title="Inspect Commit Changes"
                 >
                   <Eye size={10} />

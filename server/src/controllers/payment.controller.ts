@@ -1,300 +1,147 @@
 import type { Response } from 'express';
 import crypto from 'crypto';
 import { SeatReservation } from '../models/seatReservation.model.js';
+import { PaymentTransaction } from '../models/paymentTransaction.model.js';
 import { SeatStatus } from '../constants/enums.js';
 import { getIO } from '../socket/index.js';
 import type { AuthRequest } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
-import { activatePaidPlan } from '../services/subscription/subscription.service.js';
-import type { BillingCycle } from '../models/subscription.model.js';
-import type { PaidPlanKey } from '../services/subscription/subscriptionPlans.js';
 import { notificationService } from '../services/notification.service.js';
-
-export type PaymentKind = 'seat' | 'subscription';
-
-export interface PaymentIntent {
-  paymentIntentId: string;
-  clientSecret:    string;
-  amount:          number;
-  currency:        string;
-  status:          'requires_payment' | 'processing' | 'succeeded' | 'failed';
-  kind:            PaymentKind;
-  userId:          string;
-  transactionId?:  string;
-  createdAt:       Date;
-  // Seat-specific
-  reservationIds?: string[];
-  // Arbitrary per-kind payload (e.g. subscription cycle)
-  metadata?:       Record<string, unknown>;
-}
-
-// In-memory store for dummy payment intents
-const paymentIntents = new Map<string, PaymentIntent>();
-
-/** Internal accessor used by other controllers (e.g. subscription). */
-export const paymentIntentsStore = {
-  get: (id: string) => paymentIntents.get(id),
-  set: (id: string, intent: PaymentIntent) => paymentIntents.set(id, intent),
-};
-
-const generateId = (prefix: string) => `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { meterOrReject } from '../modules/billing/meter.js';
+import { SERVICE_KEYS } from '../modules/catalog/catalog.registry.js';
 
 /**
- * Create a new dummy payment intent.
+ * Movie service — ticket checkout.
  *
- * Body:
- *   - `kind` (optional, default `seat`): `seat` | `subscription`
- *   - Seat kind requires `reservationIds: string[]` and verifies ownership.
- *   - Subscription kind accepts `metadata: Record<string, unknown>` only; the
- *     caller (subscription controller) is responsible for supplying amount.
+ * IMPORTANT: there is no real payment gateway integrated. Ticket payment
+ * intents are simulated (in-memory) exactly as before this refactor, so a
+ * "confirmed" ticket does not mean money was collected. Integrate a gateway
+ * (and verify its webhook) before taking real payments. What IS real:
+ *   - the ticket amount is computed server-side from locked reservations,
+ *   - the platform's movie-service fee is charged through the billing engine.
  */
+interface PaymentIntent {
+  paymentIntentId: string;
+  clientSecret: string;
+  amount: number;
+  currency: string;
+  status: 'requires_payment' | 'processing' | 'succeeded' | 'failed';
+  userId: string;
+  reservationIds: string[];
+  transactionId?: string;
+  createdAt: Date;
+}
+
+const paymentIntents = new Map<string, PaymentIntent>();
+const INTENT_TTL_MS = 30 * 60 * 1000;
+const generateId = (prefix: string) => `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
+
+const pruneIntents = () => {
+  const cutoff = Date.now() - INTENT_TTL_MS;
+  for (const [id, intent] of paymentIntents) if (intent.createdAt.getTime() < cutoff) paymentIntents.delete(id);
+};
+
+/** POST /api/payment/create-intent — body: { reservationIds: string[] } */
 export const createPaymentIntent = async (req: AuthRequest, res: Response) => {
   try {
-    const { amount, currency, reservationIds, kind: kindRaw, metadata } = req.body;
-    const kind: PaymentKind = kindRaw === 'subscription' ? 'subscription' : 'seat';
+    pruneIntents();
+    const { reservationIds } = req.body ?? {};
     const userId = req.user!.id;
-
-    if (!amount || !currency) {
-      return res.status(400).json({ success: false, message: 'amount and currency are required' });
+    if (!Array.isArray(reservationIds) || reservationIds.length === 0 || reservationIds.length > 20) {
+      return res.status(400).json({ success: false, message: 'reservationIds are required' });
     }
-
-    if (kind === 'seat') {
-      if (!reservationIds || !Array.isArray(reservationIds)) {
-        return res.status(400).json({ success: false, message: 'reservationIds are required' });
-      }
-      const reservations = await SeatReservation.find({
-        _id: { $in: reservationIds },
-        userId,
-        status: SeatStatus.LOCKED,
-      });
-      if (reservations.length !== reservationIds.length) {
-        return res.status(400).json({ success: false, message: 'Some reservations are invalid, expired, or not owned by you' });
-      }
+    const reservations = await SeatReservation.find({ _id: { $in: reservationIds }, userId, status: SeatStatus.LOCKED });
+    if (reservations.length !== reservationIds.length) {
+      return res.status(400).json({ success: false, message: 'Some reservations are invalid, expired, or not owned by you' });
     }
-
-    const paymentIntentId = generateId('pi');
-    const clientSecret    = generateId('secret');
-
+    const amount = reservations.reduce((sum, r) => sum + r.price, 0);
     const intent: PaymentIntent = {
-      paymentIntentId,
-      clientSecret,
+      paymentIntentId: generateId('pi'),
+      clientSecret: generateId('secret'),
       amount,
-      currency,
-      status:    'requires_payment',
-      kind,
+      currency: 'INR',
+      status: 'requires_payment',
       userId,
+      reservationIds: reservations.map((r) => String(r._id)),
       createdAt: new Date(),
-      ...(kind === 'seat' ? { reservationIds: reservationIds as string[] } : {}),
-      ...(metadata && typeof metadata === 'object' ? { metadata: metadata as Record<string, unknown> } : {}),
     };
-
-    paymentIntents.set(paymentIntentId, intent);
-
+    paymentIntents.set(intent.paymentIntentId, intent);
     res.status(201).json({
       success: true,
-      clientSecret,
-      paymentIntentId,
+      clientSecret: intent.clientSecret,
+      paymentIntentId: intent.paymentIntentId,
       amount,
-      currency,
-      status: 'requires_payment',
+      currency: intent.currency,
+      status: intent.status,
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
   }
 };
 
+/** POST /api/payment/confirm — body: { paymentIntentId, paymentMethod } */
 export const confirmPayment = async (req: AuthRequest, res: Response) => {
   try {
-    const { paymentIntentId, paymentMethod } = req.body;
-
+    const { paymentIntentId, paymentMethod } = req.body ?? {};
     if (!paymentIntentId || !paymentMethod) {
       return res.status(400).json({ success: false, message: 'paymentIntentId and paymentMethod are required' });
     }
-
-    const intent = paymentIntents.get(paymentIntentId);
-    if (!intent) {
+    const intent = paymentIntents.get(String(paymentIntentId));
+    if (!intent || intent.userId !== req.user!.id) {
       return res.status(404).json({ success: false, message: 'Payment intent not found' });
     }
-
-    if (intent.userId !== req.user!.id) {
-      return res.status(403).json({ success: false, message: 'Unauthorized to confirm this payment' });
+    if (intent.status === 'succeeded' || intent.status === 'processing') {
+      return res.status(409).json({ success: false, message: 'Payment already being processed or confirmed' });
     }
-
-    if (intent.status === 'succeeded') {
-      return res.status(400).json({ success: false, message: 'Payment already confirmed' });
-    }
-
     intent.status = 'processing';
-    await delay(1500);
-    const transactionId = generateId('txn');
 
-    if (intent.kind === 'seat') {
-      const reservationIds = intent.reservationIds ?? [];
-      const reservations = await SeatReservation.updateMany(
-        {
-          _id:    { $in: reservationIds },
-          userId: req.user!.id,
-          status: SeatStatus.LOCKED,
-        },
-        {
-          status: SeatStatus.BOOKED,
-          transactionId,
-          $unset: { expiresAt: 1 },
-        },
-      );
-
-      if (reservations.modifiedCount === 0) {
-        intent.status = 'failed';
-        return res.status(400).json({ success: false, message: 'No valid locked seats found. They may have expired.' });
-      }
-
-      intent.status = 'succeeded';
-      intent.transactionId = transactionId;
-      getIO().emit('seats_booked', { reservationIds, transactionId });
-
-      // Notify authenticated user
-      notificationService.sendNotification({
-        userIds: [intent.userId],
-        title: 'Booking Confirmed! 🎫',
-        message: `Your booking for ${reservationIds.length} seat(s) was successful. Transaction: ${transactionId}`,
-        url: '/profile/bookings' // Link to user's bookings
-      });
-
-      // Notify admins
-      notificationService.sendNotification({
-        targets: ['admins'],
-        title: 'New Movie Booking!',
-        message: `User ${req.user!.name} just confirmed a booking for ${reservationIds.length} seat(s).`,
-        url: '/admin/overview' // Link to admin dashboard
-      });
-    } else {
-      // Subscription path — metadata drives activation.
-      const meta     = intent.metadata ?? {};
-      const intentKind = meta['kind'] as string | undefined;
-
-      // ── Booster top-up ───────────────────────────────────────────────────
-      if (intentKind === 'booster') {
-        const productId = meta['productId'] as string | undefined;
-        const { BOOSTER_PRODUCTS } = await import('../services/subscription/subscriptionPlans.js');
-        const booster = productId ? BOOSTER_PRODUCTS[productId as keyof typeof BOOSTER_PRODUCTS] : undefined;
-        if (!booster) {
-          intent.status = 'failed';
-          return res.status(400).json({ success: false, message: 'Unknown booster product' });
-        }
-        try {
-          const { creditBoosterTokens } = await import('../services/subscription/subscription.service.js');
-          await creditBoosterTokens(intent.userId, booster.tokenType, booster.amount, paymentIntentId);
-        } catch (err: unknown) {
-          intent.status = 'failed';
-          return res.status(400).json({ success: false, message: getErrorMessage(err) });
-        }
-
-        intent.status = 'succeeded';
-        intent.transactionId = transactionId;
-
-        notificationService.sendNotification({
-          userIds: [intent.userId],
-          title: 'Tokens Added! ⚡',
-          message: `${booster.amount.toLocaleString()} ${booster.tokenType === 'chat' ? 'Chat Sparks' : 'Nexus Credits'} added to your account.`,
-          url: '/subscription',
-        });
-      } else {
-        // ── Subscription plan activation ────────────────────────────────────
-        const planKey = (meta['plan'] as PaidPlanKey | 'enterprise' | undefined) ?? 'pro';
-
-        if (planKey === 'enterprise') {
-          const customMonthlyLimit   = meta['customMonthlyLimit']   as number | undefined;
-          const customDurationMonths = meta['customDurationMonths'] as number | undefined;
-          try {
-            await activatePaidPlan(intent.userId, {
-              plan: 'enterprise',
-              paymentId: paymentIntentId,
-              ...(customMonthlyLimit   !== undefined ? { customMonthlyLimit }   : {}),
-              ...(customDurationMonths !== undefined ? { customDurationMonths } : {}),
-            });
-          } catch (err: unknown) {
-            intent.status = 'failed';
-            return res.status(400).json({ success: false, message: getErrorMessage(err) });
-          }
-        } else if (planKey === 'pro' || planKey === 'proMax') {
-          const cycle = (meta['cycle'] as BillingCycle | undefined) ?? 'monthly';
-          if (cycle !== 'monthly' && cycle !== 'quarterly') {
-            intent.status = 'failed';
-            return res.status(400).json({ success: false, message: 'Invalid subscription cycle' });
-          }
-          await activatePaidPlan(intent.userId, {
-            plan: planKey,
-            cycle,
-            paymentId: paymentIntentId,
-          });
-        } else {
-          intent.status = 'failed';
-          return res.status(400).json({ success: false, message: 'Invalid subscription plan' });
-        }
-
-        intent.status = 'succeeded';
-        intent.transactionId = transactionId;
-
-        notificationService.sendNotification({
-          userIds: [intent.userId],
-          title: 'Subscription Activated! 🚀',
-          message: `You have successfully upgraded to the ${planKey.toUpperCase()} plan. Enjoy your premium benefits!`,
-          url: '/profile/subscription',
-        });
-
-        notificationService.sendNotification({
-          targets: ['admins'],
-          title: 'New Subscription!',
-          message: `User ${req.user!.name} upgraded to ${planKey.toUpperCase()} plan.`,
-          url: '/admin/users',
-        });
-      }
-    }
-
-    // --- Create Fiat Payment Transaction Log ---
-    if (intent.status === 'succeeded' && transactionId) {
-      const { PaymentTransaction } = await import('../models/paymentTransaction.model.js');
-      
-      let description = 'Payment';
-      let txKind: 'seat' | 'subscription' | 'booster' = 'seat';
-
-      if (intent.kind === 'seat') {
-        description = `Movie Ticket Booking (${(intent.reservationIds || []).length} seats)`;
-        txKind = 'seat';
-      } else {
-        const meta = intent.metadata ?? {};
-        const intentKind = meta['kind'] as string | undefined;
-        if (intentKind === 'booster') {
-          txKind = 'booster';
-          const productId = meta['productId'] as string | undefined;
-          description = `Booster Pack: ${productId || 'Unknown'}`;
-        } else {
-          txKind = 'subscription';
-          const planKey = (meta['plan'] as string | undefined) ?? 'pro';
-          description = `Subscription Upgrade: ${planKey.toUpperCase()}`;
-        }
-      }
-
-      await PaymentTransaction.create({
-        userId: intent.userId,
-        paymentIntentId,
-        transactionId,
-        amount: intent.amount,
-        currency: intent.currency,
-        kind: txKind,
-        description,
-        status: 'succeeded',
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      status:  'succeeded',
-      transactionId,
-      kind:    intent.kind,
+    // Platform fee for the movie service (1 unit per booking), charged
+    // before the seats are confirmed. Idempotent per payment intent.
+    const fee = await meterOrReject(res, {
+      user: req.user!,
+      serviceKey: SERVICE_KEYS.MOVIES,
+      units: 1,
+      idempotencyKey: `movies:booking:${intent.paymentIntentId}`,
+      description: `Movie booking (${intent.reservationIds.length} seats)`,
     });
+    if (!fee) {
+      intent.status = 'requires_payment';
+      return;
+    }
+
+    const transactionId = generateId('txn');
+    const updated = await SeatReservation.updateMany(
+      { _id: { $in: intent.reservationIds }, userId: req.user!.id, status: SeatStatus.LOCKED },
+      { status: SeatStatus.BOOKED, transactionId, $unset: { expiresAt: 1 } },
+    );
+    if (updated.modifiedCount === 0) {
+      intent.status = 'failed';
+      return res.status(400).json({ success: false, message: 'No valid locked seats found. They may have expired.' });
+    }
+
+    intent.status = 'succeeded';
+    intent.transactionId = transactionId;
+    getIO().emit('seats_booked', { reservationIds: intent.reservationIds, transactionId });
+
+    await PaymentTransaction.create({
+      userId: intent.userId,
+      paymentIntentId: intent.paymentIntentId,
+      transactionId,
+      amount: intent.amount,
+      currency: intent.currency,
+      kind: 'seat',
+      description: `Movie Ticket Booking (${intent.reservationIds.length} seats)`,
+      status: 'succeeded',
+    });
+
+    notificationService.sendNotification({
+      userIds: [intent.userId],
+      title: 'Booking Confirmed',
+      message: `Your booking for ${intent.reservationIds.length} seat(s) was successful. Transaction: ${transactionId}`,
+      url: '/dashboard/bookings',
+    });
+
+    res.status(200).json({ success: true, status: 'succeeded', transactionId, kind: 'seat' });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
   }
@@ -302,26 +149,19 @@ export const confirmPayment = async (req: AuthRequest, res: Response) => {
 
 export const getPaymentStatus = async (req: AuthRequest, res: Response) => {
   try {
-    const id = req.params.id as string;
-    const intent = paymentIntents.get(id);
-
-    if (!intent) {
+    const intent = paymentIntents.get(String(req.params.id));
+    if (!intent || intent.userId !== req.user!.id) {
       return res.status(404).json({ success: false, message: 'Payment intent not found' });
     }
-
-    if (intent.userId !== req.user!.id) {
-      return res.status(403).json({ success: false, message: 'Unauthorized to view this payment' });
-    }
-
     res.status(200).json({
       success: true,
       paymentIntentId: intent.paymentIntentId,
-      amount:          intent.amount,
-      currency:        intent.currency,
-      status:          intent.status,
-      kind:            intent.kind,
-      transactionId:   intent.transactionId || null,
-      createdAt:       intent.createdAt,
+      amount: intent.amount,
+      currency: intent.currency,
+      status: intent.status,
+      kind: 'seat',
+      transactionId: intent.transactionId || null,
+      createdAt: intent.createdAt,
     });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });

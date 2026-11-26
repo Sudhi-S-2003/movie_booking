@@ -104,13 +104,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({ onReplyTo }) => {
 const LoaderStrip: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center justify-center gap-2 py-2">
     <Loader2 size={12} className="animate-spin text-accent-blue" />
-    <span className="text-[8px] font-bold uppercase tracking-wider text-white/30">{label}</span>
+    <span className="text-[11px] font-bold uppercase tracking-wider text-white/30">{label}</span>
   </div>
 );
 
 const EdgeHint: React.FC<{ label: string }> = ({ label }) => (
   <div className="text-center py-2">
-    <span className="text-[7px] font-bold text-white/15 uppercase tracking-[0.3em]">
+    <span className="text-[11px] font-bold text-white/15 uppercase tracking-wider">
       {label}
     </span>
   </div>
@@ -121,7 +121,7 @@ const EmptyState: React.FC = () => (
     <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center">
       <MessageSquare size={18} className="text-white/10" />
     </div>
-    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/15">
+    <p className="text-[11px] font-bold uppercase tracking-wide text-white/15">
       No replies yet — start the conversation
     </p>
   </div>

@@ -33,7 +33,7 @@ const SeatCell = memo(({
         : `${COLOR_MAP[col.priceGroup as PriceGroupType]} border-transparent`
     }`}>
       {col.type === "seat" && <div className="absolute top-1 w-6 h-1 bg-white/20 rounded-full blur-[1px]" />}
-      <span className={`text-[10px] font-black select-none ${col.type === "space" ? "hidden group-hover/seat:block text-white/20" : "text-white"}`}>
+      <span className={`text-xs font-bold select-none ${col.type === "space" ? "hidden group-hover/seat:block text-white/20" : "text-white"}`}>
         {col.type === "seat" ? col.name : "gap"}
       </span>
     </div>
@@ -45,7 +45,7 @@ const SeatCell = memo(({
           <button
             key={pg}
             onClick={() => onUpdatePrice(rowIndex, colIndex, pg)}
-            className={`w-7 h-7 rounded-lg text-[8px] font-bold flex items-center justify-center hover:scale-110 transition-transform ${pg === col.priceGroup ? "ring-2 ring-white" : "opacity-40 hover:opacity-100"} ${COLOR_MAP[pg]}`}
+            className={`w-7 h-7 rounded-lg text-[11px] font-bold flex items-center justify-center hover:scale-110 transition-transform ${pg === col.priceGroup ? "ring-2 ring-white" : "opacity-40 hover:opacity-100"} ${COLOR_MAP[pg]}`}
           >
             {pg[0]}
           </button>
@@ -86,7 +86,7 @@ const SeatRow = memo(({
   if (row.type === "space") {
     return (
       <div className="group relative flex items-center justify-center w-[900px] h-10 bg-white/[0.01] border border-dashed border-white/5 rounded-2xl hover:bg-white/[0.03] transition-colors">
-        <span className="text-[8px] font-black text-white/5 tracking-[2em] uppercase group-hover:text-white/20 transition-colors">Horizontal Walkway</span>
+        <span className="text-[11px] font-bold text-white/5 tracking-[2em] uppercase group-hover:text-white/20 transition-colors">Horizontal Walkway</span>
         <button onClick={() => onRemoveRow(rowIndex)} className="absolute right-6 p-2 text-red-500 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"><Trash2 size={16} /></button>
       </div>
     );
@@ -95,7 +95,7 @@ const SeatRow = memo(({
   return (
     <div className="flex items-center gap-6 group/row relative">
       {}
-      <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl font-black text-gray-500 text-xs border border-white/5 group-hover/row:border-accent-pink/40 group-hover/row:text-white transition-colors shadow-lg">
+      <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl font-bold text-gray-500 text-xs border border-white/5 group-hover/row:border-accent-pink/40 group-hover/row:text-white transition-colors shadow-lg">
         {row.name}
       </div>
 
@@ -127,19 +127,19 @@ const SeatRow = memo(({
             </button>
             <div className="absolute left-full ml-3 top-0 hidden group-hover/bulk:flex bg-black/90 border border-white/10 rounded-2xl p-3 shadow-2xl backdrop-blur-xl gap-3 z-[60] min-w-max">
               <div className="flex flex-col gap-2">
-                <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest pl-1">Fill Row</span>
+                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide pl-1">Fill Row</span>
                 <div className="flex gap-2">
                   {[10, 15, 20].map(n => (
-                    <button key={n} onClick={() => onFillRow(rowIndex, n)} className="px-3 py-1.5 bg-white/5 hover:bg-white/20 rounded-lg text-[10px] font-bold transition-colors underline decoration-accent-blue underline-offset-4 text-white">To {n}</button>
+                    <button key={n} onClick={() => onFillRow(rowIndex, n)} className="px-3 py-1.5 bg-white/5 hover:bg-white/20 rounded-lg text-xs font-bold transition-colors underline decoration-accent-blue underline-offset-4 text-white">To {n}</button>
                   ))}
                 </div>
               </div>
               <div className="w-px h-auto bg-white/10 mx-1" />
               <div className="flex flex-col gap-2">
-                <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest pl-1">Category</span>
+                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide pl-1">Category</span>
                 <div className="flex gap-2">
                   {PRICE_GROUPS.map(pg => (
-                    <button key={pg} onClick={() => onApplyCategory(rowIndex, pg)} className={`w-8 h-8 rounded-lg flex items-center justify-center hover:scale-110 transition-transform ${COLOR_MAP[pg]} text-[10px] font-bold`}>{pg[0]}</button>
+                    <button key={pg} onClick={() => onApplyCategory(rowIndex, pg)} className={`w-8 h-8 rounded-lg flex items-center justify-center hover:scale-110 transition-transform ${COLOR_MAP[pg]} text-xs font-bold`}>{pg[0]}</button>
                   ))}
                 </div>
               </div>
@@ -162,7 +162,7 @@ const SeatRow = memo(({
       </div>
 
       {}
-      <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl font-black text-gray-500 text-xs border border-white/5 group-hover/row:border-accent-pink/40 group-hover/row:text-white transition-colors shadow-lg">
+      <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl font-bold text-gray-500 text-xs border border-white/5 group-hover/row:border-accent-pink/40 group-hover/row:text-white transition-colors shadow-lg">
         {row.name}
       </div>
     </div>
@@ -210,7 +210,7 @@ export const OwnerArchitecture = () => {
     void save(selectedScreenId);
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px] font-black animate-pulse">SYNCHRONIZING CORE DATA...</div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px] font-bold animate-pulse">SYNCHRONIZING CORE DATA...</div>;
 
   return (
     <DashboardPage
@@ -228,21 +228,21 @@ export const OwnerArchitecture = () => {
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="flex items-center gap-2.5 bg-white/[0.04] border border-white/[0.06] rounded-2xl px-5 py-3">
             <Armchair size={16} className="text-white/40" />
-            <span className="text-lg font-black text-white">{totalSeats}</span>
-            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Seats</span>
+            <span className="text-lg font-bold text-white">{totalSeats}</span>
+            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Seats</span>
           </div>
           <div className="flex items-center gap-2.5 bg-white/[0.04] border border-white/[0.06] rounded-2xl px-5 py-3">
             <Monitor size={16} className="text-white/40" />
-            <span className="text-lg font-black text-white">{rowCount}</span>
-            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Rows</span>
+            <span className="text-lg font-bold text-white">{rowCount}</span>
+            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Rows</span>
           </div>
           <div className="w-px h-8 bg-white/10 mx-1" />
           {PRICE_GROUPS.map(pg => (
             (seatBreakdown[pg] ?? 0) > 0 && (
               <div key={pg} className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.05] rounded-xl px-3.5 py-2">
                 <div className={`w-2.5 h-2.5 rounded-full ${MINI_BG[pg]}`} />
-                <span className="text-sm font-black text-white">{seatBreakdown[pg]}</span>
-                <span className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">{pg}</span>
+                <span className="text-sm font-bold text-white">{seatBreakdown[pg]}</span>
+                <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">{pg}</span>
               </div>
             )
           ))}
@@ -252,11 +252,11 @@ export const OwnerArchitecture = () => {
       {}
       <div className="flex flex-wrap gap-4 items-center justify-between bg-white/[0.03] p-3 rounded-2xl border border-white/5 mb-6">
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => addRow("row")} className="px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-accent-pink hover:border-accent-pink transition-colors text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center gap-2 group">
+          <button onClick={() => addRow("row")} className="px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-accent-pink hover:border-accent-pink transition-colors text-white text-xs font-bold uppercase tracking-wide rounded-xl flex items-center gap-2 group">
             <Plus size={14} className="group-hover:scale-110 transition-transform" />
             Add Row
           </button>
-          <button onClick={() => addRow("space")} className="px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center gap-2">
+          <button onClick={() => addRow("space")} className="px-5 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-gray-400 text-xs font-bold uppercase tracking-wide rounded-xl flex items-center gap-2">
             <Plus size={14} />
             Insert Aisle
           </button>
@@ -264,10 +264,10 @@ export const OwnerArchitecture = () => {
 
         <div className="flex items-center gap-2 bg-black/40 p-1 rounded-xl border border-white/10">
           <button onClick={() => setZoom(prev => Math.min(prev + 0.1, 2))} className="w-7 h-7 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-lg font-bold transition-colors text-white text-sm">+</button>
-          <span className="text-[9px] font-black text-gray-400 min-w-[36px] text-center">{Math.round(zoom * 100)}%</span>
+          <span className="text-[11px] font-bold text-gray-400 min-w-[36px] text-center">{Math.round(zoom * 100)}%</span>
           <button onClick={() => setZoom(prev => Math.max(prev - 0.1, 0.4))} className="w-7 h-7 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-lg font-bold transition-colors text-white text-sm">−</button>
           <div className="w-px h-4 bg-white/10" />
-          <button onClick={() => setZoom(1)} className="px-2.5 h-7 bg-white/5 hover:bg-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest text-white transition-colors">Reset</button>
+          <button onClick={() => setZoom(1)} className="px-2.5 h-7 bg-white/5 hover:bg-white/10 rounded-lg text-[11px] font-bold uppercase tracking-wide text-white transition-colors">Reset</button>
         </div>
       </div>
 
@@ -276,7 +276,7 @@ export const OwnerArchitecture = () => {
         {!selectedScreenId ? (
           <div className="flex flex-col items-center gap-6 text-white/5 py-40">
             <Layout size={120} strokeWidth={0.5} className="animate-pulse" />
-            <p className="font-black uppercase tracking-[1em] text-[10px]">Select a screen to begin</p>
+            <p className="font-bold uppercase tracking-wider text-xs">Select a screen to begin</p>
           </div>
         ) : (
           <>
@@ -297,7 +297,7 @@ export const OwnerArchitecture = () => {
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
                   </div>
                   <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                    <span className="text-[9px] font-black text-white/15 tracking-[1.5em] uppercase whitespace-nowrap">Projection Area</span>
+                    <span className="text-[11px] font-bold text-white/15 tracking-[1.5em] uppercase whitespace-nowrap">Projection Area</span>
                     <div className="w-40 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mt-3" />
                   </div>
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-white/[0.015] blur-[80px] rounded-full pointer-events-none" />
@@ -326,8 +326,8 @@ export const OwnerArchitecture = () => {
                     <div key={pg} className="flex items-center gap-3 group cursor-default">
                       <div className={`w-5 h-5 rounded-lg ${COLOR_MAP[pg]} border-transparent shadow-sm transition-transform group-hover:scale-110`} />
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black tracking-widest uppercase text-white/80">{pg}</span>
-                        <span className="text-[7px] font-bold text-gray-600">{seatBreakdown[pg]} seats</span>
+                        <span className="text-[11px] font-bold tracking-wide uppercase text-white/80">{pg}</span>
+                        <span className="text-[11px] font-bold text-gray-600">{seatBreakdown[pg]} seats</span>
                       </div>
                     </div>
                   ))}
@@ -346,19 +346,19 @@ export const OwnerArchitecture = () => {
                   <Info size={18} />
                 </button>
                 <div className="absolute bottom-full right-0 mb-3 w-64 bg-black/90 border border-white/10 rounded-2xl p-5 shadow-2xl backdrop-blur-xl hidden group-hover:block pointer-events-none">
-                  <h4 className="text-[9px] font-black uppercase tracking-widest text-accent-blue mb-3">Pro Tips</h4>
+                  <h4 className="text-[11px] font-bold uppercase tracking-wide text-accent-blue mb-3">Pro Tips</h4>
                   <ul className="space-y-3">
                     <li className="flex gap-3">
-                      <div className="w-5 h-5 rounded-md bg-accent-pink/10 flex items-center justify-center flex-shrink-0 text-accent-pink text-[9px] font-black">1</div>
-                      <p className="text-[10px] text-gray-400 font-medium leading-relaxed">Use <span className="text-white font-bold">Aisles</span> for vertical paths between blocks.</p>
+                      <div className="w-5 h-5 rounded-md bg-accent-pink/10 flex items-center justify-center flex-shrink-0 text-accent-pink text-[11px] font-bold">1</div>
+                      <p className="text-xs text-gray-400 font-medium leading-relaxed">Use <span className="text-white font-bold">Aisles</span> for vertical paths between blocks.</p>
                     </li>
                     <li className="flex gap-3">
-                      <div className="w-5 h-5 rounded-md bg-accent-blue/10 flex items-center justify-center flex-shrink-0 text-accent-blue text-[9px] font-black">2</div>
-                      <p className="text-[10px] text-gray-400 font-medium leading-relaxed">Hover a row for the <span className="text-white font-bold">Magic Wand</span> — bulk fill & categories.</p>
+                      <div className="w-5 h-5 rounded-md bg-accent-blue/10 flex items-center justify-center flex-shrink-0 text-accent-blue text-[11px] font-bold">2</div>
+                      <p className="text-xs text-gray-400 font-medium leading-relaxed">Hover a row for the <span className="text-white font-bold">Magic Wand</span> — bulk fill & categories.</p>
                     </li>
                     <li className="flex gap-3">
-                      <div className="w-5 h-5 rounded-md bg-accent-purple/10 flex items-center justify-center flex-shrink-0 text-accent-purple text-[9px] font-black">3</div>
-                      <p className="text-[10px] text-gray-400 font-medium leading-relaxed">Hover a <span className="text-white font-bold">Seat</span> to change its pricing tier.</p>
+                      <div className="w-5 h-5 rounded-md bg-accent-purple/10 flex items-center justify-center flex-shrink-0 text-accent-purple text-[11px] font-bold">3</div>
+                      <p className="text-xs text-gray-400 font-medium leading-relaxed">Hover a <span className="text-white font-bold">Seat</span> to change its pricing tier.</p>
                     </li>
                   </ul>
                 </div>

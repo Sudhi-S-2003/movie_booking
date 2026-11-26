@@ -1,27 +1,32 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore.js';
+import { dashboardPrefix } from '../features/platform/useAccount.js';
 
-const ROLE_PREFIXES: Record<string, string> = {
-  admin: '/admin',
-  theatre_owner: '/owner',
-  user: '/user',
-};
+/** Dashboard areas that are role-based (the movie-operator `/owner` area is permission-based). */
+const ROLE_AREAS = ['/admin', '/user'] as const;
 
 /**
- * Paths that exist under all role prefixes. 
- * If a user accesses these at the root (e.g. /integrations), 
- * we redirect them to their role-specific version (e.g. /admin/integrations).
+ * Sections that exist in every dashboard area. Only these are rewritten,
+ * so public pages that share a prefix (e.g. `/user/:username` profiles) are
+ * never touched.
  */
-const SHORTHAND_PATHS = [
-  '/integrations',
-  '/api-docs',
-  '/api-keys',
-  '/chat',
-  '/settings',
-  '/overview',
-];
+const SHARED_SECTIONS = new Set([
+  // 'pricing' is intentionally absent: /pricing is the public price list.
+  'services', 'billing', 'account', 'customers', 'platform', 'applications', 'audit',
+  'chat', 'api-keys', 'api-docs', 'integrations', 'chatbots', 'security', 'settings',
+]);
 
+/** Root-level public routes under shared names that must not be redirected. */
+const isPublicChatRoute = (path: string, search: string) =>
+  path.startsWith('/chat/g/') || path.startsWith('/chat/invite/') ||
+  (path.startsWith('/chat/') && new URLSearchParams(search).has('signature'));
+
+/**
+ * Sends signed-in users to their own dashboard area:
+ *  - `/billing` → `/user/billing` (or `/admin/billing` for staff)
+ *  - `/admin/chat` opened by a customer → `/user/chat`
+ */
 export const useRoleRedirect = () => {
   const { user, isAuthenticated } = useAuthStore();
   const location = useLocation();
@@ -29,35 +34,22 @@ export const useRoleRedirect = () => {
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
+    const { pathname, search } = location;
+    if (isPublicChatRoute(pathname, search)) return;
 
-    const currentPath = location.pathname;
-    const userRole = user.role;
-    const correctPrefix = ROLE_PREFIXES[userRole];
+    const prefix = dashboardPrefix(user.role);
+    const [, first = '', second = ''] = pathname.split('/');
 
-    if (!correctPrefix) return;
-
-    // 1. Handle Shorthand Redirects (e.g. /integrations -> /admin/integrations)
-    const isShorthand = SHORTHAND_PATHS.some(path => currentPath === path || currentPath.startsWith(`${path}/`));
-    
-    if (isShorthand) {
-      const newPath = `${correctPrefix}${currentPath}`;
-      console.log(`[RoleRedirect] Shorthand redirect for ${userRole}: ${currentPath} -> ${newPath}`);
-      navigate(newPath, { replace: true });
+    // 1. Shorthand: /<section>/... → <prefix>/<section>/...
+    if (SHARED_SECTIONS.has(first)) {
+      navigate(`${prefix}${pathname}${search}`, { replace: true });
       return;
     }
 
-    // 2. Handle Cross-Role Prefix Redirects (e.g. /owner/chat -> /admin/chat for an admin)
-    const prefixes = Object.values(ROLE_PREFIXES);
-    const matchedPrefix = prefixes.find(
-      (prefix) => currentPath.startsWith(prefix) && prefix !== correctPrefix
-    );
-
-    if (matchedPrefix) {
-      const subPath = currentPath.substring(matchedPrefix.length);
-      const newPath = `${correctPrefix}${subPath}`;
-      console.log(`[RoleRedirect] Role mismatch redirect for ${userRole}: ${currentPath} -> ${newPath}`);
-      navigate(newPath, { replace: true });
+    // 2. Another role's area, shared section only.
+    const area = ROLE_AREAS.find((a) => a === `/${first}`);
+    if (area && area !== prefix && SHARED_SECTIONS.has(second)) {
+      navigate(`${prefix}${pathname.slice(area.length)}${search}`, { replace: true });
     }
-  }, [user, isAuthenticated, location.pathname, navigate]);
+  }, [user, isAuthenticated, location, navigate]);
 };
-

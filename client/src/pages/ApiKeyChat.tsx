@@ -7,7 +7,7 @@ import {
   SignedLinkError,
   useSignedLinkPreflight,
 } from '@/components/chat-signed/index.js';
-import { SubscriptionProvider } from '@/components/chat/hooks/useSubscription.js';
+import { BillingProvider } from '@/providers/BillingProvider.js';
 
 /**
  * Signed-URL guest chat route (`/chat/:conversationId?signature=…&expiresAt=…`).
@@ -64,7 +64,7 @@ export const ApiKeyChat = () => {
   );
   if (!guestSession) return inner;
   return (
-    <SubscriptionProvider
+    <BillingProvider
       guest={{
         signature:      guestSession.signature,
         expiresAt:      guestSession.expiresAt,
@@ -72,7 +72,7 @@ export const ApiKeyChat = () => {
       }}
     >
       {inner}
-    </SubscriptionProvider>
+    </BillingProvider>
   );
 };
 
@@ -82,7 +82,7 @@ const PreflightLoading = () => (
   <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
     <div className="flex flex-col items-center gap-3">
       <div className="w-8 h-8 border-2 border-white/15 border-t-white/60 rounded-full animate-spin" />
-      <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 font-semibold">
+      <p className="text-xs uppercase tracking-wider text-white/30 font-semibold">
         Verifying link
       </p>
     </div>

@@ -120,7 +120,7 @@ export const ChatbotKeywords: React.FC = React.memo(() => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs font-semibold">
             <thead>
-              <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest text-[10px]">
+              <tr className="border-b border-white/5 text-gray-500 uppercase tracking-wide text-xs">
                 <th className="py-3 px-4">Keyword Match</th>
                 <th className="py-3 px-4">Match Method</th>
                 <th className="py-3 px-4">Priority</th>
@@ -138,7 +138,7 @@ export const ChatbotKeywords: React.FC = React.memo(() => {
                     <tr key={kw._id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                       <td className="py-4 px-4 font-bold text-white font-mono">{kw.keyword}</td>
                       <td className="py-4 px-4">
-                        <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold rounded-md">
+                        <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold rounded-md">
                           {kw.matchType}
                         </span>
                       </td>
@@ -174,13 +174,13 @@ export const ChatbotKeywords: React.FC = React.memo(() => {
 
         {/* Add Keyword inline form */}
         <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 space-y-4">
-          <h4 className="text-xs uppercase font-bold tracking-widest text-white flex items-center gap-2">
+          <h4 className="text-xs uppercase font-bold tracking-wide text-white flex items-center gap-2">
             <Plus className="w-4 h-4 text-accent-purple" /> Add Keyword Route
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <div className="space-y-2 md:col-span-2">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Keyword / Regex Trigger
               </label>
               <input
@@ -192,7 +192,7 @@ export const ChatbotKeywords: React.FC = React.memo(() => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Match Strategy
               </label>
               <select
@@ -207,7 +207,7 @@ export const ChatbotKeywords: React.FC = React.memo(() => {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Route Priority
               </label>
               <input
@@ -218,7 +218,7 @@ export const ChatbotKeywords: React.FC = React.memo(() => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                 Session Group ID
               </label>
               <input
@@ -232,7 +232,7 @@ export const ChatbotKeywords: React.FC = React.memo(() => {
 
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between border-t border-white/5 pt-4">
             <div className="space-y-2 w-full md:max-w-md">
-              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
                 Linked Response Template
               </label>
               <AsyncSelect

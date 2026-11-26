@@ -39,7 +39,7 @@ export const CodeShareFooter: React.FC<CodeShareFooterProps> = ({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
           <ShieldCheck size={12} />
-          <span className="text-[10px] font-bold uppercase tracking-wide">Secure</span>
+          <span className="text-xs font-bold uppercase tracking-wide">Secure</span>
         </div>
         
         <div className="flex items-center gap-2 text-zinc-600">

@@ -227,7 +227,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Menu Name
             </label>
             <input
@@ -239,7 +239,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Menu Heading Title
             </label>
             <input
@@ -251,7 +251,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Body Text
             </label>
             <input
@@ -263,7 +263,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Trigger Keyword Rule
             </label>
             <AsyncSelect
@@ -279,7 +279,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
 
         <div className="grid grid-cols-1 gap-4 border-t border-white/5 pt-4">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Footer Text
             </label>
             <input
@@ -328,14 +328,14 @@ export const ChatbotMenus: React.FC = React.memo(() => {
                     </div>
                     <div>
                       <h4 className="font-bold text-white text-sm">{menu.name}</h4>
-                      <p className="text-gray-500 text-[10px] uppercase font-semibold">
+                      <p className="text-gray-500 text-xs uppercase font-semibold">
                         Heading: {menu.title} | {triggerKw ? `Linked Trigger: ${triggerKw.keyword}` : 'Submenu Node'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-4">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase">
+                    <span className="text-xs font-bold text-gray-500 uppercase">
                       {(menu.items || []).length} Options
                     </span>
                     {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
@@ -355,9 +355,9 @@ export const ChatbotMenus: React.FC = React.memo(() => {
                       <div className="p-6 space-y-6">
                         <div className="flex justify-between items-center bg-slate-950 p-4 border border-white/5 rounded-xl">
                           <div className="text-xs space-y-1">
-                            <p className="text-gray-500 font-bold uppercase tracking-wider text-[9px]">Menu Description Body</p>
+                            <p className="text-gray-500 font-bold uppercase tracking-wider text-[11px]">Menu Description Body</p>
                             <p className="text-white">{menu.body || '—'}</p>
-                            <p className="text-gray-500 font-bold uppercase tracking-wider text-[9px] pt-2">Footer Guide Text</p>
+                            <p className="text-gray-500 font-bold uppercase tracking-wider text-[11px] pt-2">Footer Guide Text</p>
                             <p className="text-gray-400">{menu.footerText || '—'}</p>
                           </div>
 
@@ -372,7 +372,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
 
                         {/* Menu options listing */}
                         <div className="space-y-4">
-                          <h5 className="text-xs uppercase font-bold tracking-widest text-white border-b border-white/5 pb-2">
+                          <h5 className="text-xs uppercase font-bold tracking-wide text-white border-b border-white/5 pb-2">
                             Quick Reply Options
                           </h5>
 
@@ -381,17 +381,17 @@ export const ChatbotMenus: React.FC = React.memo(() => {
                               <div key={idx} className="bg-slate-950 p-4 rounded-xl border border-white/5 flex justify-between items-start text-xs font-semibold">
                                 <div className="space-y-2">
                                   <div className="flex items-center space-x-2">
-                                    <span className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-mono text-[10px] text-gray-400 font-bold">
+                                    <span className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-mono text-xs text-gray-400 font-bold">
                                       {item.order}
                                     </span>
                                     <h5 className="text-white font-bold">{item.label}</h5>
                                   </div>
                                   {item.description && <p className="text-gray-400 pl-7 font-normal">{item.description}</p>}
                                   <div className="pl-7 pt-1 flex items-center gap-1.5 font-bold">
-                                    <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[9px] uppercase border border-blue-500/20">
+                                    <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[11px] uppercase border border-blue-500/20">
                                       {item.actionType}
                                     </span>
-                                    <span className="text-[10px] text-gray-500 font-mono">
+                                    <span className="text-xs text-gray-500 font-mono">
                                       Target: {
                                         item.actionType === 'template'
                                           ? templates.find(t => t._id === item.templateId)?.name || 'Missing!'
@@ -417,13 +417,13 @@ export const ChatbotMenus: React.FC = React.memo(() => {
 
                           {/* Add Menu Option Item Form */}
                           <div className="bg-slate-950/40 p-5 rounded-xl border border-white/5 space-y-4">
-                            <h6 className="text-[10px] uppercase font-black tracking-wider text-accent-purple flex items-center gap-1">
+                            <h6 className="text-xs uppercase font-bold tracking-wider text-accent-purple flex items-center gap-1">
                               <Plus className="w-3.5 h-3.5" /> Add Options Action Row
                             </h6>
 
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                               <div className="space-y-2">
-                                <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                                   Button / Option Label
                                 </label>
                                 <input
@@ -435,7 +435,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                                   Option Description
                                 </label>
                                 <input
@@ -447,7 +447,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                                   Action Response Type
                                 </label>
                                 <select
@@ -461,7 +461,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
                                 </select>
                               </div>
                               <div className="space-y-2">
-                                <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
                                   Trigger Order Value
                                 </label>
                                 <input
@@ -476,7 +476,7 @@ export const ChatbotMenus: React.FC = React.memo(() => {
                             {/* Action target pickers conditional */}
                             <div className="flex flex-col md:flex-row gap-4 justify-between items-center pt-2">
                               <div className="space-y-2 w-full md:max-w-md">
-                                <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
                                   Linked Action Target
                                 </label>
                                 {newMenuItemForm.actionType === 'template' ? (

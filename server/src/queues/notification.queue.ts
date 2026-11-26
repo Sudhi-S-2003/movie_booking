@@ -125,10 +125,9 @@ export const enqueueNotification = async (job: NotificationJob): Promise<void> =
   if (!queue) return; // graceful degradation
 
   try {
-    await queue.add(job.type, job, {
-      // Dedup: same post+type won't queue twice within 60s
-      jobId: `${job.type}:${(job as any).postId ?? (job as any).userId ?? Date.now()}`,
-    });
+    // No custom jobId: BullMQ keeps completed jobs, so an id derived from the
+    // post/user silently dropped every later notification for the same target.
+    await queue.add(job.type, job);
   } catch (e: any) {
     console.warn('[enqueueNotification] Failed to enqueue:', e?.message);
   }

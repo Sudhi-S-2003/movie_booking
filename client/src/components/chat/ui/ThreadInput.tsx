@@ -77,6 +77,33 @@ export const ThreadInput = forwardRef<ThreadInputHandle, ThreadInputProps>(({
     onChange(e.currentTarget.innerText);
   }, [onChange]);
 
+  /**
+   * Paste as plain text only. Without this, a contentEditable keeps the
+   * source page's HTML (background colours, fonts, sizes), which showed up
+   * as black-highlighted lines and oversized text in the composer.
+   */
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    if (!text) return;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    const node = document.createTextNode(text);
+    range.insertNode(node);
+    range.setStartAfter(node);
+    range.setEndAfter(node);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    onChange(e.currentTarget.innerText);
+  }, [onChange]);
+
+  /** Block rich-text drops for the same reason. */
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    if (e.dataTransfer.types.includes('text/html')) e.preventDefault();
+  }, []);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -99,6 +126,11 @@ export const ThreadInput = forwardRef<ThreadInputHandle, ThreadInputProps>(({
         contentEditable={!disabled}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        onDrop={handleDrop}
+        role="textbox"
+        aria-multiline="true"
+        aria-label={placeholder}
         className={`
           w-full px-4 py-2.5 
           bg-white/[0.04] border border-white/[0.08] 

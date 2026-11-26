@@ -49,7 +49,7 @@ export const Captcha = memo(({ onTokenChange, value, onChange, ref }: CaptchaPro
     >
       <div className="flex items-center gap-2 px-1">
         <ShieldCheck size={13} className="text-accent-blue animate-pulse" />
-        <span className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-500">
+        <span className="text-xs font-bold uppercase tracking-[0.15em] text-gray-500">
           Security Check
         </span>
       </div>
@@ -76,11 +76,11 @@ export const Captcha = memo(({ onTokenChange, value, onChange, ref }: CaptchaPro
           <button
             type="button"
             onClick={fetchCaptcha}
-            className="text-[10px] font-extrabold uppercase tracking-widest text-accent-blue hover:text-accent-pink transition-colors text-left pl-1"
+            className="text-xs font-extrabold uppercase tracking-wide text-accent-blue hover:text-accent-pink transition-colors text-left pl-1"
           >
             Refresh
           </button>
-          <span className="text-[9px] text-gray-600 font-medium pl-1 mt-0.5 leading-none">
+          <span className="text-[11px] text-gray-600 font-medium pl-1 mt-0.5 leading-none">
             Can't read? Click to reload
           </span>
         </div>

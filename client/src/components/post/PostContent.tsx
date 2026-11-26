@@ -92,7 +92,7 @@ export const PostContent = ({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-            <h1 className={`font-black text-white leading-[1.15] drop-shadow-2xl ${isTheaterMode ? 'text-xl sm:text-2xl md:text-4xl' : 'text-lg sm:text-xl md:text-2xl'}`}>
+            <h1 className={`font-bold text-white leading-[1.15] drop-shadow-2xl ${isTheaterMode ? 'text-xl sm:text-2xl md:text-4xl' : 'text-lg sm:text-xl md:text-2xl'}`}>
               {post.title}
             </h1>
           </div>
@@ -101,7 +101,7 @@ export const PostContent = ({
 
       {/* Title (no image) */}
       {!post.imageUrl && (
-        <h1 className="text-xl sm:text-2xl font-black text-white leading-[1.15]">
+        <h1 className="text-xl sm:text-2xl font-bold text-white leading-[1.15]">
           {post.title}
         </h1>
       )}
@@ -119,7 +119,7 @@ export const PostContent = ({
               className="w-9 h-9 rounded-full object-cover ring-[1.5px] ring-white/10 group-hover/a:ring-accent-pink/50 transition-all"
             />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-blue to-accent-pink flex items-center justify-center text-white font-black text-xs">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-blue to-accent-pink flex items-center justify-center text-white font-bold text-xs">
               {post.author?.name?.[0] ?? '?'}
             </div>
           )}

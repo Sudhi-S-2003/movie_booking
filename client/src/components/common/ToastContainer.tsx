@@ -44,7 +44,7 @@ export const ToastContainer = React.memo(() => {
               {isLoading && <Loader2 size={16} className="animate-spin" />}
             </div>
             
-            <p className="flex-1 text-[11px] font-bold uppercase tracking-widest text-white mt-0.5">{toast.message}</p>
+            <p className="flex-1 text-[11px] font-bold uppercase tracking-wide text-white mt-0.5">{toast.message}</p>
             
             {!isLoading && (
               <button 

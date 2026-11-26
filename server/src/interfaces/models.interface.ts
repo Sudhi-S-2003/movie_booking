@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose';
 import {
   UserRole,
+  UserStatus,
   AuthProvider,
   MovieStatus,
   SeatStatus,
@@ -46,12 +47,27 @@ export interface ILayoutRow {
 /* ---------------- MODELS ---------------- */
 
 export interface IUser {
-  _id: RefId;
+  _id: Types.ObjectId;
   name: string;
   username: string;
   email: string;
   password?: string;
   role: UserRole;
+  /** Account lifecycle; only `active` accounts can authenticate. */
+  status: UserStatus;
+  /** Owning reseller (null = platform-direct customer of the super admin). */
+  parentId?: Types.ObjectId | null;
+  /** Materialized path of owning resellers, root first. Drives subtree scoping. */
+  ancestors: Types.ObjectId[];
+  /** System-level protection (super admin). Only the bootstrap can set it. */
+  isProtected: boolean;
+  /** Extra permissions granted on top of the role defaults. */
+  permissions: string[];
+  /** Public reseller signup code (resellers only). */
+  resellerCode?: string;
+  /** Reseller white-label display name. */
+  brandName?: string;
+  suspendedReason?: string;
   authProvider: AuthProvider;
   twoFactorSecret?: string;
   twoFactorEnabled?: boolean;

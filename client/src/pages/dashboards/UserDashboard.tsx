@@ -53,7 +53,7 @@ export const UserDashboard = () => {
       }`}
     >
       <Icon size={20} className={activeTab === id ? (id === 'BOOKINGS' ? 'text-accent-blue' : id === 'STATS' ? 'text-accent-pink' : 'text-accent-purple') : ''} />
-      <span className="font-black text-[10px] uppercase tracking-widest">{label}</span>
+      <span className="font-bold text-xs uppercase tracking-wide">{label}</span>
     </button>
   );
 
@@ -64,12 +64,12 @@ export const UserDashboard = () => {
       {}
       <aside className="w-80 border-r border-white/5 p-8 flex flex-col gap-2">
         <div className="mb-10 px-6 flex items-center gap-4">
-           <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-pink to-accent-purple flex items-center justify-center font-black text-xl">
+           <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-accent-pink to-accent-purple flex items-center justify-center font-bold text-xl">
               {user?.name[0]}
            </div>
            <div>
-              <h2 className="text-sm font-black tracking-tight">{user?.name}</h2>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Premium Member</p>
+              <h2 className="text-sm font-bold tracking-tight">{user?.name}</h2>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Premium Member</p>
            </div>
         </div>
         
@@ -83,7 +83,7 @@ export const UserDashboard = () => {
           className="mt-auto w-full flex items-center gap-4 px-6 py-4 text-red-500/60 hover:text-red-500 transition-colors"
         >
           <LogOut size={20} />
-          <span className="font-black text-[10px] uppercase tracking-widest">Sign Out</span>
+          <span className="font-bold text-xs uppercase tracking-wide">Sign Out</span>
         </button>
       </aside>
 
@@ -97,8 +97,8 @@ export const UserDashboard = () => {
                className="space-y-12"
             >
                <div className="flex items-center justify-between">
-                  <h1 className="text-4xl font-black uppercase tracking-tighter">My <span className="text-accent-blue">Tickets</span></h1>
-                  <Link to="/" className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all">Book More</Link>
+                  <h1 className="text-4xl font-bold uppercase tracking-tighter">My <span className="text-accent-blue">Tickets</span></h1>
+                  <Link to="/" className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wide hover:bg-white/10 transition-all">Book More</Link>
                </div>
 
                <div className="grid grid-cols-1 gap-8">
@@ -111,19 +111,19 @@ export const UserDashboard = () => {
                         <img src={booking.showtimeId.movieId.posterUrl} className="w-32 aspect-[2/3] rounded-2xl object-cover shadow-2xl" />
                         <div className="flex-1 space-y-4">
                            <div>
-                              <h3 className="text-2xl font-black">{booking.showtimeId.movieId.title}</h3>
-                              <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">
+                              <h3 className="text-2xl font-bold">{booking.showtimeId.movieId.title}</h3>
+                              <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mt-1">
                                 {new Date(booking.showtimeId.startTime).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' })} • {new Date(booking.showtimeId.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </p>
                            </div>
                            <div className="flex items-center gap-6 pt-4 border-t border-white/5">
                               <div>
-                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Seats</p>
-                                 <p className="text-sm font-black text-white">{booking.seats.join(', ')}</p>
+                                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Seats</p>
+                                 <p className="text-sm font-bold text-white">{booking.seats.join(', ')}</p>
                               </div>
                               <div>
-                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Theatre</p>
-                                 <p className="text-sm font-black text-white">{booking.showtimeId.theatreId.name}</p>
+                                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Theatre</p>
+                                 <p className="text-sm font-bold text-white">{booking.showtimeId.theatreId.name}</p>
                               </div>
                            </div>
                         </div>
@@ -135,7 +135,7 @@ export const UserDashboard = () => {
                   ) : (
                     <div className="py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10 text-center space-y-4">
                        <Ticket size={60} className="mx-auto text-gray-700 opacity-30" />
-                       <p className="text-xl font-black italic opacity-40">No tickets found</p>
+                       <p className="text-xl font-bold italic opacity-40">No tickets found</p>
                     </div>
                   )}
                </div>
@@ -151,7 +151,7 @@ export const UserDashboard = () => {
                <div className="bg-white/5 border border-white/10 p-10 rounded-[50px] space-y-6">
                   <BarChart3 className="text-accent-pink" size={32} />
                   <div>
-                     <h3 className="text-xl font-black uppercase tracking-tight">Activities</h3>
+                     <h3 className="text-xl font-bold uppercase tracking-tight">Activities</h3>
                      <p className="text-sm text-gray-500 mt-2">You've completed <span className="text-white font-bold">{profile?.stats?.bookings ?? 0}</span> bookings and written <span className="text-white font-bold">{profile?.stats?.reviews ?? 0}</span> reviews.</p>
                   </div>
                   <div className="pt-6 border-t border-white/5 flex gap-2">
@@ -162,10 +162,10 @@ export const UserDashboard = () => {
                <div className="bg-white/5 border border-white/10 p-10 rounded-[50px] space-y-6">
                   <User className="text-accent-blue" size={32} />
                   <div>
-                     <h3 className="text-xl font-black uppercase tracking-tight">Loyalty Points</h3>
-                     <p className="text-4xl font-black text-white mt-4">{(profile?.stats?.bookings ?? 0) * 120} <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Points</span></p>
+                     <h3 className="text-xl font-bold uppercase tracking-tight">Loyalty Points</h3>
+                     <p className="text-4xl font-bold text-white mt-4">{(profile?.stats?.bookings ?? 0) * 120} <span className="text-xs text-gray-500 font-bold uppercase tracking-wide">Points</span></p>
                   </div>
-                  <button className="w-full py-4 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl font-black text-[10px] uppercase tracking-widest text-accent-blue">Redeem Rewards</button>
+                  <button className="w-full py-4 bg-accent-blue/10 border border-accent-blue/20 rounded-2xl font-bold text-xs uppercase tracking-wide text-accent-blue">Redeem Rewards</button>
                </div>
             </motion.div>
           )}

@@ -212,7 +212,8 @@ export const handleCodeShareV2Action = async (ctx: ApiActionContextV2): Promise<
       const commitId = query.commitId || body.commitId;
       if (!commitId) throw new Error('Commit ID required');
 
-      const commit: any = await CodeShareCommitV2.findById(commitId).lean();
+      if (!resourceId || !mongoose.isValidObjectId(commitId)) throw new Error("Invalid commit id");
+      const commit: any = await CodeShareCommitV2.findOne({ _id: commitId, codeShareId: new mongoose.Types.ObjectId(resourceId) }).lean();
       if (!commit) throw new Error('Commit not found');
 
       // Fetch the heavy details from the separated collection
@@ -551,12 +552,13 @@ export const createCommitV2 = async (
 /**
  * Traverses backwards through commits to rebuild files at target commit
  */
-export const reconstructFilesAtCommit = async (_codeShareId: string, targetCommitId: string): Promise<any[]> => {
+export const reconstructFilesAtCommit = async (codeShareId: string, targetCommitId: string): Promise<any[]> => {
   const resolvedFiles = new Map<string, { content: string; deleted: boolean }>();
+  if (!mongoose.isValidObjectId(targetCommitId)) throw new Error("Invalid commit id");
   let currentCommitId: mongoose.Types.ObjectId | undefined = new mongoose.Types.ObjectId(targetCommitId);
 
   while (currentCommitId) {
-    const commit: any = await CodeShareCommitV2.findById(currentCommitId).select('parentCommitId').lean();
+    const commit: any = await CodeShareCommitV2.findOne({ _id: currentCommitId, codeShareId }).select("parentCommitId").lean();
     if (!commit) break;
 
     // Load the heavy changes details for this commit

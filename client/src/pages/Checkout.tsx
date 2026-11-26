@@ -74,7 +74,7 @@ export const Checkout = () => {
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="flex items-center gap-3">
         <Loader2 size={20} className="animate-spin text-accent-pink" />
-        <span className="font-black text-white uppercase tracking-widest text-sm">Loading...</span>
+        <span className="font-bold text-white uppercase tracking-wide text-sm">Loading...</span>
       </div>
     </div>
   );
@@ -90,12 +90,12 @@ export const Checkout = () => {
             <ChevronLeft size={18} />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Checkout</h1>
-            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Payment</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Checkout</h1>
+            <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Payment</p>
           </div>
           <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
             <Lock size={12} className="text-emerald-500" />
-            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-wider">Secure</span>
+            <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">Secure</span>
           </div>
         </div>
 
@@ -114,14 +114,14 @@ export const Checkout = () => {
                   <img src={showtime.movieId.posterUrl} className="w-full h-full object-cover" alt="" />
                 </div>
                 <div className="space-y-1.5 min-w-0">
-                  <h2 className="text-lg font-black text-white leading-tight truncate">{showtime.movieId.title}</h2>
+                  <h2 className="text-lg font-bold text-white leading-tight truncate">{showtime.movieId.title}</h2>
                   <p className="text-[11px] font-bold text-accent-blue uppercase tracking-wider truncate">{showtime.theatreId.name} · {showtime.screenId.name}</p>
                   <p className="text-[11px] font-bold text-gray-500">
                     {new Date(showtime.startTime).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })} · {new Date(showtime.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                   <div className="flex items-center gap-1.5 pt-1">
                     <Ticket size={12} className="text-accent-pink" />
-                    <span className="text-[10px] font-black text-accent-pink uppercase tracking-wider">
+                    <span className="text-xs font-bold text-accent-pink uppercase tracking-wider">
                       {selectedSeats.length} {selectedSeats.length === 1 ? 'Ticket' : 'Tickets'}
                     </span>
                   </div>
@@ -130,10 +130,10 @@ export const Checkout = () => {
 
               {}
               <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-                <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2">Selected Seats</p>
+                <p className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-2">Selected Seats</p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedSeats.map(s => (
-                    <span key={s.id} className="px-2.5 py-1 bg-accent-pink/10 border border-accent-pink/20 rounded-lg text-[10px] font-black text-accent-pink">
+                    <span key={s.id} className="px-2.5 py-1 bg-accent-pink/10 border border-accent-pink/20 rounded-lg text-xs font-bold text-accent-pink">
                       {s.id}
                     </span>
                   ))}
@@ -155,15 +155,15 @@ export const Checkout = () => {
                   <span className="text-white font-bold">₹{gst}</span>
                 </div>
                 <div className="flex justify-between items-end pt-3 border-t border-white/[0.06]">
-                  <span className="text-sm font-black text-white uppercase tracking-tight">Total</span>
-                  <span className="text-2xl font-black text-white">₹{finalTotal}</span>
+                  <span className="text-sm font-bold text-white uppercase tracking-tight">Total</span>
+                  <span className="text-2xl font-bold text-white">₹{finalTotal}</span>
                 </div>
               </div>
             </motion.div>
 
             <div className="flex items-center gap-3 p-4 bg-accent-blue/5 border border-accent-blue/10 rounded-xl">
               <ShieldCheck size={18} className="text-accent-blue flex-shrink-0" />
-              <p className="text-[10px] font-bold text-accent-blue/80 leading-relaxed">Your payment is secure. We don't store your card details.</p>
+              <p className="text-xs font-bold text-accent-blue/80 leading-relaxed">Your payment is secure. We don't store your card details.</p>
             </div>
           </div>
 
@@ -188,7 +188,7 @@ export const Checkout = () => {
                       <button
                         key={key}
                         onClick={() => setSelectedMethod(key)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
                           selectedMethod === key
                             ? 'bg-white/10 text-white border border-white/10'
                             : 'text-gray-600 hover:text-gray-400'
@@ -208,7 +208,7 @@ export const Checkout = () => {
                       className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 space-y-5"
                     >
                       <div>
-                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Cardholder Name</label>
+                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2 block">Cardholder Name</label>
                         <input
                           type="text"
                           value={cardName}
@@ -219,7 +219,7 @@ export const Checkout = () => {
                       </div>
 
                       <div>
-                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Card Number</label>
+                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2 block">Card Number</label>
                         <div className="relative">
                           <input
                             type="text"
@@ -230,15 +230,15 @@ export const Checkout = () => {
                             className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm font-bold placeholder:text-gray-700 focus:outline-none focus:border-accent-blue/40 transition-colors tracking-wider"
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                            <div className="px-1.5 py-0.5 bg-white/10 rounded text-[7px] font-black text-gray-400 italic">VISA</div>
-                            <div className="px-1.5 py-0.5 bg-white/10 rounded text-[7px] font-black text-gray-400">MC</div>
+                            <div className="px-1.5 py-0.5 bg-white/10 rounded text-[11px] font-bold text-gray-400 italic">VISA</div>
+                            <div className="px-1.5 py-0.5 bg-white/10 rounded text-[11px] font-bold text-gray-400">MC</div>
                           </div>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Expiry</label>
+                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2 block">Expiry</label>
                           <input
                             type="text"
                             value={cardExpiry}
@@ -249,7 +249,7 @@ export const Checkout = () => {
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">CVC</label>
+                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2 block">CVC</label>
                           <input
                             type="text"
                             value={cardCvc}
@@ -261,7 +261,7 @@ export const Checkout = () => {
                         </div>
                       </div>
 
-                      <p className="text-[9px] text-gray-700 font-bold">Use test card: 4242 4242 4242 4242, any future expiry, any 3-digit CVC</p>
+                      <p className="text-[11px] text-gray-700 font-bold">Use test card: 4242 4242 4242 4242, any future expiry, any 3-digit CVC</p>
                     </motion.div>
                   )}
 
@@ -273,7 +273,7 @@ export const Checkout = () => {
                       className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 space-y-5"
                     >
                       <div>
-                        <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2 block">UPI ID</label>
+                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2 block">UPI ID</label>
                         <input
                           type="text"
                           value={upiId}
@@ -282,7 +282,7 @@ export const Checkout = () => {
                           className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm font-bold placeholder:text-gray-700 focus:outline-none focus:border-accent-blue/40 transition-colors"
                         />
                       </div>
-                      <p className="text-[9px] text-gray-700 font-bold">Enter any valid-looking UPI ID (e.g., test@upi)</p>
+                      <p className="text-[11px] text-gray-700 font-bold">Enter any valid-looking UPI ID (e.g., test@upi)</p>
                     </motion.div>
                   )}
 
@@ -293,7 +293,7 @@ export const Checkout = () => {
                       animate={{ opacity: 1 }}
                       className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6"
                     >
-                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4">Select Bank</p>
+                      <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-4">Select Bank</p>
                       <div className="grid grid-cols-2 gap-3">
                         {['HDFC Bank', 'ICICI Bank', 'SBI', 'Axis Bank'].map(bank => (
                           <button
@@ -304,7 +304,7 @@ export const Checkout = () => {
                           </button>
                         ))}
                       </div>
-                      <p className="text-[9px] text-gray-700 font-bold mt-4">Net banking is simulated — select any bank to proceed</p>
+                      <p className="text-[11px] text-gray-700 font-bold mt-4">Net banking is simulated — select any bank to proceed</p>
                     </motion.div>
                   )}
 
@@ -312,7 +312,7 @@ export const Checkout = () => {
                   <button
                     onClick={handlePayment}
                     disabled={!canPay}
-                    className={`w-full py-4 rounded-xl font-black uppercase tracking-wider text-sm transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full py-4 rounded-xl font-bold uppercase tracking-wider text-sm transition-all flex items-center justify-center gap-2 ${
                       canPay
                         ? 'bg-accent-pink text-white hover:bg-accent-pink/90 shadow-lg shadow-accent-pink/20 active:scale-[0.98]'
                         : 'bg-white/5 text-gray-600 cursor-not-allowed'
@@ -335,7 +335,7 @@ export const Checkout = () => {
                   <div className="w-16 h-16 rounded-2xl bg-accent-blue/10 flex items-center justify-center mb-6">
                     <Loader2 size={28} className="animate-spin text-accent-blue" />
                   </div>
-                  <h3 className="text-xl font-black text-white mb-2">Processing</h3>
+                  <h3 className="text-xl font-bold text-white mb-2">Processing</h3>
                   <p className="text-sm text-gray-500 font-bold">Don't close this page.</p>
                   <div className="mt-6 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-accent-blue animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -361,7 +361,7 @@ export const Checkout = () => {
                   >
                     <CheckCircle2 size={28} className="text-white" />
                   </motion.div>
-                  <h3 className="text-xl font-black text-white mb-2">Paid!</h3>
+                  <h3 className="text-xl font-bold text-white mb-2">Paid!</h3>
                   <p className="text-sm text-emerald-400 font-bold">Loading ticket...</p>
                 </motion.div>
               )}
@@ -377,11 +377,11 @@ export const Checkout = () => {
                   <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-6">
                     <AlertCircle size={28} className="text-red-500" />
                   </div>
-                  <h3 className="text-xl font-black text-white mb-2">Failed</h3>
+                  <h3 className="text-xl font-bold text-white mb-2">Failed</h3>
                   <p className="text-sm text-red-400 font-bold mb-6">{errorMessage}</p>
                   <button
                     onClick={reset}
-                    className="px-8 py-3 bg-white/10 border border-white/10 rounded-xl font-black text-sm text-white hover:bg-white/15 transition-all"
+                    className="px-8 py-3 bg-white/10 border border-white/10 rounded-xl font-bold text-sm text-white hover:bg-white/15 transition-all"
                   >
                     Try Again
                   </button>

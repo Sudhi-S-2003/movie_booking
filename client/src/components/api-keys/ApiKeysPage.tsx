@@ -39,13 +39,13 @@ export const ApiKeysPage = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSelectorOpen(true)}
-              className="px-6 py-3 bg-white/5 border border-white/10 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 hover:text-white transition-all underline underline-offset-4 decoration-white/20"
+              className="px-6 py-3 bg-white/5 border border-white/10 text-gray-400 rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 hover:bg-white/10 hover:text-white transition-all underline underline-offset-4 decoration-white/20"
             >
               <Book size={14} /> View API Docs
             </button>
             <button
               onClick={() => setCreateOpen(true)}
-              className="px-6 py-3 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-accent-blue/15 transition-all"
+              className="px-6 py-3 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 hover:bg-accent-blue/15 transition-all"
             >
               <Plus size={14} /> New Key
             </button>
@@ -60,11 +60,11 @@ export const ApiKeysPage = () => {
                 <KeyRound size={18} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500">Total</p>
-                <p className="text-2xl font-black tracking-tight text-white">{pagination.total}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Total</p>
+                <p className="text-2xl font-bold tracking-tight text-white">{pagination.total}</p>
               </div>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 max-w-[48%] text-right hidden sm:block">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-600 max-w-[48%] text-right hidden sm:block">
               Secrets are stored as hashes — they're shown once on creation and
               are never retrievable afterward.
             </p>
@@ -83,7 +83,7 @@ export const ApiKeysPage = () => {
           ) : keys.length === 0 ? (
             <div className="p-20 text-center space-y-3">
               <Key size={40} className="mx-auto text-gray-800" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-700">
                 No API keys yet
               </p>
               <p className="text-[11px] text-gray-600 max-w-xs mx-auto">
@@ -98,7 +98,7 @@ export const ApiKeysPage = () => {
 
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between gap-4 px-8 py-5 border-t border-white/5 flex-wrap">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
                 Showing {keys.length} of {pagination.total}
               </p>
               <MembersPagination

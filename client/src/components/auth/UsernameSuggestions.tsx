@@ -22,7 +22,7 @@ export const UsernameSuggestions = ({ suggestions, onSelect }: UsernameSuggestio
         {/* Header */}
         <div className="flex items-center gap-2">
           <Sparkles size={14} className="text-accent-blue" />
-          <p className="text-[11px] font-black uppercase tracking-widest text-accent-blue">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-accent-blue">
             Available usernames
           </p>
         </div>

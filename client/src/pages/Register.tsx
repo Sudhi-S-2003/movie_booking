@@ -23,10 +23,12 @@ export const Register = () => {
   const captchaRef = useRef<CaptchaRef>(null);
 
   const location = useLocation();
+  // Reseller signup links: /register?ref=<code> attaches the account to that reseller.
+  const resellerCode = new URLSearchParams(location.search).get('ref')?.trim() || undefined;
   const { setAuth } = useAuthStore();
   
   // Use location state first, then fallback to sessionStorage safely
-  const from = location.state?.from?.pathname || safeSession.getItem('redirectPath') || '/';
+  const from = location.state?.from?.pathname || safeSession.getItem('redirectPath') || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +38,7 @@ export const Register = () => {
     try {
       const { user, token, refreshToken } = await authApi.register({
         ...formData,
+        ...(resellerCode ? { resellerCode } : {}),
         captchaText: captchaText.trim(),
         captchaToken: captchaToken
       });
@@ -46,10 +49,10 @@ export const Register = () => {
 
       window.location.href = from;
     } catch (err: any) {
-      const message = err.response?.data?.message || err.message || 'Registration failed';
-      const suggestions: string[] | undefined = err.fieldErrors?.username ? [err.fieldErrors.username] : undefined; 
-      setError(message);
-      if (suggestions !== undefined) setUsernameSuggestions(suggestions);
+      // http throws ApiError; field errors carry the specific validation message.
+      const field = err?.fieldErrors ? Object.values(err.fieldErrors as Record<string, string>)[0] : undefined;
+      setError(field || err?.message || 'Registration failed');
+      setUsernameSuggestions(null);
       captchaRef.current?.refresh(); // Refresh captcha on failure
     } finally {
       setLoading(false);
@@ -148,7 +151,7 @@ export const Register = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4"
           >
-            <p className="text-red-400 text-[10px] font-black uppercase tracking-widest text-center animate-shake">
+            <p className="text-red-400 text-xs font-bold uppercase tracking-wide text-center animate-shake">
               {error}
             </p>
           </motion.div>
@@ -157,7 +160,7 @@ export const Register = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-4.5 rounded-[20px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-2xl relative overflow-hidden group/btn ${
+          className={`w-full py-4.5 rounded-[20px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-3 shadow-2xl relative overflow-hidden group/btn ${
             loading 
               ? 'bg-white/5 text-gray-500 cursor-not-allowed' 
               : 'bg-gradient-to-r from-accent-pink via-accent-purple to-accent-blue text-white hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,45,85,0.3)] active:scale-[0.98]'
@@ -175,10 +178,10 @@ export const Register = () => {
             to="/login"
             className="group inline-flex flex-col items-center gap-2"
           >
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+            <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
               Already a member?
             </span>
-            <span className="text-sm font-black text-white uppercase tracking-tighter group-hover:text-accent-pink transition-colors border-b-2 border-accent-blue/30 group-hover:border-accent-pink pb-1">
+            <span className="text-sm font-bold text-white uppercase tracking-tighter group-hover:text-accent-pink transition-colors border-b-2 border-accent-blue/30 group-hover:border-accent-pink pb-1">
               Sign In
             </span>
           </Link>

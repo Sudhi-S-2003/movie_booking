@@ -26,7 +26,7 @@ export const IssueListItem: React.FC<IssueListItemProps> = React.memo(
       >
         <div className="flex justify-between items-start mb-2.5">
           <span
-            className={`text-[7px] font-bold px-1.5 py-px rounded border ${
+            className={`text-[11px] font-bold px-1.5 py-px rounded border ${
               PRIORITY_COLORS[issue.priority]
             }`}
           >
@@ -34,19 +34,19 @@ export const IssueListItem: React.FC<IssueListItemProps> = React.memo(
           </span>
           <div className="flex items-center gap-1.5">
             <UnreadBadge count={unreadCount} />
-            <span className="text-[7px] font-mono text-white/20">
+            <span className="text-[11px] font-mono text-white/20">
               #{issue._id.slice(-6)}
             </span>
           </div>
         </div>
         <h4
           className={`text-xs mb-2 line-clamp-2 leading-snug ${
-            unreadCount > 0 ? "font-black text-white" : "font-bold text-white"
+            unreadCount > 0 ? "font-bold text-white" : "font-bold text-white"
           }`}
         >
           {issue.title}
         </h4>
-        <div className="flex justify-between items-center text-[7px] font-bold text-white/30 uppercase tracking-wider">
+        <div className="flex justify-between items-center text-[11px] font-bold text-white/30 uppercase tracking-wider">
           <span>{issue.category}</span>
           <div className="flex items-center gap-1.5">
             <div

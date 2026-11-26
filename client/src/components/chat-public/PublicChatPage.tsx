@@ -92,7 +92,7 @@ const AnonymousCta: React.FC<{ publicName: string; onLogin: () => void }> = ({ o
     </p>
     <button
       onClick={onLogin}
-      className="w-full py-3 bg-accent-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-accent-blue/20"
+      className="w-full py-3 bg-accent-blue text-white rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 hover:scale-[1.01] transition-all shadow-lg shadow-accent-blue/20"
     >
       <LogIn size={13} /> Sign in to continue
     </button>
@@ -104,7 +104,7 @@ const NotViewableCta: React.FC = () => (
     <div className="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-300">
       <ShieldOff size={18} />
     </div>
-    <p className="text-[11px] font-black uppercase tracking-[0.3em] text-rose-300">
+    <p className="text-[11px] font-bold uppercase tracking-wider text-rose-300">
       Not Viewable
     </p>
     <p className="text-[11px] text-gray-500 max-w-xs">
@@ -116,7 +116,7 @@ const NotViewableCta: React.FC = () => (
 const ErrorCard: React.FC<{ status: number; message: string }> = ({ status, message }) => (
   <div className="max-w-sm w-full bg-white/[0.02] border border-rose-500/20 rounded-3xl p-10 text-center space-y-3">
     <ShieldOff size={32} className="mx-auto text-rose-400/70" />
-    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-300">
+    <p className="text-xs font-bold uppercase tracking-wider text-rose-300">
       Error {status}
     </p>
     <p className="text-[11px] text-gray-400">{message}</p>

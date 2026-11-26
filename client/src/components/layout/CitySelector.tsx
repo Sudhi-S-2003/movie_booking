@@ -69,10 +69,10 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ isOpen, onClose }) =
             <div className="p-5 sm:p-6 border-b border-white/5 relative bg-white/[0.02]">
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">
+                  <h2 className="text-xl font-bold text-white tracking-tighter uppercase leading-none">
                     Select <span className="text-accent-blue">Location</span>
                   </h2>
-                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.4em] mt-1.5">Choose your city</p>
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mt-1.5">Choose your city</p>
                 </div>
                 <button 
                   onClick={onClose}
@@ -116,8 +116,8 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ isOpen, onClose }) =
                       <Globe size={28} />
                     </div>
                     <div className="text-left">
-                      <p className="text-[11px] font-black uppercase tracking-widest opacity-60 mb-1">Global Access</p>
-                      <p className="text-base font-black uppercase tracking-widest">All Locations</p>
+                      <p className="text-[11px] font-bold uppercase tracking-wide opacity-60 mb-1">Global Access</p>
+                      <p className="text-base font-bold uppercase tracking-wide">All Locations</p>
                     </div>
                     {!selectedCity && (
                       <div className="ml-auto w-2.5 h-2.5 rounded-full bg-white" />
@@ -126,7 +126,7 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ isOpen, onClose }) =
 
                   <div className="flex items-center gap-4 mt-8 mb-6">
                     <div className="h-px flex-1 bg-white/5" />
-                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em]">Popular Cities</span>
+                    <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Popular Cities</span>
                     <div className="h-px flex-1 bg-white/5" />
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ isOpen, onClose }) =
                     }`}>
                       <MapPin size={22} />
                     </div>
-                    <span className="text-sm font-black uppercase tracking-[0.1em]">{city}</span>
+                    <span className="text-sm font-bold uppercase tracking-[0.1em]">{city}</span>
                     {selectedCity === city && (
                       <div className="ml-auto w-2 h-2 rounded-full bg-accent-blue" />
                     )}
@@ -163,14 +163,14 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ isOpen, onClose }) =
               {isLoading && (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40">
                   <Loader2 className="w-6 h-6 animate-spin" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.4em]">Loading cities...</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider">Loading cities...</p>
                 </div>
               )}
 
               {hasMore && !isLoading && (
                 <button
                   onClick={loadMore}
-                  className="w-full mt-8 py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] hover:bg-white/5 hover:text-white transition-all"
+                  className="w-full mt-8 py-4 border border-dashed border-white/10 rounded-2xl text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-white/5 hover:text-white transition-all"
                 >
                   Show More Cities
                 </button>
@@ -179,7 +179,7 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ isOpen, onClose }) =
 
             {/* Footer */}
             <div className="p-5 sm:p-6 border-t border-white/5 bg-black/20 text-center">
-              <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.4em]">Cinema Connect Location Services</p>
+              <p className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">Cinema Connect Location Services</p>
             </div>
           </motion.div>
         </div>

@@ -32,7 +32,7 @@ export const IssueSuite: React.FC<IssueSuiteProps> = ({
   const unread = useUnreadCounts(!!user);
 
   const userRole: "User" | "TheatreOwner" | "Guest" = user
-    ? user.role === "theatre_owner" ? "TheatreOwner" : "User"
+    ? "User"
     : "Guest";
 
   const getBasePath = useCallback(() => {
@@ -90,20 +90,18 @@ export const IssueSuite: React.FC<IssueSuiteProps> = ({
             </button>
           )}
           <div>
-            <h2 className="text-lg font-black uppercase tracking-tight flex items-center gap-2 text-white">
+            <h2 className="text-lg font-bold uppercase tracking-tight flex items-center gap-2 text-white">
               <LifeBuoy size={18} className="text-accent-blue" />
               Support
             </h2>
-            <p className="text-white/30 text-[8px] font-bold uppercase tracking-widest mt-0.5">
-              {userRole === "TheatreOwner"
-                ? "Help Center"
-                : "Support Tickets"}
+            <p className="text-white/30 text-[11px] font-bold uppercase tracking-wide mt-0.5">
+              Support Tickets
             </p>
           </div>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-accent-blue text-white rounded-lg font-bold text-[8px] uppercase tracking-widest flex items-center gap-1.5 hover:scale-105 transition-all shadow-md shadow-accent-blue/20"
+          className="px-4 py-2 bg-accent-blue text-white rounded-lg font-bold text-[11px] uppercase tracking-wide flex items-center gap-1.5 hover:scale-105 transition-all shadow-md shadow-accent-blue/20"
         >
           <Plus size={13} /> New Ticket
         </button>
@@ -149,10 +147,10 @@ export const IssueSuite: React.FC<IssueSuiteProps> = ({
                 <LifeBuoy size={22} />
               </div>
               <div className="space-y-1">
-                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/25">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-white/25">
                   No ticket selected
                 </p>
-                <p className="text-[8px] text-white/15 font-medium">
+                <p className="text-[11px] text-white/15 font-medium">
                   Select a ticket to view details
                 </p>
               </div>

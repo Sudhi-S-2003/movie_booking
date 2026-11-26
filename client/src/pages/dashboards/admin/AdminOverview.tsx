@@ -23,9 +23,9 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, colorClas
       <Icon size={28} />
     </div>
     <div>
-      <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">{label}</p>
+      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">{label}</p>
       <div className="flex items-baseline gap-4 mt-1">
-        <h3 className="text-5xl font-black text-white tracking-tighter">{value}</h3>
+        <h3 className="text-5xl font-bold text-white tracking-tighter">{value}</h3>
       </div>
     </div>
   </div>
@@ -110,7 +110,7 @@ export const AdminOverview = () => {
               <div className="p-3 bg-accent-pink/10 rounded-2xl text-accent-pink">
                 <BarChart3 size={20} />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight">Top Genres</h3>
+              <h3 className="text-xl font-bold uppercase tracking-tight">Top Genres</h3>
             </div>
           </div>
           {adminLoading ? (
@@ -127,8 +127,8 @@ export const AdminOverview = () => {
                 return (
                   <div key={g.genre} className="space-y-1.5">
                     <div className="flex justify-between items-baseline">
-                      <span className="text-xs font-black uppercase tracking-widest text-white">{g.genre}</span>
-                      <span className="text-[10px] font-bold text-gray-500">{fmt(g.count)}</span>
+                      <span className="text-xs font-bold uppercase tracking-wide text-white">{g.genre}</span>
+                      <span className="text-xs font-bold text-gray-500">{fmt(g.count)}</span>
                     </div>
                     <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <motion.div
@@ -154,7 +154,7 @@ export const AdminOverview = () => {
               <div className="p-3 bg-accent-blue/10 rounded-2xl text-accent-blue">
                 <Activity size={20} />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight">Recent Bookings</h3>
+              <h3 className="text-xl font-bold uppercase tracking-tight">Recent Bookings</h3>
             </div>
             <TrendingUp size={14} className="text-green-500" />
           </div>
@@ -168,10 +168,10 @@ export const AdminOverview = () => {
             <div className="space-y-2">
               {admin.recentBookings.slice(-7).map((b) => (
                 <div key={b._id} className="flex items-center justify-between p-3 bg-white/[0.03] border border-white/5 rounded-2xl">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{b._id}</span>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{b._id}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black text-white">{fmt(b.count)} bookings</span>
-                    <span className="text-[10px] font-bold text-accent-blue">₹{fmt(b.revenue)}</span>
+                    <span className="text-xs font-bold text-white">{fmt(b.count)} bookings</span>
+                    <span className="text-xs font-bold text-accent-blue">₹{fmt(b.revenue)}</span>
                   </div>
                 </div>
               ))}
@@ -188,7 +188,7 @@ export const AdminOverview = () => {
               <div className="p-3 bg-accent-purple/10 rounded-2xl text-accent-purple">
                 <Shield size={20} />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight">Top Movies</h3>
+              <h3 className="text-xl font-bold uppercase tracking-tight">Top Movies</h3>
             </div>
             <ChevronRight size={14} className="text-gray-500" />
           </div>
@@ -202,15 +202,15 @@ export const AdminOverview = () => {
             <div className="space-y-3">
               {admin.topMovies.slice(0, 6).map((m, i) => (
                 <div key={m._id} className="flex items-center gap-4 p-3 bg-white/[0.03] border border-white/5 rounded-2xl hover:bg-white/[0.06] transition-all">
-                  <span className="text-xl font-black text-gray-700 w-6 text-center">#{i + 1}</span>
+                  <span className="text-xl font-bold text-gray-700 w-6 text-center">#{i + 1}</span>
                   {m.posterUrl ? (
                     <img src={m.posterUrl} className="w-10 h-14 rounded-lg object-cover shadow-xl" alt={m.title} />
                   ) : (
                     <div className="w-10 h-14 rounded-lg bg-white/5" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-black text-white truncate">{m.title}</p>
-                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-1">{fmt(m.bookings)} bookings</p>
+                    <p className="text-xs font-bold text-white truncate">{m.title}</p>
+                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mt-1">{fmt(m.bookings)} bookings</p>
                   </div>
                 </div>
               ))}
@@ -222,7 +222,7 @@ export const AdminOverview = () => {
       </div>
 
       {loading && (
-        <p className="text-center text-[10px] font-black text-gray-700 uppercase tracking-[0.5em] pt-4">
+        <p className="text-center text-xs font-bold text-gray-700 uppercase tracking-wider pt-4">
           Loading...
         </p>
       )}

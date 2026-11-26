@@ -89,7 +89,7 @@ export const ChatPanel = memo(() => {
 
       {isSystem && (
         <div className="flex-shrink-0 border-t border-white/[0.06] py-3 text-center">
-          <p className="text-[9px] text-white/20 font-medium uppercase tracking-wider">
+          <p className="text-[11px] text-white/20 font-medium uppercase tracking-wider">
             System notifications — replies are not available
           </p>
         </div>

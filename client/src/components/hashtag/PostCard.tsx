@@ -42,7 +42,7 @@ export const PostCard = ({ post, accent, canInteract, onLike, onBookmark }: Post
           <img src={post.author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
         ) : (
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
             style={{ background: `linear-gradient(135deg, ${accent}, ${accent}88)` }}
           >
             {post.author?.name?.[0] ?? '?'}
@@ -60,7 +60,7 @@ export const PostCard = ({ post, accent, canInteract, onLike, onBookmark }: Post
 
       {/* Title — clickable */}
       <Link to={`/post/${post._id}`} className="block group/title">
-        <h2 className="text-xl font-black text-white mb-2 leading-tight group-hover/title:text-accent-pink transition-colors">
+        <h2 className="text-xl font-bold text-white mb-2 leading-tight group-hover/title:text-accent-pink transition-colors">
           {post.title}
         </h2>
       </Link>

@@ -145,7 +145,9 @@ export const getCodeShare = async (id: string, pagination?: PaginationParams): P
     };
   }
 
-  const chunk = await CodeShareChunk.findById(chunkId).lean();
+  if (!mongoose.isValidObjectId(chunkId)) throw new Error("Invalid chunk id");
+  // Scope the chunk to this code share so a link for one share cannot read another.
+  const chunk = await CodeShareChunk.findOne({ _id: chunkId, codeShareId: doc._id }).lean();
   if (!chunk) {
     return {
       title: doc.title,
@@ -174,6 +176,7 @@ export const appendChunk = async (params: AppendChunkParams): Promise<any> => {
   const { codeShareId, prevChunkId, content } = params;
   const csId = new mongoose.Types.ObjectId(codeShareId);
 
+  if (prevChunkId && !mongoose.isValidObjectId(prevChunkId)) throw new Error("Invalid previous chunk id");
   const chunkData: any = {
     content,
     codeShareId: csId,
@@ -184,9 +187,13 @@ export const appendChunk = async (params: AppendChunkParams): Promise<any> => {
 
   // If there's a previous chunk, update its 'nextChunkId' to point to this new chunk
   if (prevChunkId) {
-    await CodeShareChunk.findByIdAndUpdate(prevChunkId, {
+    const linked = await CodeShareChunk.findOneAndUpdate({ _id: prevChunkId, codeShareId: csId }, {
       $set: { nextChunkId: chunk._id }
     });
+    if (!linked) {
+      await CodeShareChunk.deleteOne({ _id: chunk._id });
+      throw new Error("Previous chunk not found");
+    }
   }
 
   // Update the CodeShare metadata

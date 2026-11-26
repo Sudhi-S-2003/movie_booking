@@ -97,7 +97,7 @@ export const CommentItem = ({
           {comment.user?.avatar ? (
             <img src={comment.user.avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
           ) : (
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-[10px] font-bold text-white/80">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-xs font-bold text-white/80">
               {initial}
             </div>
           )}

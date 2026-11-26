@@ -52,7 +52,7 @@ const FileRow: React.FC<{ url: string; bytes?: number }> = ({ url, bytes }) => {
           {truncateMiddle(name, 28)}
         </span>
         {bytes !== undefined && (
-          <span className="text-[10px] text-white/55 tabular-nums uppercase tracking-wider">
+          <span className="text-xs text-white/55 tabular-nums uppercase tracking-wider">
             {formatBytes(bytes)}
           </span>
         )}

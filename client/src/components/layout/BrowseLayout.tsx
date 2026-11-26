@@ -64,7 +64,7 @@ export const BrowseLayout = ({
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
           >
-            <h1 className="text-6xl sm:text-8xl font-black uppercase tracking-tighter text-white leading-[0.85]">
+            <h1 className="text-6xl sm:text-8xl font-bold uppercase tracking-tighter text-white leading-[0.85]">
               {title} <br />
               <span className={accent.text}>{titleHighlight}</span>
             </h1>

@@ -84,7 +84,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         className={`w-full bg-black/60 border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between outline-none transition-all group-hover:bg-white/[0.02] ${isOpen ? colors[accentColor] : "group-hover:border-white/20"}`}
       >
         <div className="flex flex-col items-start ">
-           <span className={`font-black text-[10px] uppercase tracking-widest ${activeOption ? "text-white" : "text-gray-600"}`}>
+           <span className={`font-bold text-xs uppercase tracking-wide ${activeOption ? "text-white" : "text-gray-600"}`}>
             {activeOption ? activeOption.name : placeholder}
           </span>
         </div>
@@ -93,7 +93,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {}
       {label && (
-        <label className="absolute -top-3 left-4 px-2 bg-[#080808] text-[8px] font-black text-gray-600 uppercase tracking-widest pointer-events-none">
+        <label className="absolute -top-3 left-4 px-2 bg-[#080808] text-[11px] font-bold text-gray-600 uppercase tracking-wide pointer-events-none">
           {label}
         </label>
       )}
@@ -134,7 +134,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             <div className="max-h-64 overflow-y-auto custom-scrollbar p-2">
               {isLoading && filteredOptions.length === 0 ? (
                 <div className="p-10 text-center animate-pulse">
-                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600">Querying Cinematic Database...</p>
+                   <p className="text-xs text-slate-400">Searching…</p>
                 </div>
               ) : filteredOptions.length > 0 ? (
                 filteredOptions.map((opt, index) => (
@@ -149,7 +149,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                       value === opt.id ? "bg-white/10 text-white" : "hover:bg-white/5 text-gray-500 hover:text-white"
                     }`}
                   >
-                    <span className="text-xs font-black uppercase tracking-widest">
+                    <span className="text-xs font-bold uppercase tracking-wide">
                       {opt.name}
                     </span>
                     {value === opt.id && (
@@ -160,7 +160,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               ) : (
                 <div className="p-10 text-center space-y-2">
                   <Search size={32} className="mx-auto text-gray-900" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-800">No matching records found</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-gray-800">No matching records found</p>
                 </div>
               )}
             </div>

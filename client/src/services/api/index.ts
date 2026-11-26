@@ -19,24 +19,6 @@ export type { PlatformStats, AdminStats, GenreBucket, DailyBookingBucket, TopMov
 export { chatApi } from './chat.api.js';
 export { apiKeysApi } from './apiKeys.api.js';
 export type { ApiKeyRecord, ApiKeyCategory } from './apiKeys.api.js';
-export { subscriptionApi } from './subscription.api.js';
-export type {
-  SubscriptionPlan, BillingCycle, SubscriptionInfo, TokenRemaining,
-  PlanCatalogItem, PlanCatalogResponse,
-} from './subscription.api.js';
-export type { PaidPlan } from './subscription.api.js';
-export type SubscriptionRequestRecord = {
-  _id: string;
-  userId: string;
-  userName?: string;
-  userEmail?: string;
-  monthlyLimit: number;
-  durationMonths: number;
-  priceDisplay: number;
-  status: 'pending' | 'approved' | 'rejected';
-  adminNote?: string;
-  createdAt: string;
-  updatedAt: string;
-};
+export { accountApi, manageApi, servicesApi, billingApi } from './platform.api.js';
 export { authApi } from './auth.api.js';
 export type { UserSession } from './auth.api.js';

@@ -56,7 +56,7 @@ export const PublicNameForm = memo(({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
         <Globe size={12} /> Public Name
       </div>
 
@@ -70,7 +70,7 @@ export const PublicNameForm = memo(({
         <button
           onClick={() => void persist(value.trim() || null)}
           disabled={saving || !dirty}
-          className="px-4 py-2.5 bg-accent-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="px-4 py-2.5 bg-accent-blue text-white rounded-xl font-bold text-xs uppercase tracking-wide hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {saving ? 'Saving…' : 'Save'}
         </button>
@@ -86,11 +86,11 @@ export const PublicNameForm = memo(({
         )}
       </div>
 
-      {error && <p className="text-[10px] font-bold text-rose-300">{error}</p>}
+      {error && <p className="text-xs font-bold text-rose-300">{error}</p>}
 
       {saved && !dirty && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/15">
-          <code className="flex-1 text-[10px] font-mono text-emerald-300 truncate">
+          <code className="flex-1 text-xs font-mono text-emerald-300 truncate">
             {buildPublicChatUrl(saved)}
           </code>
           <button

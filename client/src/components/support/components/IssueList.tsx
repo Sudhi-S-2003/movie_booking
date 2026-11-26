@@ -42,7 +42,7 @@ export const IssueList: React.FC<IssueListProps> = ({
     return (
       <div className="h-full bg-white/[0.03] border border-white/[0.06] rounded-xl p-10 text-center flex flex-col items-center justify-center space-y-3">
         <CheckCircle2 size={32} className="mx-auto text-white/10" />
-        <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-white/20">
+        <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/20">
           No tickets found
         </p>
       </div>
@@ -65,7 +65,7 @@ export const IssueList: React.FC<IssueListProps> = ({
         <button
           onClick={() => onLoadMore(issuesPage + 1)}
           disabled={loading}
-          className="w-full py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-[7px] font-bold uppercase tracking-[0.2em] hover:bg-white/[0.06] transition-all disabled:opacity-50 flex-shrink-0"
+          className="w-full py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-white/[0.06] transition-all disabled:opacity-50 flex-shrink-0"
         >
           {loading ? "Loading more..." : "Load more tickets"}
         </button>

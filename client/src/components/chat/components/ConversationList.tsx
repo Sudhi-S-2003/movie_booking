@@ -48,7 +48,7 @@ export const ConversationList: React.FC = memo(() => {
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-black uppercase tracking-tight text-white">
+          <h2 className="text-sm font-bold uppercase tracking-tight text-white">
             Messages
           </h2>
           <button
@@ -93,7 +93,7 @@ export const ConversationList: React.FC = memo(() => {
           <button
             onClick={loadMoreConversations}
             disabled={conversationsLoading}
-            className="w-full py-3 text-[10px] text-white/30 hover:text-white/50 transition-colors font-medium"
+            className="w-full py-3 text-xs text-white/30 hover:text-white/50 transition-colors font-medium"
           >
             {conversationsLoading ? 'Loading...' : 'Load more'}
           </button>
@@ -117,19 +117,19 @@ const EmptyState: React.FC<{ dirty: boolean; onReset: () => void }> = ({ dirty, 
   <div className="flex flex-col items-center justify-center py-16 text-center px-4">
     {dirty ? (
       <>
-        <p className="text-[10px] text-white/30 font-medium">No matches</p>
-        <p className="text-[9px] text-white/20 mt-1">Try a different search or clear the filters</p>
+        <p className="text-xs text-white/30 font-medium">No matches</p>
+        <p className="text-[11px] text-white/20 mt-1">Try a different search or clear the filters</p>
         <button
           onClick={onReset}
-          className="mt-3 text-[10px] font-semibold text-accent-blue hover:text-accent-blue/80 transition-colors"
+          className="mt-3 text-xs font-semibold text-accent-blue hover:text-accent-blue/80 transition-colors"
         >
           Clear filters
         </button>
       </>
     ) : (
       <>
-        <p className="text-[10px] text-white/20 font-medium">No conversations yet</p>
-        <p className="text-[9px] text-white/10 mt-1">Start a new chat to begin messaging</p>
+        <p className="text-xs text-white/20 font-medium">No conversations yet</p>
+        <p className="text-[11px] text-white/10 mt-1">Start a new chat to begin messaging</p>
       </>
     )}
   </div>

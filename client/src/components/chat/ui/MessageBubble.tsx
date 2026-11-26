@@ -156,7 +156,7 @@ export const MessageBubble = memo(({
               />
             ) : (
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white ${
                   isOwn
                     ? 'bg-gradient-to-br from-violet-600/90 to-indigo-700/90 shadow-sm shadow-violet-500/15'
                     : 'bg-white/10 border border-white/10'
@@ -170,7 +170,7 @@ export const MessageBubble = memo(({
 
         <div className={`flex flex-col min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[60%] xl:max-w-[520px] ${isOwn ? 'items-end' : 'items-start'}`}>
           {!isSameGroupPrev && !isOwn && !isEmoji && (
-            <span className="text-[8px] font-bold uppercase tracking-widest mb-1 px-1 text-white/30">
+            <span className="text-[11px] font-bold uppercase tracking-wide mb-1 px-1 text-white/30">
               {msg.senderName}
             </span>
           )}
@@ -246,7 +246,7 @@ export const MessageBubble = memo(({
 
           {!isSameGroupNext && (
             <div className={`flex items-center gap-1.5 mt-1 px-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
-              <span className={`text-[9px] font-medium tabular-nums ${isEmoji ? 'text-white/40' : 'text-white/25'}`}>
+              <span className={`text-[11px] font-medium tabular-nums ${isEmoji ? 'text-white/40' : 'text-white/25'}`}>
                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
               {isOwn && (
@@ -254,12 +254,12 @@ export const MessageBubble = memo(({
               )}
               {isFailed && (
                 <>
-                  <span className="text-[8px] text-red-400 font-medium">Failed</span>
+                  <span className="text-[11px] text-red-400 font-medium">Failed</span>
                   {onRetry && (
                     <button
                       type="button"
                       onClick={() => onRetry(msg._id)}
-                      className="text-[9px] text-red-300 hover:text-red-100 font-semibold uppercase tracking-wider flex items-center gap-0.5 transition-colors"
+                      className="text-[11px] text-red-300 hover:text-red-100 font-semibold uppercase tracking-wider flex items-center gap-0.5 transition-colors"
                       aria-label="Retry send"
                       title="Retry sending this message"
                     >
@@ -282,7 +282,7 @@ MessageBubble.displayName = 'MessageBubble';
 const DateSeparator: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-3 my-4">
     <div className="flex-1 h-px bg-white/[0.06]" />
-    <span className="text-[8px] font-bold text-white/30 uppercase tracking-[0.15em] px-3 py-1 bg-white/[0.03] border border-white/[0.06] rounded-full">
+    <span className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] px-3 py-1 bg-white/[0.03] border border-white/[0.06] rounded-full">
       {label}
     </span>
     <div className="flex-1 h-px bg-white/[0.06]" />

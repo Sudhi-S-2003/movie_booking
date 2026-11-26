@@ -200,13 +200,14 @@ const toApiError = (err: unknown): ApiError => {
   if (axios.isAxiosError(err)) {
     const status = err.response?.status ?? 0;
     const body = err.response?.data as
-      | { message?: string; errors?: Record<string, string> }
+      | { message?: string; code?: string; errors?: Record<string, string>; details?: { fieldErrors?: Record<string, string> } }
       | undefined;
+    // Server envelope: { success:false, code, message, details:{ fieldErrors } }.
     return new ApiError(
-      body?.message ?? err.message ?? 'Network error',
+      body?.message ?? err.message ?? "Network error",
       status,
-      err.code ?? 'NETWORK_ERROR',
-      body?.errors,
+      body?.code ?? err.code ?? "NETWORK_ERROR",
+      body?.errors ?? body?.details?.fieldErrors,
     );
   }
   if (err instanceof Error) return new ApiError(err.message, 0, 'UNKNOWN');

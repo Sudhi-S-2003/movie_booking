@@ -72,7 +72,7 @@ export const CreateApiKeyModal = memo(({ open, onClose, onCreate }: CreateApiKey
             className="w-full max-w-md bg-[#0c0c0c] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
           >
             <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-              <h3 className="text-sm font-black uppercase tracking-tight text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold uppercase tracking-tight text-white flex items-center gap-2">
                 <Key size={14} className="text-accent-blue" />
                 New API Key
               </h3>
@@ -87,7 +87,7 @@ export const CreateApiKeyModal = memo(({ open, onClose, onCreate }: CreateApiKey
 
             <div className="p-4 space-y-4">
               <div>
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-1">
+                <label className="text-[11px] font-bold uppercase tracking-wide text-gray-500 block mb-1">
                   Name
                 </label>
                 <input
@@ -100,7 +100,7 @@ export const CreateApiKeyModal = memo(({ open, onClose, onCreate }: CreateApiKey
               </div>
 
               <div>
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-1">
+                <label className="text-[11px] font-bold uppercase tracking-wide text-gray-500 block mb-1">
                   Category
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -108,7 +108,7 @@ export const CreateApiKeyModal = memo(({ open, onClose, onCreate }: CreateApiKey
                     <button
                       key={c}
                       onClick={() => setCategory(c)}
-                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] border transition-all ${
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all ${
                         category === c
                           ? 'bg-accent-blue/15 border-accent-blue/30 text-accent-blue'
                           : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white'
@@ -120,20 +120,20 @@ export const CreateApiKeyModal = memo(({ open, onClose, onCreate }: CreateApiKey
                 </div>
               </div>
 
-              {error && <p className="text-[10px] font-bold text-rose-300">{error}</p>}
+              {error && <p className="text-xs font-bold text-rose-300">{error}</p>}
             </div>
 
             <div className="p-4 pt-0 flex items-center gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2.5 bg-white/[0.04] text-white/60 border border-white/[0.06] rounded-xl font-bold text-[10px] uppercase tracking-widest hover:text-white transition-all"
+                className="flex-1 py-2.5 bg-white/[0.04] text-white/60 border border-white/[0.06] rounded-xl font-bold text-xs uppercase tracking-wide hover:text-white transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={() => void handleSubmit()}
                 disabled={submitting}
-                className="flex-[1.5] py-2.5 bg-accent-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="flex-[1.5] py-2.5 bg-accent-blue text-white rounded-xl font-bold text-xs uppercase tracking-wide hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {submitting ? 'Creating…' : 'Create Key'}
               </button>

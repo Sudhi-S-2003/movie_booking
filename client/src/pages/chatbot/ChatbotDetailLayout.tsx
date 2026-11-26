@@ -88,7 +88,7 @@ export const ChatbotDetailLayout: React.FC = React.memo(() => {
             <div className="absolute inset-0 bg-accent-blue/20 blur-xl rounded-full" />
             <Loader2 className="w-12 h-12 text-accent-blue animate-spin relative z-10" />
           </div>
-          <p className="text-gray-400 font-mono text-sm tracking-widest uppercase animate-pulse">
+          <p className="text-gray-400 font-mono text-sm tracking-wide uppercase animate-pulse">
             Loading Bot Architecture...
           </p>
         </div>
@@ -116,10 +116,10 @@ export const ChatbotDetailLayout: React.FC = React.memo(() => {
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-black text-white tracking-tight flex items-center space-x-3">
+              <h1 className="text-3xl font-bold text-white tracking-tight flex items-center space-x-3">
                 <span>{chatbot.name}</span>
                 <span className={clsx(
-                  "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                  "px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border",
                   chatbot.isActive
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                     : "bg-red-500/10 text-red-400 border-red-500/20"

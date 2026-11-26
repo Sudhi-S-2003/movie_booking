@@ -64,12 +64,12 @@ export const HashtagHero = ({
               >
                 <Hash size={28} style={{ color: accent }} />
               </div>
-              <span className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
                 Hashtag · Live Feed
               </span>
             </div>
 
-            <h1 className="text-6xl sm:text-8xl font-black text-white leading-none tracking-tighter">
+            <h1 className="text-6xl sm:text-8xl font-bold text-white leading-none tracking-tighter">
               #{hashtag?.name ?? fallbackTag}
             </h1>
 

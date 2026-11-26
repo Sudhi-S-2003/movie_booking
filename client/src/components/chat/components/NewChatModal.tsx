@@ -132,14 +132,14 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-              <h3 className="text-sm font-black uppercase tracking-tight text-white">
+              <h3 className="text-sm font-bold uppercase tracking-tight text-white">
                 New {mode === 'group' ? 'Group' : 'Message'}
               </h3>
               <div className="flex items-center gap-2">
                 {/* Toggle mode */}
                 <button
                   onClick={() => setMode((m: 'search' | 'group') => m === 'search' ? 'group' : 'search')}
-                  className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
                     mode === 'group'
                       ? 'bg-accent-blue/20 text-accent-blue border border-accent-blue/30'
                       : 'bg-white/[0.04] text-white/40 border border-white/[0.06] hover:text-white/60'
@@ -171,7 +171,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
                   <CharCounter value={groupTitle} max={TITLE_MAX} min={TITLE_MIN} />
                 </div>
                 <div className={`relative flex items-center bg-white/[0.04] border ${borderFor(groupPublicName, PUBLIC_NAME_MAX, PUBLIC_NAME_MIN)} rounded-xl focus-within:border-white/[0.12] transition-colors`}>
-                  <span className="pl-3 pr-1 text-[10px] font-mono text-white/30 select-none">
+                  <span className="pl-3 pr-1 text-xs font-mono text-white/30 select-none">
                     /chat/g/
                   </span>
                   <input
@@ -185,11 +185,11 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
                   />
                   <CharCounter value={groupPublicName} max={PUBLIC_NAME_MAX} min={PUBLIC_NAME_MIN} />
                 </div>
-                <p className="text-[9px] text-white/25 leading-relaxed px-1">
+                <p className="text-[11px] text-white/25 leading-relaxed px-1">
                   Required. Permanent slug at <code className="text-white/40">/chat/g/your-slug</code> — must be unique across all groups.
                 </p>
                 {createError && (
-                  <p className="text-[10px] font-bold text-rose-300">{createError}</p>
+                  <p className="text-xs font-bold text-rose-300">{createError}</p>
                 )}
               </div>
             )}
@@ -201,7 +201,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
                   <span
                     key={u._id}
                     onClick={() => setSelected((prev: SearchedUser[]) => prev.filter((s: SearchedUser) => s._id !== u._id))}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-accent-blue/20 border border-accent-blue/30 rounded-full text-[9px] text-accent-blue font-bold cursor-pointer hover:bg-accent-blue/30 transition-all"
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-accent-blue/20 border border-accent-blue/30 rounded-full text-[11px] text-accent-blue font-bold cursor-pointer hover:bg-accent-blue/30 transition-all"
                   >
                     {u.name}
                     <X size={10} />
@@ -234,7 +234,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
 
               {!loading && results.length === 0 && query.trim() && (
                 <div className="py-8 text-center">
-                  <p className="text-[10px] text-white/20">No users found</p>
+                  <p className="text-xs text-white/20">No users found</p>
                 </div>
               )}
 
@@ -251,7 +251,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
                     <ChatAvatar participant={{ ...user, username: user.username }} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-bold text-white truncate">{user.name}</p>
-                      <p className="text-[9px] text-white/30 truncate">@{user.username}</p>
+                      <p className="text-[11px] text-white/30 truncate">@{user.username}</p>
                     </div>
                     {mode === 'search' && (
                       <MessageCircle size={14} className="text-white/20 flex-shrink-0" />
@@ -280,7 +280,7 @@ export const NewChatModal = memo(({ show, onClose }: NewChatModalProps) => {
                 <button
                   onClick={() => void handleCreateGroup()}
                   disabled={creating}
-                  className="w-full py-2.5 bg-accent-blue text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full py-2.5 bg-accent-blue text-white rounded-xl font-bold text-xs uppercase tracking-wide hover:scale-[1.02] transition-all shadow-md shadow-accent-blue/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {creating
                     ? 'Creating…'

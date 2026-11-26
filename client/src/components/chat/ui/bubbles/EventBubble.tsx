@@ -71,7 +71,7 @@ export const EventBubble = memo(({ msg, isOwn }: EventBubbleProps) => {
         </div>
         
         <div className="flex flex-col min-w-0 flex-1">
-          <h4 className="text-[14px] font-black leading-tight tracking-tight break-words [overflow-wrap:anywhere] line-clamp-2">
+          <h4 className="text-[14px] font-bold leading-tight tracking-tight break-words [overflow-wrap:anywhere] line-clamp-2">
             {e.title}
           </h4>
           <p className="mt-1 text-[11px] font-medium text-white/60 tabular-nums break-words">

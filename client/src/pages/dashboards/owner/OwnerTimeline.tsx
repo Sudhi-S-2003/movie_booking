@@ -66,7 +66,7 @@ export const OwnerTimeline = () => {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px] font-black animate-pulse text-accent-blue">Loading...</div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px] font-bold animate-pulse text-accent-blue">Loading...</div>;
 
   return (
     <DashboardPage
@@ -78,7 +78,7 @@ export const OwnerTimeline = () => {
       headerActions={
         <button
           onClick={() => setShowAddForm(true)}
-          className="px-8 py-4 bg-accent-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-accent-blue/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+          className="px-8 py-4 bg-accent-blue text-white rounded-2xl font-bold text-xs uppercase tracking-wide shadow-lg shadow-accent-blue/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
         >
           <Plus size={18} /> Add Showtime
         </button>
@@ -87,7 +87,7 @@ export const OwnerTimeline = () => {
       <SEO title="Schedule & Showtimes" description="Manage movie showtimes, formats, and scheduling for your theatre screens." />
       <ContextBar />
         <div className="flex justify-between items-center border-b border-white/5 pb-4">
-          <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-600">Showtimes</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-gray-600">Showtimes</h3>
         </div>
 
         {}
@@ -97,7 +97,7 @@ export const OwnerTimeline = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest"
+              className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl flex items-center gap-3 text-xs font-bold uppercase tracking-wide"
             >
               <AlertCircle size={16} /> {error}
               <button onClick={() => setError(null)} className="ml-auto hover:text-white">DISMISS</button>
@@ -132,7 +132,7 @@ export const OwnerTimeline = () => {
           {showtimes.length === 0 ? (
             <div className="bg-white/[0.02] border border-white/5 rounded-[40px] p-24 flex flex-col items-center gap-8 text-white/5 group">
                <Clock size={80} strokeWidth={1} className="group-hover:text-accent-blue/20 transition-colors" />
-               <p className="font-black uppercase tracking-[1em] text-[10px]">No shows scheduled</p>
+               <p className="font-bold uppercase tracking-wider text-xs">No shows scheduled</p>
             </div>
           ) : (
             showtimes.map((show: any) => {
@@ -148,17 +148,17 @@ export const OwnerTimeline = () => {
                       <Film size={24} />
                     </div>
                     <div>
-                      <h4 className="text-xl font-black flex items-center gap-3">
+                      <h4 className="text-xl font-bold flex items-center gap-3">
                         {show.movieId.title}
-                        {isCurrent && <span className="text-[8px] px-2 py-0.5 bg-accent-blue/20 text-accent-blue rounded-full">LIVE</span>}
+                        {isCurrent && <span className="text-[11px] px-2 py-0.5 bg-accent-blue/20 text-accent-blue rounded-full">LIVE</span>}
                       </h4>
                       <div className="flex gap-4 mt-1">
-                        <span className="text-[10px] font-black text-gray-500 uppercase flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2">
                           <Clock size={12} className="text-accent-pink" /> 
                           {new Date(show.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(show.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
-                        <span className="text-[10px] font-black text-accent-blue uppercase tracking-widest px-2 bg-accent-blue/10 rounded-md border border-accent-blue/20">{show.format}</span>
-                        <span className="text-[10px] font-black text-gray-600 uppercase">Dur: {show.movieId.duration}m</span>
+                        <span className="text-xs font-bold text-accent-blue uppercase tracking-wide px-2 bg-accent-blue/10 rounded-md border border-accent-blue/20">{show.format}</span>
+                        <span className="text-xs font-bold text-gray-600 uppercase">Dur: {show.movieId.duration}m</span>
                       </div>
                     </div>
                   </div>

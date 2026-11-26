@@ -77,7 +77,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ diffData, filename }) =>
         <div className="flex items-center gap-1.5 p-0.5 bg-zinc-900 border border-zinc-800 rounded-lg">
           <button
             onClick={() => setViewMode('unified')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] uppercase tracking-widest font-black transition-all ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs uppercase tracking-wide font-bold transition-all ${
               viewMode === 'unified' 
                 ? 'bg-zinc-800 text-white' 
                 : 'text-zinc-500 hover:text-zinc-300'
@@ -88,7 +88,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ diffData, filename }) =>
           </button>
           <button
             onClick={() => setViewMode('split')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] uppercase tracking-widest font-black transition-all ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs uppercase tracking-wide font-bold transition-all ${
               viewMode === 'split' 
                 ? 'bg-zinc-800 text-white' 
                 : 'text-zinc-500 hover:text-zinc-300'

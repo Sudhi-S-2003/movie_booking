@@ -23,7 +23,7 @@ export const PaginationShimmer: React.FC<PaginationShimmerProps> = ({ label }) =
         />
       ))}
     </div>
-    <span className="text-[10px] font-medium text-white/30 tracking-wider uppercase">
+    <span className="text-xs font-medium text-white/30 tracking-wider uppercase">
       {label}
     </span>
     <style>{`

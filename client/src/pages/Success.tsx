@@ -31,8 +31,8 @@ export const Success = () => {
             >
               <CheckCircle2 size={40} className="text-white" />
             </motion.div>
-            <h1 className="text-3xl font-black text-white tracking-tight uppercase">Booking Successful!</h1>
-            <p className="text-xs font-bold text-green-500 uppercase tracking-widest">Transaction ID: #CC-{Math.floor(Math.random() * 900000 + 100000)}</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight uppercase">Booking Successful!</h1>
+            <p className="text-xs font-bold text-green-500 uppercase tracking-wide">Transaction ID: #CC-{Math.floor(Math.random() * 900000 + 100000)}</p>
           </div>
 
           {}
@@ -41,18 +41,18 @@ export const Success = () => {
             
             <div className="space-y-6">
               <div>
-                <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mb-2">Movie</p>
-                <h2 className="text-3xl font-black text-white leading-tight">{movie}</h2>
+                <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Movie</p>
+                <h2 className="text-3xl font-bold text-white leading-tight">{movie}</h2>
               </div>
 
               <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mb-2">Theatre</p>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Theatre</p>
                   <p className="text-sm font-bold text-white">{theatre}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mb-2">Seats</p>
-                  <p className="text-sm font-black text-accent-blue">{seats.join(', ')}</p>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Seats</p>
+                  <p className="text-sm font-bold text-accent-blue">{seats.join(', ')}</p>
                 </div>
               </div>
 
@@ -62,8 +62,8 @@ export const Success = () => {
                     <Share2 size={20} className="hover:text-white cursor-pointer transition-colors" />
                  </div>
                  <div className="text-right">
-                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Total Paid</p>
-                    <p className="text-3xl font-black text-accent-pink tracking-tight">₹{total}</p>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wide">Total Paid</p>
+                    <p className="text-3xl font-bold text-accent-pink tracking-tight">₹{total}</p>
                  </div>
                </div>
             </div>
@@ -74,11 +74,11 @@ export const Success = () => {
         <div className="mt-12 flex flex-col sm:flex-row gap-6">
           <Link 
             to="/" 
-            className="flex-1 px-10 py-5 bg-white/5 border border-white/10 rounded-[32px] text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-white/10 transition-all"
+            className="flex-1 px-10 py-5 bg-white/5 border border-white/10 rounded-[32px] text-white font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-3 hover:bg-white/10 transition-all"
           >
             <Home size={18} /> Take Me Home
           </Link>
-          <button className="flex-1 px-10 py-5 bg-accent-blue text-white rounded-[32px] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-accent-blue/30">
+          <button className="flex-1 px-10 py-5 bg-accent-blue text-white rounded-[32px] font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-accent-blue/30">
             View My Bookings
           </button>
         </div>

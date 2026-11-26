@@ -622,7 +622,7 @@ export const sendMessage = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: decorated,
-      tokens: { remaining: tokens.remaining, plan: tokens.plan, cost: tokens.cost },
+      billing: { cost: tokens.cost, units: tokens.units, balance: tokens.balance },
     });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });
@@ -680,6 +680,11 @@ export const markMessagesRead = async (req: Request, res: Response) => {
       .slice(0, 200);
 
     if (messageIds.length === 0) return res.json({ success: true, markedIds: [] });
+
+    // Only participants can mark messages read (and emit receipts) in a conversation.
+    if (!mongoose.isValidObjectId(conversationId) || !(await ConversationParticipant.exists({ conversationId, userId: user._id }))) {
+      return res.status(404).json({ success: false, message: 'Conversation not found' });
+    }
 
     const { insertedIds } = await recordReads({
       conversationId,

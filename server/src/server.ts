@@ -3,47 +3,34 @@ import http from 'http';
 import mongoose from 'mongoose';
 import app from './app.js';
 import { initSocket } from './socket/index.js';
-import { Movie } from './models/movie.model.js';
-import { Theatre } from './models/theatre.model.js';
 import { User } from './models/user.model.js';
 import { Session } from './models/session.model.js';
-
-const { PORT, MONGODB_URI } = env;
+import { syncCatalog } from './modules/catalog/entitlement.service.js';
+import { bootstrapSuperAdmin } from './modules/platform/superAdmin.bootstrap.js';
+import { ensureUnlimitedWallet } from './modules/billing/billingAccount.service.js';
+import { UserRole } from './constants/enums.js';
 
 const server = http.createServer(app);
-
-// Initialize Socket.io
 initSocket(server);
 
+/** One-time platform setup that must finish before serving traffic. */
+const prepare = async () => {
+  await mongoose.connection.syncIndexes();
+  await syncCatalog();
+  await bootstrapSuperAdmin();
+  const root = await User.findOne({ role: UserRole.SUPER_ADMIN, isProtected: true }).select('_id');
+  if (root) await ensureUnlimitedWallet(root._id);
+  // Presence flags from a previous process are stale.
+  await Promise.all([User.updateMany({}, { isOnline: false }), Session.updateMany({}, { isOnline: false })]);
+};
+
 mongoose
-  .connect(MONGODB_URI)
+  .connect(env.MONGODB_URI)
   .then(async () => {
     console.log('✅ Connected to MongoDB');
-    
-    // Ensure search indexes are ready for production scale
-    try {
-      await Promise.all([
-        Movie.syncIndexes(),
-        Theatre.syncIndexes()
-      ]);
-      console.log('🔍 Search Indexes Synchronized');
-      
-      // Reset online status on startup (clear stale data)
-      await Promise.all([
-        User.updateMany({}, { isOnline: false }),
-        Session.updateMany({}, { isOnline: false })
-      ]);
-      console.log('✨ Online Statuses Reset');
-    } catch (indexError) {
-      console.error('⚠️ Index sync warning:', indexError);
-    }
-    
-    // Start Server
-    server.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
+    await prepare();
+    server.listen(env.PORT, () => console.log(`🚀 Server running on port ${env.PORT}`));
 
-    // Graceful shutdown
     const shutdown = async () => {
       console.log('\n🔄 Shutting down...');
       server.close();
@@ -54,6 +41,6 @@ mongoose
     process.on('SIGINT', shutdown);
   })
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err);
+    console.error('❌ Startup failed:', err);
     process.exit(1);
   });

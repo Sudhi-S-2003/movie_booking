@@ -26,19 +26,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         <div className="min-w-0">
           <h3 className="font-bold text-xs text-white truncate">{issue.title}</h3>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[8px] font-bold text-accent-blue/70 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-accent-blue/70 uppercase tracking-wider">
               {issue.category}
             </span>
-            <span className="text-white/10 text-[8px]">·</span>
+            <span className="text-white/10 text-[11px]">·</span>
             <span
-              className={`text-[7px] font-bold px-1.5 py-px rounded border ${
+              className={`text-[11px] font-bold px-1.5 py-px rounded border ${
                 STATUS_STYLES[issue.status] ?? STATUS_STYLES.CLOSED
               } uppercase tracking-wider`}
             >
               {issue.status}
             </span>
-            <span className="text-white/10 text-[8px]">·</span>
-            <span className="text-[7px] font-mono text-white/20">
+            <span className="text-white/10 text-[11px]">·</span>
+            <span className="text-[11px] font-mono text-white/20">
               #{issue._id.slice(-6)}
             </span>
           </div>
@@ -75,7 +75,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             <button
               type="button"
               onClick={() => onStatusChange('CLOSED')}
-              className="px-2.5 py-1 bg-white/5 text-gray-400 border border-white/10 rounded-lg text-[7px] font-bold uppercase tracking-wider hover:bg-white/10 transition-all"
+              className="px-2.5 py-1 bg-white/5 text-gray-400 border border-white/10 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-white/10 transition-all"
             >
               Close
             </button>
@@ -134,7 +134,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({ label, color, onClick }) =>
     <button
       type="button"
       onClick={onClick}
-      className={`px-2.5 py-1 border rounded-lg text-[7px] font-bold uppercase tracking-wider transition-all ${styles[color]}`}
+      className={`px-2.5 py-1 border rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${styles[color]}`}
     >
       {label}
     </button>
@@ -146,7 +146,7 @@ const MetadataTag: React.FC<{ color: string; label: string }> = ({ color, label 
     className={`px-2 py-0.5 bg-${color}/5 border border-${color}/10 rounded-md flex items-center gap-1.5`}
   >
     <div className={`w-1 h-1 rounded-full bg-${color} animate-pulse`} />
-    <span className={`text-[7px] font-bold text-${color} uppercase tracking-wider`}>
+    <span className={`text-[11px] font-bold text-${color} uppercase tracking-wider`}>
       {label}
     </span>
   </div>

@@ -378,7 +378,7 @@ export const UserDetails = () => {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-accent-blue animate-pulse">
+        <p className="text-xs font-bold uppercase tracking-wider text-accent-blue animate-pulse">
           Loading profile…
         </p>
       </div>
@@ -391,7 +391,7 @@ export const UserDetails = () => {
         <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
           <AlertCircle size={28} />
         </div>
-        <h1 className="text-2xl font-black text-white">User not found</h1>
+        <h1 className="text-2xl font-bold text-white">User not found</h1>
         <p className="text-gray-500 text-sm">No profile exists for @{username}.</p>
         <Link to="/" className="mt-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold text-white hover:bg-white/10">
           Back home

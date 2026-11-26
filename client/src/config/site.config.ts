@@ -1,26 +1,27 @@
 export const SITE_CONFIG = {
-  name: "CineNexus",
-  firstName: "Cine",
-  lastName: "Nexus",
-  shortName: "CN",
-  tagline: "The Cinematic Social Hub",
-  description: "Book movies, join communities, and chat with fellow film enthusiasts. CineNexus combines premium cinema booking with a vibrant social network.",
-  domain: "cinenexus.app",
-  author: "CineNexus Team",
+  // Brand is configurable per deployment (VITE_APP_NAME etc.) so resellers can white-label.
+  name: import.meta.env.VITE_APP_NAME || "Nexus Platform",
+  firstName: (import.meta.env.VITE_APP_NAME || "Nexus Platform").split(" ")[0],
+  lastName: (import.meta.env.VITE_APP_NAME || "Nexus Platform").split(" ").slice(1).join(" "),
+  shortName: "NP",
+  tagline: "Business services platform",
+  description: "One account for authentication, messaging, chatbots, developer tools, bookings and community services, with reseller support.",
+  domain: import.meta.env.VITE_APP_DOMAIN || "localhost",
+  author: "Platform Team",
   year: new Date().getFullYear() > 2026 ? `2026-${new Date().getFullYear()}` : "2026",
   version: "1.0.0",
   
   contact: {
-    email: "hello@cinenexus.app",
-    support: "support@cinenexus.app",
-    address: "Cinema Street, Film District, CA 90210",
+    email: import.meta.env.VITE_CONTACT_EMAIL || "",
+    support: import.meta.env.VITE_SUPPORT_EMAIL || "",
+    address: "",
   },
 
   social: {
-    twitter: "https://twitter.com/CineNexus",
-    instagram: "https://instagram.com/cinenexus",
-    github: "https://github.com/cinenexus",
-    discord: "https://discord.gg/cinenexus",
+    twitter: "",
+    instagram: "",
+    github: "",
+    discord: "",
   },
 
   theme: {

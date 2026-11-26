@@ -25,7 +25,7 @@ export const PaginationBar = ({ pagination, onChange }: PaginationBarProps) => {
       className="flex items-center justify-between pt-4"
     >
       {/* Left: total */}
-      <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+      <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
         {total} results
       </span>
 
@@ -49,7 +49,7 @@ export const PaginationBar = ({ pagination, onChange }: PaginationBarProps) => {
               )}
               <button
                 onClick={() => onChange(p)}
-                className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-black transition-all active:scale-90 ${
+                className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all active:scale-90 ${
                   p === page
                     ? 'bg-accent-blue text-white shadow-lg shadow-accent-blue/30'
                     : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
@@ -71,7 +71,7 @@ export const PaginationBar = ({ pagination, onChange }: PaginationBarProps) => {
       </div>
 
       {/* Right: page x of y */}
-      <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+      <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
         Page {page} / {totalPages}
       </span>
     </motion.div>

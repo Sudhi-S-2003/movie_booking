@@ -150,7 +150,7 @@ export const ChatbotList = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
-            <h1 className="text-3xl font-black text-white tracking-tight uppercase">Chatbot Hub</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight uppercase">Chatbot Hub</h1>
             <Sparkles className="w-5 h-5 text-accent-purple animate-pulse" />
           </div>
           <p className="text-gray-400 text-sm max-w-xl">
@@ -221,7 +221,7 @@ export const ChatbotList = () => {
 
         {/* Result count */}
         {!loading && (
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
             {totalCount > 0
               ? `${totalCount} chatbot${totalCount !== 1 ? 's' : ''} found`
               : 'No results'}
@@ -282,14 +282,14 @@ export const ChatbotList = () => {
                             </h3>
                             <div className="flex items-center space-x-1.5 mt-0.5">
                               <Globe className="w-3 h-3 text-gray-500" />
-                              <span className="text-[10px] text-gray-500 uppercase font-semibold">
+                              <span className="text-xs text-gray-500 uppercase font-semibold">
                                 {bot.language}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <span className={clsx('px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5', getTypeBadgeStyles(bot.type))}>
+                        <span className={clsx('px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5', getTypeBadgeStyles(bot.type))}>
                           {getTypeIcon(bot.type)}
                           <span>{bot.type.replace('-', ' ')}</span>
                         </span>
@@ -302,18 +302,18 @@ export const ChatbotList = () => {
                       {/* Stats */}
                       <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/5 text-center">
                         <div className="bg-white/5 rounded-lg py-2 border border-white/5">
-                          <p className="text-white font-black text-sm">{bot.keywordCount ?? 0}</p>
-                          <p className="text-[9px] text-gray-500 uppercase font-bold mt-0.5 flex items-center justify-center gap-0.5">
+                          <p className="text-white font-bold text-sm">{bot.keywordCount ?? 0}</p>
+                          <p className="text-[11px] text-gray-500 uppercase font-bold mt-0.5 flex items-center justify-center gap-0.5">
                             <Zap className="w-2.5 h-2.5" /> Keywords
                           </p>
                         </div>
                         <div className="bg-white/5 rounded-lg py-2 border border-white/5">
-                          <p className="text-white font-black text-sm">{bot.templateCount ?? 0}</p>
-                          <p className="text-[9px] text-gray-500 uppercase font-bold mt-0.5">Templates</p>
+                          <p className="text-white font-bold text-sm">{bot.templateCount ?? 0}</p>
+                          <p className="text-[11px] text-gray-500 uppercase font-bold mt-0.5">Templates</p>
                         </div>
                         <div className="bg-white/5 rounded-lg py-2 border border-white/5">
-                          <p className="text-white font-black text-sm">{metric.count}</p>
-                          <p className="text-[9px] text-gray-500 uppercase font-bold mt-0.5">{metric.label}</p>
+                          <p className="text-white font-bold text-sm">{metric.count}</p>
+                          <p className="text-[11px] text-gray-500 uppercase font-bold mt-0.5">{metric.label}</p>
                         </div>
                       </div>
                     </div>

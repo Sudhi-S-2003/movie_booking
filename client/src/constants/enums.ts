@@ -1,7 +1,8 @@
 export const UserRole = {
-  USER: 'user',
+  SUPER_ADMIN: 'super_admin',
   ADMIN: 'admin',
-  THEATRE_OWNER: 'theatre_owner',
+  RESELLER: 'reseller',
+  USER: 'user',
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 

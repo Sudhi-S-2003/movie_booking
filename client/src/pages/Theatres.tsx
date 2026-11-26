@@ -47,7 +47,7 @@ export const Theatres = () => {
             selectedCity ? (
               <div className="flex items-center gap-3 bg-white/5 px-5 py-3 rounded-2xl border border-white/5 whitespace-nowrap">
                 <MapPin size={16} className="text-accent-pink" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-white">
+                <span className="text-xs font-bold uppercase tracking-wide text-white">
                   {selectedCity}
                 </span>
               </div>

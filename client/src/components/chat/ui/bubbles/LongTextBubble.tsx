@@ -157,7 +157,7 @@ export const LongTextBubble = memo(({
               type="button"
               onClick={() => void loadNext()}
               disabled={loading}
-              className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${
+              className={`text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${
                 isOwn
                   ? 'bg-white/[0.15] hover:bg-white/[0.22] text-white/90'
                   : 'bg-white/[0.06] hover:bg-white/[0.10] text-white/70'
@@ -173,7 +173,7 @@ export const LongTextBubble = memo(({
             <button
               type="button"
               onClick={reset}
-              className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${
+              className={`text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded-md transition-colors ${
                 isOwn
                   ? 'bg-white/[0.15] hover:bg-white/[0.22] text-white/90'
                   : 'bg-white/[0.06] hover:bg-white/[0.10] text-white/70'
@@ -183,7 +183,7 @@ export const LongTextBubble = memo(({
             </button>
           )}
           {loading && (
-            <span className={`text-[10px] ${isOwn ? 'text-white/70' : 'text-white/40'}`}>
+            <span className={`text-xs ${isOwn ? 'text-white/70' : 'text-white/40'}`}>
               fetching…
             </span>
           )}

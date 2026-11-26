@@ -7,10 +7,10 @@ interface SidebarGroupProps {
 
 export const SidebarGroup: React.FC<SidebarGroupProps> = ({ label, children }) => (
   <div>
-    <div className="px-4 mb-3">
-      <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">{label}</span>
+    <div className="px-3 mb-1.5">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
     </div>
-    <div className="space-y-1">
+    <div className="space-y-0.5">
       {children}
     </div>
   </div>

@@ -1,6 +1,6 @@
 import { BrowserRouter } from 'react-router-dom';
 import { BookingSessionProvider } from './providers/BookingSessionProvider.js';
-import { SubscriptionProvider } from './components/chat/hooks/useSubscription.js';
+import { BillingProvider } from './providers/BillingProvider.js';
 import { NotificationRoot } from './components/notifications/NotificationRoot.js';
 import { useRoleRedirect } from './hooks/useRoleRedirect.js';
 import { ScrollToTop } from './components/common/ScrollToTop.js';
@@ -20,12 +20,12 @@ const App = () => {
       <RoleRedirectHandler />
       <SEO />
       <NotificationRoot />
-      <SubscriptionProvider>
+      <BillingProvider>
         <BookingSessionProvider>
           <ToastContainer />
           <AppRoutes />
         </BookingSessionProvider>
-      </SubscriptionProvider>
+      </BillingProvider>
     </BrowserRouter>
   );
 };

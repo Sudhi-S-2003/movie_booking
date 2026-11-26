@@ -49,14 +49,14 @@ export const DateBubble = memo(({ msg, isOwn }: DateBubbleProps) => {
       <Calendar size={14} className="absolute top-3 right-3 opacity-30 flex-shrink-0" aria-hidden="true" />
       
       {/* Eyebrow */}
-      <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 mb-1">
+      <div className="text-[11px] font-bold uppercase tracking-wide text-white/50 mb-1">
         {weekday || 'Date'}
       </div>
       
       {/* FIX: Added responsive text sizes (text-xl on mobile, text-3xl on desktop).
          Added [overflow-wrap:anywhere] to prevent long months from breaking the bubble.
       */}
-      <div className="text-xl sm:text-2xl md:text-3xl font-black leading-tight tracking-tight break-words [overflow-wrap:anywhere]">
+      <div className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight tracking-tight break-words [overflow-wrap:anywhere]">
         {bigLine}
       </div>
 

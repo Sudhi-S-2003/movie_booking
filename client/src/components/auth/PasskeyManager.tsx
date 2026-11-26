@@ -41,7 +41,7 @@ export const PasskeyManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-5 mb-2">
         <div>
-          <h2 className="text-xl font-black text-white flex items-center gap-3">
+          <h2 className="text-xl font-bold text-white flex items-center gap-3">
             <Fingerprint size={24} className="text-accent-blue animate-pulse" />
             Biometric Passkeys
           </h2>
@@ -50,7 +50,7 @@ export const PasskeyManager: React.FC = () => {
 
         <button
           onClick={() => { clearMessages(); setPasskeyModalOpen(true); }}
-          className="p-3 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 text-accent-blue hover:bg-accent-blue hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95 text-[10px] font-black uppercase tracking-widest"
+          className="p-3 rounded-2xl bg-accent-blue/10 border border-accent-blue/20 text-accent-blue hover:bg-accent-blue hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95 text-xs font-bold uppercase tracking-wide"
         >
           <Plus size={14} /> Add Key
         </button>
@@ -74,7 +74,7 @@ export const PasskeyManager: React.FC = () => {
         <form onSubmit={handleAddPasskey} className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl space-y-4">
           <h3 className="text-sm font-bold text-white">Register a New Passkey</h3>
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Device Friendly Name</label>
+            <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Device Friendly Name</label>
             <input
               type="text"
               placeholder="e.g. My Touch ID MacBook"
@@ -88,14 +88,14 @@ export const PasskeyManager: React.FC = () => {
             <button
               type="button"
               onClick={() => { setPasskeyModalOpen(false); setNewPasskeyName(''); clearMessages(); }}
-              className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white transition-colors"
+              className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-bold uppercase tracking-wide text-white transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!newPasskeyName.trim() || loading}
-              className="flex-1 py-3 rounded-xl bg-accent-blue text-white hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 text-[10px] font-black uppercase tracking-widest transition-all"
+              className="flex-1 py-3 rounded-xl bg-accent-blue text-white hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 text-xs font-bold uppercase tracking-wide transition-all"
             >
               {loading ? 'Initializing...' : 'Add Key'}
             </button>
@@ -109,7 +109,7 @@ export const PasskeyManager: React.FC = () => {
         <div className="text-center py-10 bg-[#141416]/20 border border-white/5 rounded-3xl text-gray-500 text-xs space-y-2">
           <Key className="mx-auto text-gray-600" size={24} />
           <p>No passkeys registered on your profile yet.</p>
-          <p className="text-[10px] text-gray-600">Register your biometric keychain for password-free credentials.</p>
+          <p className="text-xs text-gray-600">Register your biometric keychain for password-free credentials.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -120,8 +120,8 @@ export const PasskeyManager: React.FC = () => {
                   <Fingerprint size={18} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-white uppercase tracking-wider">{pk.friendlyName}</h4>
-                  <p className="text-[10px] text-gray-500 mt-1">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">{pk.friendlyName}</h4>
+                  <p className="text-xs text-gray-500 mt-1">
                     Registered {new Date(pk.createdAt).toLocaleDateString()} &bull; {pk.deviceType === 'multiDevice' ? 'Keychain Synced' : 'Device Bound'}
                   </p>
                 </div>

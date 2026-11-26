@@ -48,7 +48,7 @@ export const NotificationRequest: React.FC<NotificationRequestProps> = ({ varian
   return (
     <button
       onClick={handleRequest}
-      className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+      className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold uppercase tracking-wide transition-all ${
         permissionStatus === 'granted'
           ? 'bg-green-500/10 text-green-500 border border-green-500/20 cursor-default'
           : 'bg-accent-blue/10 text-accent-blue border border-accent-blue/20 hover:bg-accent-blue/20'

@@ -67,7 +67,7 @@ export const JoinRequestsPage = () => {
       headerActions={
         <button
           onClick={() => navigate(backPath)}
-          className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 transition-all"
+          className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wide flex items-center gap-3 hover:bg-white/10 transition-all"
         >
           <ArrowLeft size={14} /> Back to Members
         </button>
@@ -90,10 +90,10 @@ export const JoinRequestsPage = () => {
                 <Inbox size={18} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
                   Pending
                 </p>
-                <p className="text-2xl font-black tracking-tight text-white">
+                <p className="text-2xl font-bold tracking-tight text-white">
                   {requests.pendingTotal}
                 </p>
               </div>
@@ -103,7 +103,7 @@ export const JoinRequestsPage = () => {
                 <button
                   key={s}
                   onClick={() => handleFilter(s)}
-                  className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border transition-all ${
+                  className={`px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wide border transition-all ${
                     requests.status === s
                       ? 'bg-accent-blue/15 border-accent-blue/30 text-accent-blue'
                       : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white'
@@ -128,7 +128,7 @@ export const JoinRequestsPage = () => {
           ) : requests.requests.length === 0 ? (
             <div className="p-20 text-center space-y-3">
               <Inbox size={40} className="mx-auto text-gray-800" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-700">
                 No {requests.status} requests
               </p>
             </div>
@@ -147,7 +147,7 @@ export const JoinRequestsPage = () => {
 
           {requests.pagination.totalPages > 1 && (
             <div className="flex items-center justify-between gap-4 px-10 py-6 border-t border-white/5 flex-wrap">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
                 Showing {requests.requests.length} of {requests.pagination.total}
               </p>
               <MembersPagination

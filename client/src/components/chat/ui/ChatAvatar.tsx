@@ -15,7 +15,7 @@ interface ChatAvatarProps {
 }
 
 const SIZE_MAP = {
-  sm: 'w-8 h-8 text-[10px]',
+  sm: 'w-8 h-8 text-xs',
   md: 'w-10 h-10 text-xs',
   lg: 'w-14 h-14 text-base',
 } as const;

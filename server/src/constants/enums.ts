@@ -1,13 +1,39 @@
+/**
+ * Platform roles (hierarchical, highest first).
+ *  - super_admin: the platform owner. Protected, unlimited wallet, every
+ *    permission (including ones added in future releases). Created only by
+ *    the startup bootstrap, never through the API.
+ *  - admin: platform staff with delegated management permissions.
+ *  - reseller: manages its own customers (and sub-resellers if permitted).
+ *  - user: an end customer.
+ */
 export const UserRole = {
-  USER: 'user',
+  SUPER_ADMIN: 'super_admin',
   ADMIN: 'admin',
-  THEATRE_OWNER: 'theatre_owner',
+  RESELLER: 'reseller',
+  USER: 'user',
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
+/** Roles that act on behalf of the platform (support staff, moderation). */
+export const STAFF_ROLES: ReadonlySet<string> = new Set([UserRole.SUPER_ADMIN, UserRole.ADMIN]);
+
+/** Roles that own a customer subtree. */
+export const RESELLER_ROLES: ReadonlySet<string> = new Set([UserRole.SUPER_ADMIN, UserRole.RESELLER]);
+
+export const UserStatus = {
+  ACTIVE: 'active',
+  SUSPENDED: 'suspended',
+  /** Soft-deleted: cannot log in, data retained for financial records. */
+  CLOSED: 'closed',
+} as const;
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
 
 export const AuthProvider = {
   LOCAL: 'local',
   GOOGLE: 'google',
+  /** Internal non-login account (system messages). */
+  SYSTEM: 'system',
 } as const;
 export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider];
 
@@ -83,10 +109,10 @@ export type NotificationType = (typeof NotificationType)[keyof typeof Notificati
 // This is NOT a real user — it's auto-created on first use (ensureSystemUser).
 
 export const SYSTEM_ACCOUNT = {
-  EMAIL:    'system@cinemaconnect.com',
-  USERNAME: 'cinemaconnect',
-  NAME:     'CinemaConnect',
-  ROLE:     UserRole.ADMIN,
+  EMAIL:    'system@platform.internal',
+  USERNAME: 'system',
+  NAME:     'Platform',
+  ROLE:     UserRole.USER,
 } as const;
 
 export const ApiServiceCategory = {

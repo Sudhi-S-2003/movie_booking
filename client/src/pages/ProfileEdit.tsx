@@ -20,7 +20,7 @@ const Field = ({
   children: React.ReactNode;
 }) => (
   <div>
-    <label className="block text-xs font-black uppercase tracking-[0.25em] text-gray-500 mb-2">
+    <label className="block text-xs font-bold uppercase tracking-[0.25em] text-gray-500 mb-2">
       {label}
       {hint && <span className="ml-2 text-gray-600 normal-case tracking-normal">— {hint}</span>}
     </label>
@@ -39,7 +39,7 @@ const Section = ({
 }) => (
   <section className="rounded-3xl bg-white/[0.02] border border-white/10 p-6 sm:p-8 backdrop-blur-sm">
     <div className="mb-6">
-      <h2 className="text-lg font-black text-white flex items-center gap-2">
+      <h2 className="text-lg font-bold text-white flex items-center gap-2">
         <Sparkles size={16} className="text-accent-pink" /> {title}
       </h2>
       {subtitle && <p className="mt-1 text-xs text-gray-500">{subtitle}</p>}
@@ -131,7 +131,7 @@ export const ProfileEdit = () => {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-accent-blue animate-pulse">
+        <p className="text-xs font-bold uppercase tracking-wider text-accent-blue animate-pulse">
           Loading…
         </p>
       </div>
@@ -144,7 +144,7 @@ export const ProfileEdit = () => {
         <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
           <AlertCircle size={28} />
         </div>
-        <h1 className="text-2xl font-black text-white">Not allowed</h1>
+        <h1 className="text-2xl font-bold text-white">Not allowed</h1>
         <p className="text-gray-500 text-sm">You can only edit your own profile.</p>
         <Link to={`/user/${handle}`} className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold text-white hover:bg-white/10">
           Back to profile
@@ -159,7 +159,7 @@ export const ProfileEdit = () => {
         <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
           <AlertCircle size={28} />
         </div>
-        <h1 className="text-2xl font-black text-white">Profile unavailable</h1>
+        <h1 className="text-2xl font-bold text-white">Profile unavailable</h1>
         <p className="text-gray-500 text-sm">{error ?? 'Try again later.'}</p>
       </div>
     );
@@ -177,7 +177,7 @@ export const ProfileEdit = () => {
           >
             <ArrowLeft size={16} /> Back
           </Link>
-          <h1 className="text-sm font-black uppercase tracking-[0.3em] text-white">
+          <h1 className="text-sm font-bold uppercase tracking-wider text-white">
             Edit profile
           </h1>
           <button
@@ -207,7 +207,7 @@ export const ProfileEdit = () => {
               {form.avatar ? (
                 <img src={form.avatar} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-tr from-accent-blue to-accent-purple flex items-center justify-center text-white text-3xl font-black">
+                <div className="w-full h-full bg-gradient-to-tr from-accent-blue to-accent-purple flex items-center justify-center text-white text-3xl font-bold">
                   {form.name[0] ?? '?'}
                 </div>
               )}

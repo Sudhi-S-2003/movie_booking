@@ -1,5 +1,7 @@
-import jwt from 'jsonwebtoken';
-import { env } from '../env.js';
+import mongoose from 'mongoose';
+import { randomInt as cryptoRandomInt } from 'node:crypto';
+import { hmacHex, safeEqual } from './signature.util.js';
+import { CaptchaChallenge } from '../models/captchaChallenge.model.js';
 import sharp from 'sharp';
 
 export interface CaptchaData {
@@ -20,7 +22,7 @@ const CAPTCHA_COLORS = ['#34d399', '#a78bfa', '#818cf8', '#fb7185', '#38bdf8']; 
 
 // Helpers for cleaner random number generation
 const randomFloat = (min: number, max: number) => Math.random() * (max - min) + min;
-const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+const randomInt = (min: number, max: number) => cryptoRandomInt(min, max + 1);
 
 /**
  * Generates a clean, modern, and readable captcha with character rotation
@@ -97,28 +99,38 @@ export const generateCaptcha = async ({
   return { text, captchaImage: base64Image };
 };
 
+const CAPTCHA_TTL_MS = 3 * 60 * 1000;
+
+const hashAnswer = (answer: string): string => hmacHex(`captcha:${answer.trim().toUpperCase()}`);
+
 /**
- * Signs a short-lived token (expires in 3 minutes) containing the captcha text.
- * Prevents reuse and keeps verification completely stateless.
+ * Persist a single-use challenge and return its opaque id (the "captcha token").
+ * The answer itself never leaves the server.
  */
-export const createCaptchaToken = (text: string): string => {
-  return jwt.sign(
-    { captchaText: text.toUpperCase() },
-    env.JWT_SECRET,
-    { expiresIn: '3m' }
-  );
+export const createCaptchaToken = async (text: string, ownerId?: string): Promise<string> => {
+  const doc = await CaptchaChallenge.create({
+    answerHash: hashAnswer(text),
+    expiresAt: new Date(Date.now() + CAPTCHA_TTL_MS),
+    ...(ownerId ? { ownerId } : {}),
+  });
+  return String(doc._id);
 };
 
 /**
- * Validates the user's captcha answer against the cryptographically signed token.
+ * Verify and consume a challenge. The challenge is deleted on the first
+ * attempt regardless of outcome, so each token gets exactly one guess.
  */
-export const verifyCaptcha = (userAnswer: string | undefined, token: string | undefined): boolean => {
-  if (!userAnswer || !token) return false;
-  try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { captchaText: string };
-    return decoded.captchaText === userAnswer.trim().toUpperCase();
-  } catch (error) {
-    // Fails validation if token has expired or is tampered with
-    return false;
-  }
+export const verifyCaptcha = async (
+  userAnswer: string | undefined,
+  token: string | undefined,
+  ownerId?: string,
+): Promise<boolean> => {
+  if (!userAnswer || !token || !mongoose.isValidObjectId(token)) return false;
+  const doc = await CaptchaChallenge.findOneAndDelete({
+    _id: token,
+    expiresAt: { $gt: new Date() },
+    ...(ownerId ? { ownerId } : {}),
+  });
+  if (!doc) return false;
+  return safeEqual(doc.answerHash, hashAnswer(String(userAnswer)));
 };

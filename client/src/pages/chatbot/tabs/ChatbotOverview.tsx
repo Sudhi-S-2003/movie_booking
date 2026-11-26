@@ -94,7 +94,7 @@ export const ChatbotOverview: React.FC = React.memo(() => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
               Chatbot Name *
             </label>
             <input
@@ -106,7 +106,7 @@ export const ChatbotOverview: React.FC = React.memo(() => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
               Language
             </label>
             <select
@@ -123,7 +123,7 @@ export const ChatbotOverview: React.FC = React.memo(() => {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
               Avatar URL
             </label>
             <input
@@ -135,7 +135,7 @@ export const ChatbotOverview: React.FC = React.memo(() => {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <label className="text-xs font-bold uppercase tracking-wide text-gray-400">
               Description
             </label>
             <textarea
@@ -179,7 +179,7 @@ export const ChatbotOverview: React.FC = React.memo(() => {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block">
+              <label className="text-xs font-bold uppercase tracking-wide text-gray-400 block">
                 Welcome Response Template
               </label>
               <AsyncSelect
@@ -190,13 +190,13 @@ export const ChatbotOverview: React.FC = React.memo(() => {
                 placeholder="(None - Disabled)"
                 className="w-full"
               />
-              <span className="text-[9px] text-gray-500 font-bold block mt-1 leading-normal uppercase">
+              <span className="text-[11px] text-gray-500 font-bold block mt-1 leading-normal uppercase">
                 Sent automatically when a user opens a new chat session.
               </span>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block">
+              <label className="text-xs font-bold uppercase tracking-wide text-gray-400 block">
                 Fallback Response Template
               </label>
               <AsyncSelect
@@ -207,7 +207,7 @@ export const ChatbotOverview: React.FC = React.memo(() => {
                 placeholder="(None - Disabled)"
                 className="w-full"
               />
-              <span className="text-[9px] text-gray-500 font-bold block mt-1 leading-normal uppercase">
+              <span className="text-[11px] text-gray-500 font-bold block mt-1 leading-normal uppercase">
                 Sent when keywords do not match and router falls back.
               </span>
             </div>

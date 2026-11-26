@@ -23,8 +23,8 @@ export const ReviewsPage: React.FC<{ type: 'Movie' | 'Theatre' }> = ({ type }) =
     : (target as any)?.name;
 
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.3em]">Downloading Intelligence...</div>;
-  if (!target) return <div className="min-h-screen flex items-center justify-center font-black">NODE NOT FOUND</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-bold animate-pulse uppercase tracking-wider">Downloading Intelligence...</div>;
+  if (!target) return <div className="min-h-screen flex items-center justify-center font-bold">NODE NOT FOUND</div>;
 
   const backdrop = (target as any).backdropUrl;
   const subtitle = type === 'Movie' 
@@ -52,7 +52,7 @@ export const ReviewsPage: React.FC<{ type: 'Movie' | 'Theatre' }> = ({ type }) =
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <Link 
               to={type === 'Movie' ? `/movie/${id}` : `/theatre/${id}`}
-              className="inline-flex items-center gap-2 text-accent-pink font-black text-xs uppercase tracking-widest mb-6 hover:translate-x-[-4px] transition-transform"
+              className="inline-flex items-center gap-2 text-accent-pink font-bold text-xs uppercase tracking-wide mb-6 hover:translate-x-[-4px] transition-transform"
             >
               <ChevronLeft size={16} /> Back to {type}
             </Link>
@@ -63,13 +63,13 @@ export const ReviewsPage: React.FC<{ type: 'Movie' | 'Theatre' }> = ({ type }) =
               className="space-y-4"
             >
               <div className="flex items-center gap-3">
-                <span className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                <span className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-wide text-gray-400">
                   {type === 'Movie' ? <Film size={12} className="inline mr-2" /> : <MapPin size={12} className="inline mr-2" />}
                   Archive Entry
                 </span>
               </div>
-              <h1 className="text-5xl sm:text-7xl font-black text-white tracking-tighter uppercase">{title}</h1>
-              <p className="text-accent-pink font-black uppercase tracking-[0.3em] text-[10px]">{subtitle}</p>
+              <h1 className="text-5xl sm:text-7xl font-bold text-white tracking-tighter uppercase">{title}</h1>
+              <p className="text-accent-pink font-bold uppercase tracking-wider text-xs">{subtitle}</p>
             </motion.div>
           </div>
         </div>

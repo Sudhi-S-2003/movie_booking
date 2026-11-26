@@ -14,11 +14,30 @@ import type {
 } from '../../types/api.js';
 import type { IssueStatus } from '../../types/models.js';
 
+// Guest tickets: the server returns a per-ticket token once at creation.
+// We keep `id -> token` locally and prove ownership with `x-guest-token`.
+const GUEST_TICKETS_KEY = 'guestTicketTokens';
+
+const readGuestTickets = (): Record<string, string> => {
+  try {
+    return JSON.parse(localStorage.getItem(GUEST_TICKETS_KEY) ?? '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
+
+export const rememberGuestTicket = (issueId: string, token: string) => {
+  try {
+    localStorage.setItem(GUEST_TICKETS_KEY, JSON.stringify({ ...readGuestTickets(), [issueId]: token }));
+  } catch {
+    /* storage unavailable (private mode): ticket stays reachable via email follow-up */
+  }
+};
+
 const guestHeaders = (issueId: string): Record<string, string> | undefined => {
   if (typeof localStorage === 'undefined') return undefined;
-  const key = `guest_session_${issueId}`;
-  if (!localStorage.getItem(key)) return undefined;
-  return { 'x-guest-session-id': issueId };
+  const token = readGuestTickets()[issueId];
+  return token ? { 'x-guest-token': token } : undefined;
 };
 
 export const supportApi = {
@@ -27,8 +46,8 @@ export const supportApi = {
   listMine: (params?: IssuesListQuery) => {
     const merged: Record<string, unknown> = { ...(params ?? {}) };
     if (typeof localStorage !== 'undefined') {
-      const guestIds = localStorage.getItem('myGuestTickets');
-      if (guestIds) merged.guestIssueIds = guestIds;
+      const pairs = Object.entries(readGuestTickets()).map(([id, token]) => `${id}:${token}`);
+      if (pairs.length) merged.guestTickets = pairs.join(',');
     }
     return http.get<IssuesListResponse>('/issues/my', { params: merged });
   },

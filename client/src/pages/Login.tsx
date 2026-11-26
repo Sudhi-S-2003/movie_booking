@@ -140,7 +140,7 @@ export const Login = () => {
           />
 
           <div className="flex justify-end">
-            <Link to="/forgot-password" className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-accent-pink transition-colors">
+            <Link to="/forgot-password" className="text-xs font-bold uppercase tracking-wide text-gray-500 hover:text-accent-pink transition-colors">
               Forgot Password?
             </Link>
           </div>
@@ -151,7 +151,7 @@ export const Login = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4"
             >
-              <p className="text-red-400 text-[10px] font-black uppercase tracking-widest text-center animate-shake">
+              <p className="text-red-400 text-xs font-bold uppercase tracking-wide text-center animate-shake">
                 {error}
               </p>
             </motion.div>
@@ -160,7 +160,7 @@ export const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4.5 rounded-[20px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-2xl relative overflow-hidden group/btn ${
+            className={`w-full py-4.5 rounded-[20px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-3 shadow-2xl relative overflow-hidden group/btn ${
               loading 
                 ? 'bg-white/5 text-gray-500 cursor-not-allowed' 
                 : 'bg-gradient-to-r from-accent-blue via-accent-purple to-accent-pink text-white hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(31,182,255,0.3)] active:scale-[0.98]'
@@ -175,7 +175,7 @@ export const Login = () => {
             type="button"
             onClick={handlePasskeyLogin}
             disabled={loading}
-            className="w-full py-4 rounded-[20px] bg-[#141416]/50 border border-white/5 text-accent-blue hover:bg-accent-blue hover:text-white hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-[20px] bg-[#141416]/50 border border-white/5 text-accent-blue hover:bg-accent-blue hover:text-white hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 text-xs font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2"
           >
             <Fingerprint size={16} /> Sign In with Passkey
           </button>
@@ -187,10 +187,10 @@ export const Login = () => {
               to="/register"
               className="group inline-flex flex-col items-center gap-2"
             >
-              <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+              <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
                 New to the platform?
               </span>
-              <span className="text-sm font-black text-white uppercase tracking-tighter group-hover:text-accent-pink transition-colors border-b-2 border-accent-blue/30 group-hover:border-accent-pink pb-1">
+              <span className="text-sm font-bold text-white uppercase tracking-tighter group-hover:text-accent-pink transition-colors border-b-2 border-accent-blue/30 group-hover:border-accent-pink pb-1">
                 Create Free Account
               </span>
             </Link>

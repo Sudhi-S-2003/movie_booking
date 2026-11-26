@@ -56,8 +56,8 @@ export const MovieDetails = () => {
   };
 
 
-  if (movieLoading) return <div className="min-h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.5em] text-gray-500">Initializing Cinema Experience...</div>;
-  if (!movie) return <div className="min-h-screen flex items-center justify-center font-black">MOVIE NOT FOUND</div>;
+  if (movieLoading) return <div className="min-h-screen flex items-center justify-center font-bold animate-pulse uppercase tracking-wider text-gray-500">Initializing Cinema Experience...</div>;
+  if (!movie) return <div className="min-h-screen flex items-center justify-center font-bold">MOVIE NOT FOUND</div>;
 
   return (
     <div className="pb-32">
@@ -110,11 +110,11 @@ export const MovieDetails = () => {
               <motion.h1 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-6xl sm:text-8xl font-black tracking-tighter text-white leading-tight drop-shadow-2xl"
+                className="text-6xl sm:text-8xl font-bold tracking-tighter text-white leading-tight drop-shadow-2xl"
               >
                 {movie.title}
               </motion.h1>
-              <div className="flex flex-wrap items-center gap-4 text-xs font-black">
+              <div className="flex flex-wrap items-center gap-4 text-xs font-bold">
                 {movie.showStatus === 'upcoming' ? (
                   <span className="flex items-center gap-1.5 text-accent-blue bg-accent-blue/10 px-4 py-2 rounded-2xl border border-accent-blue/20">
                     <ThumbsUp size={14} fill="currentColor" /> {formatCountCompact(movie.interestedUsers?.length ?? 0)} interested
@@ -139,7 +139,7 @@ export const MovieDetails = () => {
                 <button 
                   onClick={handleToggleInterest}
                   disabled={isTogglingInterest}
-                  className={`flex-1 sm:flex-none px-12 py-5 rounded-[24px] font-black transition-all shadow-2xl flex items-center gap-3 ${isInterested ? 'bg-white/20 text-white' : 'bg-accent-blue text-white shadow-accent-blue/30'}`}
+                  className={`flex-1 sm:flex-none px-12 py-5 rounded-[24px] font-bold transition-all shadow-2xl flex items-center gap-3 ${isInterested ? 'bg-white/20 text-white' : 'bg-accent-blue text-white shadow-accent-blue/30'}`}
                 >
                   <ThumbsUp size={20} fill={isInterested ? 'currentColor' : 'none'} className={isTogglingInterest ? 'animate-bounce' : ''} /> 
                   {isInterested ? 'Interested' : 'I\'m Interested'}
@@ -147,7 +147,7 @@ export const MovieDetails = () => {
               ) : (
                 <button 
                   onClick={() => document.getElementById('showtimes-section')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="flex-1 sm:flex-none px-12 py-5 bg-accent-pink text-white rounded-[24px] font-black hover:scale-105 transition-all shadow-[0_20px_50px_rgba(255,51,102,0.3)]"
+                  className="flex-1 sm:flex-none px-12 py-5 bg-accent-pink text-white rounded-[24px] font-bold hover:scale-105 transition-all shadow-[0_20px_50px_rgba(255,51,102,0.3)]"
                 >
                   Book Tickets Now
                 </button>
@@ -165,7 +165,7 @@ export const MovieDetails = () => {
 
             {}
             <div className="pt-8 border-t border-white/5">
-                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Cast</h3>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Cast</h3>
                 <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
                     {movie.cast?.map((member: any, i: number) => (
                         <div key={i} className="flex-shrink-0 flex items-center gap-3 bg-white/[0.02] border border-white/5 px-4 py-2.5 rounded-2xl">
@@ -173,12 +173,12 @@ export const MovieDetails = () => {
                                 {member.profileUrl ? (
                                     <img src={member.profileUrl} className="w-full h-full object-cover" alt={member.name} />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-500">{member.name[0]}</div>
+                                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">{member.name[0]}</div>
                                 )}
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-white whitespace-nowrap">{member.name}</p>
-                                <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{member.role}</p>
+                                <p className="text-xs font-bold text-white whitespace-nowrap">{member.name}</p>
+                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">{member.role}</p>
                             </div>
                         </div>
                     ))}
@@ -193,10 +193,10 @@ export const MovieDetails = () => {
           {}
           <div className="lg:col-span-8 space-y-8">
               <div className="flex items-center justify-between">
-                <h3 className="text-3xl font-black uppercase tracking-tighter">Official <span className="text-accent-pink">Trailer</span></h3>
+                <h3 className="text-3xl font-bold uppercase tracking-tighter">Official <span className="text-accent-pink">Trailer</span></h3>
                 <div className="flex gap-2">
                     {(movie.technicalSpecs?.length ? movie.technicalSpecs : ['4K ULTRA HD', 'IMAX']).map((spec, i) => (
-                        <span key={i} className="text-[10px] font-black text-gray-500 uppercase tracking-widest bg-white/5 px-4 py-1.5 rounded-full border border-white/5">{spec}</span>
+                        <span key={i} className="text-xs font-bold text-gray-500 uppercase tracking-wide bg-white/5 px-4 py-1.5 rounded-full border border-white/5">{spec}</span>
                     ))}
                 </div>
               </div>
@@ -220,13 +220,13 @@ export const MovieDetails = () => {
           <div className="lg:col-span-4 space-y-10">
               <div className="bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-[50px] p-10 space-y-8">
                   <div>
-                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Crew</h4>
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Crew</h4>
                     <div className="space-y-6">
                         {movie.crew?.map((member: any, i: number) => (
                             <div key={i} className="flex items-center justify-between group">
                                 <div>
-                                    <p className="text-sm font-black text-white group-hover:text-accent-blue transition-colors">{member.name}</p>
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{member.job}</p>
+                                    <p className="text-sm font-bold text-white group-hover:text-accent-blue transition-colors">{member.name}</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{member.job}</p>
                                 </div>
                                 <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-gray-500 group-hover:bg-accent-blue/10 group-hover:text-accent-blue transition-all">
                                     <ShieldCheck size={16} />
@@ -237,15 +237,15 @@ export const MovieDetails = () => {
                   </div>
 
                   <div className="pt-8 border-t border-white/5">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Technical Specs</h4>
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Technical Specs</h4>
                       <div className="grid grid-cols-2 gap-4">
                           <div className="bg-black/30 p-4 rounded-3xl border border-white/5">
-                              <p className="text-[8px] font-bold text-gray-500 uppercase mb-1">Visuals</p>
-                              <p className="text-xs font-black text-white">{movie.technicalSpecs?.[0] || 'IMAX LASER'}</p>
+                              <p className="text-[11px] font-bold text-gray-500 uppercase mb-1">Visuals</p>
+                              <p className="text-xs font-bold text-white">{movie.technicalSpecs?.[0] || 'IMAX LASER'}</p>
                           </div>
                           <div className="bg-black/30 p-4 rounded-3xl border border-white/5">
-                              <p className="text-[8px] font-bold text-gray-500 uppercase mb-1">Audio</p>
-                              <p className="text-xs font-black text-white">{movie.technicalSpecs?.[1] || 'DOLBY ATMOS'}</p>
+                              <p className="text-[11px] font-bold text-gray-500 uppercase mb-1">Audio</p>
+                              <p className="text-xs font-bold text-white">{movie.technicalSpecs?.[1] || 'DOLBY ATMOS'}</p>
                           </div>
                       </div>
                   </div>
@@ -254,7 +254,7 @@ export const MovieDetails = () => {
               {}
               <div className="bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-[50px] p-10 space-y-8">
                   <div className="flex items-center justify-between">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Tags</h4>
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Tags</h4>
                       <Hash size={18} className="text-accent-pink" />
                   </div>
                   <TagCloud tags={movie.tags || []} variant="pink" />
@@ -268,13 +268,13 @@ export const MovieDetails = () => {
           <div className="flex items-center gap-10">
             <button 
               onClick={() => setActiveTab('SHOWTIMES')}
-              className={`text-2xl font-black pb-3 transition-colors ${activeTab === 'SHOWTIMES' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
+              className={`text-2xl font-bold pb-3 transition-colors ${activeTab === 'SHOWTIMES' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
             >
               Available Showtimes
             </button>
             <button 
               onClick={() => setActiveTab('REVIEWS')}
-              className={`text-2xl font-black pb-3 transition-colors ${activeTab === 'REVIEWS' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
+              className={`text-2xl font-bold pb-3 transition-colors ${activeTab === 'REVIEWS' ? 'text-white border-b-4 border-accent-pink' : 'text-gray-500 hover:text-white'}`}
             >
               Reviews
             </button>
@@ -283,7 +283,7 @@ export const MovieDetails = () => {
           {activeTab === 'REVIEWS' && (
             <Link 
               to={`/movie/${id}/reviews`}
-              className="text-[10px] font-black text-accent-pink uppercase tracking-widest bg-accent-pink/10 px-6 py-2.5 rounded-xl border border-accent-pink/20 hover:bg-accent-pink/20 transition-all"
+              className="text-xs font-bold text-accent-pink uppercase tracking-wide bg-accent-pink/10 px-6 py-2.5 rounded-xl border border-accent-pink/20 hover:bg-accent-pink/20 transition-all"
             >
               View All Reviews
             </Link>
@@ -328,7 +328,7 @@ export const MovieDetails = () => {
                 ))
               ) : (
                 <div className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10">
-                  <p className="text-gray-500 font-black text-xl italic opacity-50">No showtimes found for this movie in your city.</p>
+                  <p className="text-gray-500 font-bold text-xl italic opacity-50">No showtimes found for this movie in your city.</p>
                 </div>
               )}
               

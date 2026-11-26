@@ -46,22 +46,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     >
       {}
       <div
-        className={`flex items-start justify-between gap-4 ${
+        className={`flex flex-wrap items-start justify-between gap-x-4 gap-y-3 ${
           isContained ? 'flex-shrink-0 mb-5' : ''
         }`}
       >
-        <div>
-          <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex flex-wrap items-center gap-x-2.5 gap-y-1 text-white">
             {icon}
             {renderedTitle}
             {badge && (
-              <span className="text-[9px] font-bold text-accent-pink tracking-widest px-2.5 py-0.5 bg-accent-pink/10 rounded-full">
+              <span className="text-[11px] font-semibold text-accent-pink px-2.5 py-0.5 bg-accent-pink/10 rounded-full">
                 {badge}
               </span>
             )}
-          </h2>
+          </h1>
           {subtitle && (
-            <p className="text-gray-500 text-xs mt-1.5 font-medium">{subtitle}</p>
+            <p className="text-slate-400 text-sm mt-1 max-w-2xl">{subtitle}</p>
           )}
         </div>
         {headerActions && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}

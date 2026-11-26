@@ -143,7 +143,7 @@ export const TwoFactorSetup: React.FC = () => {
             <Shield size={24} />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white">Two-Factor Authentication</h1>
+            <h1 className="text-xl font-bold text-white">Two-Factor Authentication</h1>
             <p className="text-xs text-gray-400 mt-0.5">Protect your account using TOTP authentication</p>
           </div>
         </div>
@@ -249,12 +249,12 @@ export const TwoFactorSetup: React.FC = () => {
                       Generating...
                     </div>
                   )}
-                  <p className="text-gray-500 text-[10px] uppercase font-bold mt-4 tracking-wider">Scan this QR Code</p>
+                  <p className="text-gray-500 text-xs uppercase font-bold mt-4 tracking-wider">Scan this QR Code</p>
                 </div>
 
                 <div className="p-4 bg-[#141416]/30 border border-white/5 rounded-2xl flex items-center justify-between">
                   <div className="overflow-hidden mr-2">
-                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider">Manual Setup Key</p>
+                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Manual Setup Key</p>
                     <p className="text-xs font-mono text-white select-all break-all mt-1">{secret || 'Loading...'}</p>
                   </div>
                   <button
@@ -267,7 +267,7 @@ export const TwoFactorSetup: React.FC = () => {
                 </div>
 
                 <div className="space-y-4 pt-2">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 text-center">Verify Verification Code</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 text-center">Verify Verification Code</h3>
                   <TwoFactorInput value={code} onChange={setCode} disabled={loading} />
                 </div>
 

@@ -57,7 +57,7 @@ export const ReplyComposer = forwardRef<ReplyComposerHandle>((_props, ref) => {
       <div className="border-t border-white/[0.06] bg-[#080809] p-3 flex-shrink-0">
         <div className="flex items-center justify-center py-2 gap-2">
           <CheckCircle2 size={12} className="text-white/15" />
-          <p className="text-[8px] font-bold uppercase tracking-wider text-white/15">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-white/15">
             This ticket is closed
           </p>
         </div>
@@ -99,7 +99,7 @@ export const ReplyComposer = forwardRef<ReplyComposerHandle>((_props, ref) => {
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 outline-none focus:border-violet-500/40 focus:bg-white/[0.06] transition-all text-xs text-white placeholder:text-white/15 resize-none leading-relaxed overflow-hidden custom-scrollbar"
               style={{ minHeight: 40 }}
             />
-            <span className="absolute bottom-2.5 right-3 text-[7px] text-white/15 font-medium pointer-events-none hidden sm:block">
+            <span className="absolute bottom-2.5 right-3 text-[11px] text-white/15 font-medium pointer-events-none hidden sm:block">
               ↵ send · ⇧↵ newline
             </span>
           </div>
@@ -119,7 +119,7 @@ ReplyComposer.displayName = 'ReplyComposer';
 
 const SocialTagBar: React.FC<{ onAdd: (platform: string) => void }> = ({ onAdd }) => (
   <div className="flex items-center gap-1.5 pl-0.5 overflow-x-auto no-scrollbar">
-    <span className="text-[7px] font-bold text-white/15 uppercase tracking-wider mr-0.5 flex-shrink-0">
+    <span className="text-[11px] font-bold text-white/15 uppercase tracking-wider mr-0.5 flex-shrink-0">
       Quick:
     </span>
     {getAvailablePlatforms().map((p) => {

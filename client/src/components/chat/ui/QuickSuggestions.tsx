@@ -61,7 +61,7 @@ export const QuickSuggestions = memo(({ onSelect, onClose }: QuickSuggestionsPro
         "
       >
         <div className="px-3 py-2 border-b border-white/[0.06] mb-1">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+          <span className="text-xs font-bold uppercase tracking-wide text-white/30">
             Quick Suggestions
           </span>
         </div>
@@ -89,7 +89,7 @@ export const QuickSuggestions = memo(({ onSelect, onClose }: QuickSuggestionsPro
                 </div>
                 <div className="flex-1">
                   <span className="font-semibold block">{meta.displayName}</span>
-                  <span className="text-[10px] text-white/20 group-hover:text-white/40 transition-colors">
+                  <span className="text-xs text-white/20 group-hover:text-white/40 transition-colors">
                     Click to insert @{p}:
                   </span>
                 </div>

@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { Conversation } from "../models/chat.model.js";
 import { verifyConversationSignature, verifyApiServiceSignature } from "../utils/signature.util.js";
 import type { AuthUser } from "../interfaces/auth.interface.js";
+import type { ApiKeyCategory } from "../models/apiKey.model.js";
 
 
 export const isAuthenticatedApiKey = async (
@@ -12,8 +13,13 @@ export const isAuthenticatedApiKey = async (
     next: NextFunction,
 ) => {
 
-    const apiKey = (req.headers['x-api-key'] || req.body?.apiKey) as string;
-    const apiSecret = (req.headers['x-api-secret'] || req.body?.apiSecret) as string;
+    // Credentials are accepted from headers only (never the body or URL), so
+    // they don't end up in logs, caches or browser history.
+    const apiKey = req.headers['x-api-key'];
+    const apiSecret = req.headers['x-api-secret'];
+    if (typeof apiKey !== 'string' || typeof apiSecret !== 'string' || !apiKey || !apiSecret) {
+        return res.status(401).json({ success: false, message: 'Missing API key or secret' });
+    }
 
 
     const isKeyValid = await verifyKey(apiKey, apiSecret);
@@ -93,14 +99,15 @@ export const isApiServiceSignatureValid = async (
             return res.status(401).json({ success: false, message: 'Signature parameters missing' });
         }
 
-        const isValid = verifyApiServiceSignature(id as string, String(category), String(signature), Number(expiresAt));
+        const scope = req.query.scope === 'read' ? 'read' : 'write';
+        const isValid = verifyApiServiceSignature(id, String(category), String(signature), Number(expiresAt), scope);
         if (!isValid) {
             return res.status(401).json({ success: false, message: 'Invalid or expired signature' });
         }
 
-        // Attach the validated ID and category to the request for downstream controllers.
         req.apiServiceId = id;
-        req.apiServiceCategory = category as any; // Cast to bypass string mismatch
+        req.apiServiceCategory = category as ApiKeyCategory;
+        req.signedScope = scope;
         
         next();
     } catch (e) {

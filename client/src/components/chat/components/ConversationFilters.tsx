@@ -100,7 +100,7 @@ export const ConversationFilters: React.FC<ConversationFiltersProps> = memo(({
         <button
           type="button"
           onClick={() => onChangeSortOrder(value.sortOrder === 'desc' ? 'asc' : 'desc')}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border bg-white/[0.02] border-white/[0.06] text-white/60 hover:text-white hover:border-white/[0.12] text-[10px] font-semibold uppercase tracking-wide transition-colors"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border bg-white/[0.02] border-white/[0.06] text-white/60 hover:text-white hover:border-white/[0.12] text-xs font-semibold uppercase tracking-wide transition-colors"
           title={getSortOrderLabel(value.sortBy, value.sortOrder)}
           aria-label={`Sort order: ${getSortOrderLabel(value.sortBy, value.sortOrder)}`}
         >
@@ -115,7 +115,7 @@ export const ConversationFilters: React.FC<ConversationFiltersProps> = memo(({
           type="button"
           onClick={() => onToggleUnread(!value.unreadOnly)}
           className={[
-            'inline-flex items-center px-2.5 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-colors',
+            'inline-flex items-center px-2.5 py-1.5 rounded-lg border text-xs font-semibold uppercase tracking-wide transition-colors',
             value.unreadOnly
               ? 'bg-emerald-400/15 border-emerald-400/40 text-emerald-300'
               : 'bg-white/[0.02] border-white/[0.06] text-white/60 hover:text-white hover:border-white/[0.12]',
@@ -129,7 +129,7 @@ export const ConversationFilters: React.FC<ConversationFiltersProps> = memo(({
           <button
             type="button"
             onClick={onReset}
-            className="ml-auto text-[10px] text-white/40 hover:text-white/80 transition-colors px-2 py-1"
+            className="ml-auto text-xs text-white/40 hover:text-white/80 transition-colors px-2 py-1"
           >
             Reset
           </button>
@@ -164,7 +164,7 @@ interface FilterSelectProps {
 const FilterSelect: React.FC<FilterSelectProps> = ({ label, value, onChange, options, active }) => (
   <label
     className={[
-      'inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-1.5 rounded-lg border text-[10px] font-semibold uppercase tracking-wide transition-colors cursor-pointer relative',
+      'inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-1.5 rounded-lg border text-xs font-semibold uppercase tracking-wide transition-colors cursor-pointer relative',
       active
         ? 'bg-accent-blue/15 border-accent-blue/40 text-accent-blue'
         : 'bg-white/[0.02] border-white/[0.06] text-white/60 hover:text-white hover:border-white/[0.12]',
@@ -174,7 +174,7 @@ const FilterSelect: React.FC<FilterSelectProps> = ({ label, value, onChange, opt
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="bg-transparent outline-none appearance-none pr-4 cursor-pointer text-[10px] font-semibold uppercase tracking-wide"
+      className="bg-transparent outline-none appearance-none pr-4 cursor-pointer text-xs font-semibold uppercase tracking-wide"
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value} className="bg-[#0c0c0f] text-white normal-case">

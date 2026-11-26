@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { User } from '../../models/user.model.js';
-import { UserRole, AuthProvider } from '../../constants/enums.js';
+import mongoose from 'mongoose';
+import { UserRole, UserStatus, AuthProvider } from '../../constants/enums.js';
 import { Session } from '../../models/session.model.js';
 import { generateUsernameSuggestions } from '../../utils/username.utils.js';
-import { getOrCreateForUser as ensureSubscription } from '../subscription/subscription.service.js';
 
 import { generateTotpSecret, verifyTotpToken, generateBackupCodes, hashBackupCodes, verifyAndConsumeBackupCode } from '../../utils/totp.utils.js';
 import { generateRandomToken } from '../../utils/token.utils.js';
@@ -21,21 +21,45 @@ export const generateUsernameOpts = async (username: string) => {
   return generateUsernameSuggestions(username);
 };
 
-export const createUser = async (userData: any) => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(userData.password, salt);
+export interface CreateUserInput {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  /** Optional reseller signup code — attaches the new account to that reseller. */
+  resellerCode?: string | undefined;
+}
 
-  const user = await User.create({
-    name: userData.name,
-    username: userData.username,
-    email: userData.email,
+/**
+ * Self-registration. Always creates a plain `user`; the role is never taken
+ * from input. A valid reseller code places the account under that reseller.
+ */
+export const createUser = async (input: CreateUserInput) => {
+  let parentId: mongoose.Types.ObjectId | null = null;
+  let ancestors: mongoose.Types.ObjectId[] = [];
+  if (input.resellerCode) {
+    const reseller = await User.findOne({
+      resellerCode: input.resellerCode.trim().toLowerCase(),
+      role: { $in: [UserRole.RESELLER, UserRole.SUPER_ADMIN] },
+      status: UserStatus.ACTIVE,
+    }).select('_id ancestors');
+    if (!reseller) throw new Error('Invalid reseller code');
+    parentId = reseller._id as mongoose.Types.ObjectId;
+    ancestors = [...(reseller.ancestors as mongoose.Types.ObjectId[]), parentId];
+  }
+
+  const hashedPassword = await bcrypt.hash(input.password, 12);
+  return User.create({
+    name: input.name,
+    username: input.username,
+    email: input.email,
     password: hashedPassword,
-    role: userData.role || UserRole.USER,
+    role: UserRole.USER,
+    status: UserStatus.ACTIVE,
+    parentId,
+    ancestors,
     authProvider: AuthProvider.LOCAL,
   });
-
-  await ensureSubscription(user._id.toString()).catch(() => { /* non-fatal */ });
-  return user;
 };
 
 export const createSession = async (userId: any, userAgent: string, ip: string) => {
@@ -87,6 +111,7 @@ export const refreshSessionToken = async (refreshToken: string) => {
   if (!session) return null;
 
   const user = await User.findById(session.userId);
+  if (user && user.status !== UserStatus.ACTIVE) return null;
   if (!user) return null;
 
   const newRefreshToken = generateRandomToken();

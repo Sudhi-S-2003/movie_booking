@@ -98,7 +98,7 @@ const PublicTicket = () => {
         <div className="flex justify-between items-end mb-8 px-2">
           <div>
             <p className="text-blue-500 font-bold tracking-tighter text-sm uppercase">Booking Confirmed</p>
-            <h1 className="text-3xl font-black text-white flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
               My Ticket
             </h1>
           </div>
@@ -134,7 +134,7 @@ const PublicTicket = () => {
                 </div>
               </div>
               <div className="flex flex-col justify-center">
-                <h2 className="text-2xl font-black text-white mb-2 leading-tight">{movieId.title}</h2>
+                <h2 className="text-2xl font-bold text-white mb-2 leading-tight">{movieId.title}</h2>
                 <div className="flex flex-wrap gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
                   <span className="px-2 py-1 bg-slate-800 rounded-md border border-slate-700">{movieId.rating || 'PG-13'}</span>
                   <span className="px-2 py-1 bg-slate-800 rounded-md border border-slate-700">{movieId.duration} MIN</span>
@@ -154,7 +154,7 @@ const PublicTicket = () => {
               <div className="col-span-2 flex items-start gap-3">
                 <MapPin className="text-blue-500 shrink-0 mt-1" size={20} />
                 <div>
-                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Venue</p>
+                  <p className="text-slate-500 text-xs font-bold uppercase tracking-wide mb-1">Venue</p>
                   <p className="text-white font-bold text-lg leading-tight">{theatreId.name}</p>
                   <p className="text-slate-400 text-sm">{screenId.name}</p>
                 </div>
@@ -163,7 +163,7 @@ const PublicTicket = () => {
               <div className="flex items-start gap-3">
                 <Calendar className="text-blue-500 shrink-0 mt-1" size={20} />
                 <div>
-                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Date</p>
+                  <p className="text-slate-500 text-xs font-bold uppercase tracking-wide mb-1">Date</p>
                   <p className="text-white font-bold text-base">{new Date(startTime).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                 </div>
               </div>
@@ -171,7 +171,7 @@ const PublicTicket = () => {
               <div className="flex items-start gap-3">
                 <Clock className="text-blue-500 shrink-0 mt-1" size={20} />
                 <div>
-                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Showtime</p>
+                  <p className="text-slate-500 text-xs font-bold uppercase tracking-wide mb-1">Showtime</p>
                   <p className="text-white font-bold text-base">{new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
               </div>
@@ -180,11 +180,11 @@ const PublicTicket = () => {
             {/* Seat Badge */}
             <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 p-6 rounded-[2rem] flex justify-between items-center border border-blue-500/20 mb-10">
               <div>
-                <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Seat Number</p>
-                <p className="text-4xl font-black text-white">{seatId}</p>
+                <p className="text-blue-400 text-xs font-bold uppercase tracking-wide mb-1">Seat Number</p>
+                <p className="text-4xl font-bold text-white">{seatId}</p>
               </div>
               <div className="text-right">
-                <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Ticket Price</p>
+                <p className="text-blue-400 text-xs font-bold uppercase tracking-wide mb-1">Ticket Price</p>
                 <p className="text-2xl font-bold text-white">₹{booking.price}</p>
               </div>
             </div>
@@ -200,22 +200,22 @@ const PublicTicket = () => {
                 />
               </div>
               <div className="mt-6 flex flex-col items-center gap-1">
-                <p className="text-slate-300 font-bold text-xs uppercase tracking-[0.3em]">SCAN TO VERIFY</p>
-                <p className="text-slate-500 text-[10px] uppercase tracking-widest italic">Digital Access Token</p>
+                <p className="text-slate-300 font-bold text-xs uppercase tracking-wider">SCAN TO VERIFY</p>
+                <p className="text-slate-500 text-xs uppercase tracking-wide italic">Digital Access Token</p>
               </div>
             </div>
           </div>
           
           {/* Bottom Bar */}
           <div className="bg-slate-800/30 py-4 px-10 text-center border-t border-slate-700/50">
-             <p className="text-slate-600 text-[10px] font-medium tracking-widest uppercase">
+             <p className="text-slate-600 text-xs font-medium tracking-wide uppercase">
                 Valid for single entry only • Non-transferable
              </p>
           </div>
         </div>
 
         <div className="mt-8 flex flex-col items-center gap-4">
-            <p className="text-slate-700 text-[10px] font-mono tracking-widest bg-slate-900/50 px-4 py-2 rounded-full border border-slate-800/50">
+            <p className="text-slate-700 text-xs font-mono tracking-wide bg-slate-900/50 px-4 py-2 rounded-full border border-slate-800/50">
               TX_ID: {id}
             </p>
             <p className="text-slate-600 text-xs italic">

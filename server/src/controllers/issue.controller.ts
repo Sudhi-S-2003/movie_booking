@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Issue, IssueMessage, IssueReadCursor } from '../models/issue.model.js';
+import { canAccessIssue, isSupportStaff, issueGuestToken, verifiedGuestIssueIds } from '../modules/support/issueAccess.js';
 import {
   getSupportMessagesNamespace,
   getSupportListNamespace,
@@ -76,7 +77,7 @@ export const createIssue = async (req: Request, res: Response) => {
 
     if (user) {
       issueData.userId = user.id;
-      issueData.role = user.role === 'theatre_owner' ? 'TheatreOwner' : 'User';
+      issueData.role = 'User';
       issueData.isGuest = false;
     } else if (guestInfo && guestInfo.name && guestInfo.email) {
       issueData.guestInfo = guestInfo;
@@ -87,7 +88,8 @@ export const createIssue = async (req: Request, res: Response) => {
     }
 
     const issue = await Issue.create(issueData);
-    res.status(201).json({ success: true, issue });
+    // Guests get a ticket token once; it is their only proof of ownership.
+    res.status(201).json({ success: true, issue, ...(issue.isGuest ? { guestToken: issueGuestToken(String(issue._id)) } : {}) });
   } catch (error: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(error) });
   }
@@ -99,7 +101,8 @@ export const getMyIssues = async (req: Request, res: Response) => {
     const { limit, skip } = pageParams;
 
     const user = (req as any).user;
-    const guestIssueIds = req.query.guestIssueIds ? (req.query.guestIssueIds as string).split(',') : [];
+    // Guests list only tickets whose tokens they hold ("id:token,...").
+    const guestIssueIds = verifiedGuestIssueIds(req.query.guestTickets);
 
     let query: any = {};
     if (user) {
@@ -178,6 +181,9 @@ export const getAllIssues = async (req: Request, res: Response) => {
 export const getIssueMessages = async (req: Request, res: Response) => {
   try {
     const issueId = req.params.id as string;
+    if (!mongoose.isValidObjectId(issueId)) return res.status(404).json({ success: false, message: 'Ticket not found' });
+    const ticket = await Issue.findById(issueId, { userId: 1, isGuest: 1 }).lean();
+    if (!ticket || !canAccessIssue(req, ticket)) return res.status(404).json({ success: false, message: 'Ticket not found' });
     const limit = Math.min(parseInt(req.query.limit as string) || 20, PAGINATION.MAX_LIMIT);
 
     const before = req.query.before as string | undefined;
@@ -223,11 +229,10 @@ export const addReply = async (req: Request, res: Response) => {
 
     // Validate access:
     const user = (req as any).user;
-    const guestSessionId = req.headers['x-guest-session-id'] as string; // Optional: verify guest session
 
     const isOwner = user && issue.userId?.toString() === user.id;
-    const isAdmin = user && user.role === 'admin';
-    const isGuestOwner = issue.isGuest && guestSessionId === issue._id.toString(); // Simple matching for now
+    const isAdmin = isSupportStaff(req);
+    const isGuestOwner = !user && canAccessIssue(req, issue);
 
     if (!isOwner && !isAdmin && !isGuestOwner) {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
@@ -237,7 +242,7 @@ export const addReply = async (req: Request, res: Response) => {
       issueId: id as string,
       senderId: user?.id,
       senderName: user ? user.name : issue.guestInfo?.name || 'Guest',
-      senderRole: isAdmin ? 'Admin' : (user ? (user.role === 'theatre_owner' ? 'TheatreOwner' : 'User') : 'Guest'),
+      senderRole: isAdmin ? 'Admin' : (user ? 'User' : 'Guest'),
       text,
     };
     if (replyTo?.messageId) {
@@ -333,6 +338,8 @@ export const markMessagesRead = async (req: Request, res: Response) => {
     const userId = req.user?.id;
 
     if (!userId) return res.status(401).json({ success: false, message: 'Auth required' });
+    const ticket = mongoose.isValidObjectId(id) ? await Issue.findById(id, { userId: 1, isGuest: 1 }).lean() : null;
+    if (!ticket || !canAccessIssue(req, ticket)) return res.status(404).json({ success: false, message: 'Ticket not found' });
     if (!Array.isArray(messageIds) || messageIds.length === 0) {
       return res.status(200).json({ success: true, updated: 0 });
     }
@@ -401,7 +408,7 @@ export const getUnreadCounts = async (req: Request, res: Response) => {
     if (!userId) return res.status(200).json({ success: true, counts: {}, lastReadMap: {} });
 
     const userObjId = new mongoose.Types.ObjectId(userId);
-    const isAdmin = (req as any).user?.role === 'admin';
+    const isAdmin = isSupportStaff(req);
     const issueFilter = isAdmin ? {} : { userId: userObjId };
     const issues = await Issue.find(issueFilter, { _id: 1 }).lean();
     const issueIds = issues.map((i: any) => i._id);
@@ -481,7 +488,8 @@ export const updateIssueStatus = async (req: Request, res: Response) => {
 
     // Authorization: Admin can change anything. User can only close/resolve their own if needed.
     // For now, let's allow admins full control, and users can only CLOSE their own.
-    const isAdmin = req.user!.role === 'admin';
+    if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required' });
+    const isAdmin = isSupportStaff(req);
     const isOwner = issue.userId?.toString() === req.user!.id;
 
     if (!isAdmin && (!isOwner || status !== 'CLOSED')) {

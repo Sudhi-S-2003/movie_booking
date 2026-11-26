@@ -3,10 +3,6 @@ import { Chat } from '../pages/Chat.js';
 import { ChatMembers } from '../pages/ChatMembers.js';
 import { ChatJoinRequests } from '../pages/ChatJoinRequests.js';
 import { ApiKeys } from '../pages/ApiKeys.js';
-import { ApiDocs } from '../pages/ApiDocs.js';
-import { CodeShareDocsPage } from '../pages/CodeShareDocsPage.js';
-import { CodeShareV2DocsPage } from '../pages/CodeShareV2DocsPage.js';
-import { ChatDocsPage } from '../pages/ChatDocsPage.js';
 import { Integrations } from '../pages/Integrations.js';
 import { ChatbotList } from '../pages/chatbot/ChatbotList.js';
 import { ChatbotCreate } from '../pages/chatbot/ChatbotCreate.js';
@@ -22,19 +18,37 @@ import { SecurityLayout } from '../components/layout/SecurityLayout.js';
 import { TwoFactorManager } from '../components/auth/TwoFactorManager.js';
 import { PasskeyManager } from '../components/auth/PasskeyManager.js';
 import SessionsPage from '../pages/dashboards/SessionsPage.js';
+import { ServicesPage } from '../features/services/ServicesPage.js';
+import { BillingPage } from '../features/billing/BillingPage.js';
+import { CustomersPage } from '../features/customers/CustomersPage.js';
+import { CustomerDetailPage } from '../features/customers/CustomerDetailPage.js';
+import { PricingPage } from '../features/pricing/PricingPage.js';
+import { PlatformOverviewPage } from '../features/admin/PlatformOverviewPage.js';
+import { ApplicationsPage } from '../features/admin/ApplicationsPage.js';
+import { AuditPage } from '../features/admin/AuditPage.js';
+import { AccountPage } from '../features/account/AccountPage.js';
+import { ApiDocsPage } from '../features/developer/ApiDocsPage.js';
 
 export const CommonDashboardRoutes = () => {
   return (
     <>
+      {/* Platform core — available in every dashboard area; the server enforces permissions. */}
+      <Route path="services" element={<ServicesPage />} />
+      <Route path="billing" element={<BillingPage />} />
+      <Route path="account" element={<AccountPage />} />
+      <Route path="customers" element={<CustomersPage />} />
+      <Route path="customers/:id" element={<CustomerDetailPage />} />
+      <Route path="pricing" element={<PricingPage />} />
+      <Route path="platform" element={<PlatformOverviewPage />} />
+      <Route path="applications" element={<ApplicationsPage />} />
+      <Route path="audit" element={<AuditPage />} />
       <Route path="chat" element={<Chat />} />
       <Route path="chat/:conversationId" element={<Chat />} />
       <Route path="chat/:conversationId/members" element={<ChatMembers />} />
       <Route path="chat/:conversationId/join-requests" element={<ChatJoinRequests />} />
       <Route path="api-keys" element={<ApiKeys />} />
-      <Route path="api-docs" element={<ApiDocs />} />
-      <Route path="api-docs/code-share" element={<CodeShareDocsPage />} />
-      <Route path="api-docs/code-share-v2" element={<CodeShareV2DocsPage />} />
-      <Route path="api-docs/chat" element={<ChatDocsPage />} />
+      <Route path="api-docs" element={<ApiDocsPage />} />
+      <Route path="api-docs/:section" element={<ApiDocsPage />} />
       <Route path="integrations" element={<Integrations />} />
       <Route path="chatbots" element={<ChatbotList />} />
       <Route path="chatbots/new" element={<ChatbotCreate />} />

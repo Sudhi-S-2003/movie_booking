@@ -1,5 +1,8 @@
 import type { Namespace } from 'socket.io';
 import { socketAuthMiddleware } from '../socketAuth.middleware.js';
+import mongoose from 'mongoose';
+import { Issue } from '../../models/issue.model.js';
+import { STAFF_ROLES } from '../../constants/enums.js';
 
 /**
  * Support / Messages channel — per-issue chat room.
@@ -21,9 +24,21 @@ export const registerSupportMessagesHandlers = (namespace: Namespace) => {
   namespace.on('connection', (socket) => {
     console.log(`🎧 [SUPPORT-MSG] Client connected: ${socket.id} (user: ${socket.data.userId as string})`);
 
-    socket.on('join_issue', (issueId: string) => {
-      socket.join(`issue:${issueId}`);
-      console.log(`🎧 [SUPPORT-MSG] ${socket.id} joined issue: ${issueId}`);
+    socket.on('join_issue', async (issueId: string) => {
+      try {
+        // Ticket rooms: the ticket owner or support staff only. Guest chat
+        // links never grant access to support rooms.
+        if (socket.data.isGuest || typeof issueId !== 'string' || !mongoose.isValidObjectId(issueId)) return;
+        const isStaff = STAFF_ROLES.has(String(socket.data.role));
+        const allowed = isStaff || !!(await Issue.exists({ _id: issueId, userId: socket.data.userId }));
+        if (!allowed) {
+          console.warn(`⚠️ [SUPPORT-MSG] ${socket.id} denied join for issue ${issueId}`);
+          return;
+        }
+        socket.join(`issue:${issueId}`);
+      } catch (err) {
+        console.error('[SUPPORT-MSG] join failed:', err);
+      }
     });
 
     socket.on('leave_issue', (issueId: string) => {

@@ -22,8 +22,8 @@ const STYLES = {
     iconSz: 16,
   },
   sm: {
-    btn:   'w-7 h-7 rounded-md text-[10px]',
-    gap:   'px-1 text-[9px] text-white/20',
+    btn:   'w-7 h-7 rounded-md text-xs',
+    gap:   'px-1 text-[11px] text-white/20',
     iconSz: 12,
   },
 } as const;
@@ -57,13 +57,13 @@ export const MembersPagination = memo(({
 
       {window.map((slot, i) =>
         slot === '…' ? (
-          <span key={`gap-${i}`} className={`${gap} font-black`}>…</span>
+          <span key={`gap-${i}`} className={`${gap} font-bold`}>…</span>
         ) : (
           <button
             key={slot}
             onClick={() => onChange(slot)}
             disabled={disabled}
-            className={`${btn} font-black tracking-tight transition-all ${
+            className={`${btn} font-bold tracking-tight transition-all ${
               slot === page
                 ? 'bg-accent-blue/20 border border-accent-blue/40 text-accent-blue'
                 : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'

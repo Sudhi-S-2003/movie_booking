@@ -70,10 +70,10 @@ export const NotificationToast = React.memo(({ toast, onRemove }: NotificationTo
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-white line-clamp-1 mt-1">
+            <h4 className="text-xs font-bold uppercase tracking-wide text-white line-clamp-1 mt-1">
               {toast.title}
             </h4>
-            <span className="text-[10px] font-medium text-slate-500 whitespace-nowrap">
+            <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
               Just now
             </span>
           </div>
@@ -85,7 +85,7 @@ export const NotificationToast = React.memo(({ toast, onRemove }: NotificationTo
           {toast.url && (
             <button
               onClick={handleAction}
-              className={`group/btn mt-3 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+              className={`group/btn mt-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.15em] transition-all ${
                 theme === 'red' ? 'text-rose-400 hover:text-rose-300' : 'text-accent-blue hover:text-blue-300'
               }`}
             >

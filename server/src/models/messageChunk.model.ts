@@ -76,7 +76,10 @@ MessageChunkSchema.index(
   { createdAt: 1 },
   {
     expireAfterSeconds:     60 * 60,
-    partialFilterExpression: { messageId: { $exists: false } },
+    // In-progress chunks still carry their uploadId; completion clears it.
+    // ($exists:false is not allowed in partial indexes, so the old filter
+    // was rejected by MongoDB and orphans were never cleaned up.)
+    partialFilterExpression: { uploadId: { $type: 'string' } },
   },
 );
 

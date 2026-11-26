@@ -1,4 +1,4 @@
-import { Route } from 'react-router-dom';
+import { Route, Navigate } from 'react-router-dom';
 import { Home } from '../pages/Home.js';
 import { MovieDetails } from '../pages/MovieDetails.js';
 import { SeatBooking } from '../pages/SeatBooking.js';
@@ -22,10 +22,9 @@ import { Hashtag } from '../pages/Hashtag.js';
 import { PostDetail } from '../pages/PostDetail.js';
 import { PublicChat } from '../pages/PublicChat.js';
 import { ChatInvite } from '../pages/ChatInvite.js';
-import { Subscription } from '../pages/Subscription.js';
-import { ApiDocsTest } from '../pages/ApiDocsTest.js';
 import PublicTicket from '../pages/PublicTicket.js';
-import { ApiDocsSignedService } from '../pages/ApiDocsSignedService.js';
+import { ApiDocsPage } from '../features/developer/ApiDocsPage.js';
+import { PublicPricingPage } from '../features/pricing/PublicPricingPage.js';
 import { TwoFactorSetup } from '../pages/TwoFactorSetup.js';
 import { LoginVerify2FA } from '../pages/LoginVerify2FA.js';
 
@@ -56,12 +55,14 @@ export const PublicRoutes = () => (
 
     <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
     <Route path="/success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
-    <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+    <Route path="/pricing" element={<PublicPricingPage />} />
+    <Route path="/subscription" element={<Navigate to="/pricing" replace />} />
 
     <Route path="/chat/g/:publicName" element={<PublicChat />} />
     <Route path="/chat/invite/:token" element={<ChatInvite />} />
     <Route path="/ticket/:id" element={<PublicTicket />} />
-    <Route path="/docs-test" element={<ApiDocsTest />} />
-    <Route path="/docs/signed-service" element={<ApiDocsSignedService />} />
+    <Route path="/developers" element={<ApiDocsPage />} />
+    <Route path="/docs-test" element={<Navigate to="/developers" replace />} />
+    <Route path="/docs/signed-service" element={<Navigate to="/developers" replace />} />
   </Route>
 );

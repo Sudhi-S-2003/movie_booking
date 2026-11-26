@@ -42,17 +42,17 @@ export const MemberRow = memo(({
         <div className="flex items-center gap-3 flex-wrap">
           <Link
             to={`/user/${member.username}`}
-            className="text-[13px] font-black tracking-tight text-white hover:text-accent-blue transition-colors truncate"
+            className="text-[13px] font-bold tracking-tight text-white hover:text-accent-blue transition-colors truncate"
           >
             {member.name}
           </Link>
           {member.isYou && (
-            <span className="px-2.5 py-1 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-accent-blue text-[9px] font-black uppercase tracking-[0.2em]">
+            <span className="px-2.5 py-1 rounded-full bg-accent-blue/10 border border-accent-blue/20 text-accent-blue text-[11px] font-bold uppercase tracking-wide">
               You
             </span>
           )}
           {member.isCreator && (
-            <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+            <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-bold uppercase tracking-wide flex items-center gap-1.5">
               <Crown size={10} /> Owner
             </span>
           )}
@@ -64,8 +64,8 @@ export const MemberRow = memo(({
       </div>
 
       <div className="text-right hidden md:block">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-600">Joined</p>
-        <p className="text-[11px] font-black text-gray-400 tabular-nums">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-600">Joined</p>
+        <p className="text-[11px] font-bold text-gray-400 tabular-nums">
           {formatJoinDate(member.joinedAt)}
         </p>
       </div>
@@ -74,7 +74,7 @@ export const MemberRow = memo(({
         <button
           onClick={() => onRemove(member)}
           disabled={isBusy}
-          className={`ml-2 px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`ml-2 px-3 py-2 rounded-xl border text-[11px] font-bold uppercase tracking-wide flex items-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
             canLeave
               ? 'bg-white/[0.04] border-white/10 text-gray-300 hover:bg-white/[0.08] hover:text-white'
               : 'bg-rose-500/10 border-rose-500/20 text-rose-300 hover:bg-rose-500/15 hover:text-rose-200'

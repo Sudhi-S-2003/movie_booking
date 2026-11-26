@@ -64,7 +64,7 @@ export const ImageBubble = memo(({ msg, isOwn }: ImageBubbleProps) => {
                   }`}
                 />
                 {isLastWithOverflow && (
-                  <div className="absolute inset-0 bg-black/55 flex items-center justify-center text-white font-black text-xl tabular-nums">
+                  <div className="absolute inset-0 bg-black/55 flex items-center justify-center text-white font-bold text-xl tabular-nums">
                     +{extra}
                   </div>
                 )}

@@ -52,7 +52,7 @@ export const FilterBar = ({
           key={i}
           value={s.value}
           onChange={(e) => s.onChange(e.target.value)}
-          className={`bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-widest text-white outline-none transition-all ${s.accentClass ?? 'focus:border-accent-blue'}`}
+          className={`bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs font-bold uppercase tracking-wide text-white outline-none transition-all ${s.accentClass ?? 'focus:border-accent-blue'}`}
         >
           {s.options.map((o) => (
             <option key={o.value} value={o.value} className="bg-background normal-case tracking-normal font-normal">

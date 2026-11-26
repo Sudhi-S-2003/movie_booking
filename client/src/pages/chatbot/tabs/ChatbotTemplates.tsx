@@ -296,7 +296,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Template Name
             </label>
             <input
@@ -308,7 +308,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Language
             </label>
             <select
@@ -324,7 +324,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
               Internal Note
             </label>
             <input
@@ -372,14 +372,14 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
                     </div>
                     <div>
                       <h4 className="font-bold text-white text-sm">{tpl.name}</h4>
-                      <p className="text-gray-500 text-[10px] uppercase font-semibold">
+                      <p className="text-gray-500 text-xs uppercase font-semibold">
                         Lang: {tpl.language} | {tpl.description || 'No description'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-4">
-                    <span className={clsx('px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider', tpl.status === 'published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-gray-500/10 text-gray-400 border border-white/5')}>
+                    <span className={clsx('px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider', tpl.status === 'published' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-gray-500/10 text-gray-400 border border-white/5')}>
                       {tpl.status}
                     </span>
                     {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
@@ -399,7 +399,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
                         {/* General template options (nextFlowStepId) */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950 p-4 rounded-xl border border-white/5 items-end">
                           <div className="space-y-2">
-                            <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
                               Status Mode
                             </label>
                             <select
@@ -414,7 +414,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
 
                           {chatbot?.type === 'flow' && (
                             <div className="space-y-2">
-                              <label className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">
+                              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
                                 Next Dialogue Flow Step
                               </label>
                               <select
@@ -448,14 +448,14 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
                           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                             {/* HEADERS */}
                             <div className="space-y-4 glass-card p-5 bg-slate-950/20">
-                              <h5 className="text-xs uppercase font-bold tracking-widest text-white border-b border-white/5 pb-2">
+                              <h5 className="text-xs uppercase font-bold tracking-wide text-white border-b border-white/5 pb-2">
                                 Template Headers
                               </h5>
                               <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                                 {(templateDetail.headers || []).map((row, idx) => (
                                   <div key={idx} className="bg-slate-950 p-2.5 rounded-lg border border-white/5 flex justify-between items-start text-[11px]">
                                     <div className="space-y-1 pr-4">
-                                      <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[9px] font-bold font-mono">
+                                      <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[11px] font-bold font-mono">
                                         {row.type}
                                       </span>
                                       <p className="font-bold text-white font-mono mt-1">{row.key}</p>
@@ -545,7 +545,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
                                     />
                                     <button
                                       onClick={() => handleAddHeaderRow(tpl._id)}
-                                      className="w-full py-1 bg-accent-purple/20 text-accent-purple hover:bg-accent-purple hover:text-white transition-all rounded text-[10px] uppercase font-bold"
+                                      className="w-full py-1 bg-accent-purple/20 text-accent-purple hover:bg-accent-purple hover:text-white transition-all rounded text-xs uppercase font-bold"
                                     >
                                       Add Header Item
                                     </button>
@@ -556,7 +556,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
 
                             {/* BODY */}
                             <div className="space-y-4 glass-card p-5 bg-slate-950/20">
-                              <h5 className="text-xs uppercase font-bold tracking-widest text-white border-b border-white/5 pb-2">
+                              <h5 className="text-xs uppercase font-bold tracking-wide text-white border-b border-white/5 pb-2">
                                 Template Body
                               </h5>
                               <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
@@ -625,7 +625,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
                                     />
                                     <button
                                       onClick={() => handleAddBodyRow(tpl._id)}
-                                      className="w-full py-1 bg-accent-purple/20 text-accent-purple hover:bg-accent-purple hover:text-white transition-all rounded text-[10px] uppercase font-bold"
+                                      className="w-full py-1 bg-accent-purple/20 text-accent-purple hover:bg-accent-purple hover:text-white transition-all rounded text-xs uppercase font-bold"
                                     >
                                       Add Body Item
                                     </button>
@@ -636,7 +636,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
 
                             {/* FOOTERS */}
                             <div className="space-y-4 glass-card p-5 bg-slate-950/20">
-                              <h5 className="text-xs uppercase font-bold tracking-widest text-white border-b border-white/5 pb-2">
+                              <h5 className="text-xs uppercase font-bold tracking-wide text-white border-b border-white/5 pb-2">
                                 Template Footer
                               </h5>
                               <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
@@ -705,7 +705,7 @@ export const ChatbotTemplates: React.FC = React.memo(() => {
                                     />
                                     <button
                                       onClick={() => handleAddFooterRow(tpl._id)}
-                                      className="w-full py-1 bg-accent-purple/20 text-accent-purple hover:bg-accent-purple hover:text-white transition-all rounded text-[10px] uppercase font-bold"
+                                      className="w-full py-1 bg-accent-purple/20 text-accent-purple hover:bg-accent-purple hover:text-white transition-all rounded text-xs uppercase font-bold"
                                     >
                                       Add Footer Item
                                     </button>

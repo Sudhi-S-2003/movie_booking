@@ -52,7 +52,7 @@ export const ProfilePostCard = ({
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex-1 min-w-0">
           <Link to={`/post/${post._id}`} className="group/title block">
-            <h2 className="text-xl font-black text-white leading-tight group-hover/title:text-accent-pink transition-colors">
+            <h2 className="text-xl font-bold text-white leading-tight group-hover/title:text-accent-pink transition-colors">
               {post.title}
             </h2>
           </Link>

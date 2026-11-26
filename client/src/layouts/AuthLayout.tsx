@@ -38,7 +38,7 @@ export const AuthLayout = () => {
         </div>
 
         <div className="relative z-20 w-full p-20 flex flex-col justify-between">
-          <Link to="/" className="text-3xl font-black tracking-tighter text-white group/logo flex items-center gap-2">
+          <Link to="/" className="text-3xl font-bold tracking-tighter text-white group/logo flex items-center gap-2">
             <span className="w-8 h-8 bg-gradient-to-br from-accent-pink to-accent-purple rounded-lg flex items-center justify-center text-sm">{SITE_CONFIG.shortName}</span>
             <span>{SITE_CONFIG.firstName.toUpperCase()}<span className="text-accent-pink group-hover/logo:text-accent-blue transition-colors duration-500">{SITE_CONFIG.lastName.toUpperCase()}</span></span>
           </Link>
@@ -51,7 +51,7 @@ export const AuthLayout = () => {
               className="space-y-6"
             >
               <div className="w-20 h-1.5 bg-gradient-to-r from-accent-pink to-accent-purple rounded-full" />
-              <h2 className="text-5xl font-black text-white leading-[1.1] tracking-tighter">
+              <h2 className="text-5xl font-bold text-white leading-[1.1] tracking-tighter">
                 The Future of <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue via-accent-purple to-accent-pink animate-gradient-x">Cinema Browsing</span>
               </h2>
@@ -62,23 +62,23 @@ export const AuthLayout = () => {
 
             <div className="flex gap-16 text-white/40">
               <div className="space-y-2">
-                <p className="text-4xl font-black text-white tracking-tighter">
+                <p className="text-4xl font-bold text-white tracking-tighter">
                   {statsLoading ? '...' : formatCountCompact(stats?.users ?? 0) || SITE_CONFIG.stats.users}
                 </p>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-blue">Active Users</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-accent-blue">Active Users</p>
               </div>
               <div className="h-16 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
               <div className="space-y-2">
-                <p className="text-4xl font-black text-white tracking-tighter">
+                <p className="text-4xl font-bold text-white tracking-tighter">
                   {statsLoading ? '...' : formatCountCompact(stats?.theatres ?? 0) || SITE_CONFIG.stats.partners}
                 </p>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-pink">Cinema Partners</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-accent-pink">Cinema Partners</p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em]">© {SITE_CONFIG.year} {SITE_CONFIG.author}</p>
+            <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">© {SITE_CONFIG.year} {SITE_CONFIG.author}</p>
             <div className="h-px flex-1 bg-white/5" />
           </div>
         </div>
@@ -100,8 +100,8 @@ export const AuthLayout = () => {
             {/* Header */}
             <div className="space-y-6">
               <div className="lg:hidden mb-12">
-                 <Link to="/" className="text-2xl font-black tracking-tighter text-white flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-accent-pink to-accent-purple rounded flex items-center justify-center text-[10px]">{SITE_CONFIG.shortName}</div>
+                 <Link to="/" className="text-2xl font-bold tracking-tighter text-white flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-accent-pink to-accent-purple rounded flex items-center justify-center text-xs">{SITE_CONFIG.shortName}</div>
                   <span>{SITE_CONFIG.firstName.toUpperCase()}<span className="text-accent-pink">{SITE_CONFIG.lastName.toUpperCase()}</span></span>
                 </Link>
               </div>
@@ -113,11 +113,11 @@ export const AuthLayout = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-2"
                 >
-                  <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">
+                  <h1 className="text-4xl font-bold text-white tracking-tighter uppercase leading-none">
                     {title} <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-purple">{highlightText}</span>
                   </h1>
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.4em] leading-relaxed max-w-[280px]">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider leading-relaxed max-w-[280px]">
                     {subtitle}
                   </p>
                 </motion.div>

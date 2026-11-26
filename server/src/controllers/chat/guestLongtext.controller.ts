@@ -34,7 +34,9 @@ import {
   completeUpload,
   loadChunk,
 } from '../../services/chat/longtext.service.js';
-import { guardTokensForLength } from '../../services/subscription/tokenGuard.js';
+import { meterUserById, tokensForLength, type MeterOutcome } from '../../modules/billing/meter.js';
+import { SERVICE_KEYS } from '../../modules/catalog/catalog.registry.js';
+import { withTransaction } from '../../db/transaction.js';
 import { markSentMessageRead } from '../../services/chat/chatReadCursor.service.js';
 import {
   getChatMessagesNamespace,
@@ -46,7 +48,7 @@ import {
   emitConversationUpdated,
 } from '../../socket/channels/chat-list.channel.js';
 import { buildPreviewText } from '../../services/chat/contentTypeValidator.js';
-import { withOptionalTransaction, withSession } from '../../utils/transaction.util.js';
+import { withSession } from '../../utils/transaction.util.js';
 import type { ChatMessageDoc } from '../../models/chat.model.js';
 
 // ── POST /api/public/chat/conversation/:id/longtext/start ───────────────────
@@ -207,14 +209,14 @@ export const guestLongtextComplete = async (req: Request, res: Response) => {
     // total to the `meterTokens` callback below.
     const preview = buildPreviewText({ contentType: 'text', text: session.text });
 
-    type TxTokens = NonNullable<Awaited<ReturnType<typeof guardTokensForLength>>>;
+    type TxTokens = MeterOutcome;
     type TxResult =
       | { ok: true; message: ChatMessageDoc; tokens: TxTokens }
       | { ok: false; status: number; body: Record<string, unknown> };
 
     const ownerId = String(conversation.createdBy);
 
-    const outcome = await withOptionalTransaction<TxResult>(async (rawSession) => {
+    const outcome = await withTransaction<TxResult>(async (rawSession) => {
       const mongoSession = rawSession ?? undefined;
       let tokens: TxTokens | null = null;
 
@@ -227,7 +229,9 @@ export const guestLongtextComplete = async (req: Request, res: Response) => {
         ...(parsedReplyTo ? { replyTo: parsedReplyTo } : {}),
         mongoSession,
         meterTokens: async (fullLength) => {
-          tokens = await guardTokensForLength(ownerId, fullLength, res, { session: mongoSession });
+          tokens = await meterUserById(res, String(ownerId), {
+            serviceKey: SERVICE_KEYS.CHAT, units: tokensForLength(fullLength), description: 'Chat: guest long message', session: mongoSession,
+          });
           return tokens ? { ok: true } : { ok: false };
         },
       });
@@ -245,7 +249,7 @@ export const guestLongtextComplete = async (req: Request, res: Response) => {
           };
         }
         if (result.error.kind === 'metering_rejected') {
-          // `guardTokensForLength` already wrote the 402 body to `res`.
+          // `meterUserById` already wrote the 402/403 body to `res`.
           return { ok: false, status: 402, body: {} };
         }
         return { ok: false, status: 400, body: { reason: result.error.kind } };
@@ -322,7 +326,7 @@ export const guestLongtextComplete = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: decorated,
-      tokens:  { remaining: tokens.remaining, plan: tokens.plan, cost: tokens.cost },
+      billing: { cost: tokens.cost, units: tokens.units, balance: tokens.balance },
     });
   } catch (e: unknown) {
     res.status(500).json({ success: false, message: getErrorMessage(e) });

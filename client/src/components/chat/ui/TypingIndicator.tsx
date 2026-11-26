@@ -38,7 +38,7 @@ export const TypingIndicator = memo(({ users }: TypingIndicatorProps) => {
             />
           ))}
         </div>
-        <span className="text-[9px] text-white/30 font-medium">{label}</span>
+        <span className="text-[11px] text-white/30 font-medium">{label}</span>
       </motion.div>
     </AnimatePresence>
   );

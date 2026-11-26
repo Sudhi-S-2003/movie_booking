@@ -66,7 +66,7 @@ export const Movies = () => {
           ]}
           right={
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                 {pagination?.total ?? movies.length} results
               </span>
               <div className="h-4 w-px bg-white/10" />

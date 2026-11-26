@@ -23,14 +23,14 @@ export const CodeShareError: React.FC<CodeShareErrorProps> = ({ message }) => {
           <ShieldAlert className="text-rose-400" size={48} />
         </div>
         
-        <h2 className="text-2xl font-black text-white mb-3 uppercase tracking-tight">Security Alert</h2>
+        <h2 className="text-2xl font-bold text-white mb-3 uppercase tracking-tight">Security Alert</h2>
         <div className="px-6 py-3 bg-rose-500/5 border border-rose-500/10 rounded-2xl mb-8">
           <p className="text-rose-200/60 text-[11px] font-bold leading-relaxed uppercase tracking-wider">{message}</p>
         </div>
 
         <button 
           onClick={() => window.location.href = '/'}
-          className="w-full py-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+          className="w-full py-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-2xl text-xs font-bold uppercase tracking-wide hover:bg-rose-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
         >
           <AlertCircle size={14} />
           Return to Safety

@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { env } from '../env.js';
-import { AuthProvider, NotificationType } from '../constants/enums.js';
+import { AuthProvider, NotificationType, UserStatus } from '../constants/enums.js';
+import { registerSchema } from '../modules/auth/auth.schemas.js';
 import type { AuthRequest, JwtPayload } from '../interfaces/auth.interface.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 import { disconnectSessionSockets } from '../socket/index.js';
@@ -26,9 +27,16 @@ const generateTempToken = (id: string) =>
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, username, email, password, role, captchaText, captchaToken } = req.body;
+    // NOTE: `role` is deliberately NOT accepted — self-registration always
+    // creates a plain user. Elevated roles are granted server-side only.
+    const parsed = registerSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      const fieldErrors = Object.fromEntries(parsed.error.issues.map((i) => [i.path.join('.'), i.message]));
+      return res.status(400).json({ success: false, code: 'VALIDATION_ERROR', message: parsed.error.issues[0]?.message ?? 'Invalid input', details: { fieldErrors } });
+    }
+    const { name, username, email, password, resellerCode, captchaText, captchaToken } = parsed.data;
 
-    if (!verifyCaptcha(captchaText, captchaToken)) {
+    if (!(await verifyCaptcha(captchaText, captchaToken))) {
       return res.status(400).json({ success: false, message: 'Invalid or expired captcha. Please try again.' });
     }
 
@@ -47,7 +55,15 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
-    const user = await AuthService.createUser({ name, username, email, password, role });
+    let user;
+    try {
+      user = await AuthService.createUser({ name, username, email, password, resellerCode });
+    } catch (e) {
+      if (getErrorMessage(e) === 'Invalid reseller code') {
+        return res.status(400).json({ success: false, message: 'Invalid reseller code' });
+      }
+      throw e;
+    }
 
     const { session, refreshToken } = await AuthService.createSession(
       user._id,
@@ -79,7 +95,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { captchaText, captchaToken } = req.body;
 
-    if (!verifyCaptcha(captchaText, captchaToken)) {
+    if (!(await verifyCaptcha(captchaText, captchaToken))) {
       return res.status(400).json({ success: false, message: 'Invalid or expired captcha. Please try again.' });
     }
 
@@ -99,6 +115,9 @@ export const login = async (req: Request, res: Response) => {
     const isMatch = await AuthService.verifyPassword(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      return res.status(403).json({ success: false, code: 'ACCOUNT_INACTIVE', message: 'This account is suspended or closed. Contact your provider.' });
     }
 
     if (user.twoFactorEnabled) {
@@ -145,7 +164,7 @@ export const login = async (req: Request, res: Response) => {
 export const getCaptcha = async (_req: Request, res: Response) => {
   try {
     const { text, captchaImage } = await generateCaptcha();
-    const captchaToken = createCaptchaToken(text);
+    const captchaToken = await createCaptchaToken(text);
 
     res.status(200).json({
       success: true,

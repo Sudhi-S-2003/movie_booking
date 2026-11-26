@@ -34,7 +34,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({
         <button
           key={d.iso}
           onClick={() => onDateChange(d.iso)}
-          className={`px-6 py-2.5 rounded-2xl text-xs font-black flex items-center gap-2 whitespace-nowrap transition-all ${
+          className={`px-6 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 whitespace-nowrap transition-all ${
             selectedDate === d.iso 
               ? 'bg-accent-blue text-white shadow-lg shadow-accent-blue/20 scale-105' 
               : 'text-gray-400 hover:bg-white/5'

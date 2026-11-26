@@ -23,6 +23,6 @@ export const OwnerRoutes = () => (
     <Route path="support" element={<OwnerSupport />} />
     <Route path="support/:issueId" element={<OwnerSupport />} />
     {CommonDashboardRoutes()}
-    <Route path="settings" element={<div className="flex items-center justify-center h-full text-gray-500 font-black uppercase tracking-[0.5em]">Settings Module Coming Soon</div>} />
+    <Route path="settings" element={<Navigate to="../account" replace />} />
   </Route>
 );

@@ -1,30 +1,33 @@
 import React from 'react';
-import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck, Receipt, Activity, Bot } from 'lucide-react';
+import { Ticket, BarChart3, LifeBuoy, Settings, MessageCircle, KeyRound, Puzzle, ShieldCheck, Bot } from 'lucide-react';
 
 import { AppDashboardLayout } from './AppDashboardLayout.js';
 import { useLogout } from '../hooks/useLogout.js';
+import { useAccount } from '../features/platform/useAccount.js';
+import { platformNavGroups } from '../features/platform/navigation.js';
 import { DashboardSidebar, type SidebarConfig } from '../components/sidebar/index.js';
 
 const useUserSidebarConfig = (): SidebarConfig => {
   const { logout, isLoading } = useLogout();
+  const { data: account } = useAccount();
+  const isReseller = account?.role === 'reseller';
 
   return React.useMemo(() => ({
     brand: {
-      title: 'USER',
+      title: isReseller ? 'RESELLER' : 'MY',
       accent: 'HUB',
       accentColor: 'text-accent-pink',
-      subtitle: 'Premium Member',
+      subtitle: isReseller ? 'Partner Console' : 'Customer Console',
       iconName: 'User',
       iconColor: 'text-accent-pink',
     },
     groups: [
+      ...platformNavGroups('/user', account),
       {
-        label: 'Activities',
+        label: 'Movies',
         items: [
           { icon: Ticket, label: 'My Tickets', to: '/user/bookings', colorClass: 'text-accent-blue' },
           { icon: BarChart3, label: 'Stats', to: '/user/stats', colorClass: 'text-accent-pink' },
-          { icon: Receipt, label: 'Billing History', to: '/user/billing', colorClass: 'text-emerald-400' },
-          { icon: Activity, label: 'Token Usage', to: '/user/transactions', colorClass: 'text-accent-purple' },
         ],
       },
       {
@@ -61,7 +64,7 @@ const useUserSidebarConfig = (): SidebarConfig => {
     onLogout: logout,
     isLogoutLoading: isLoading,
     pillId: 'user-pill',
-  }), [logout, isLoading]);
+  }), [logout, isLoading, account, isReseller]);
 };
 
 export const UserLayout: React.FC = () => {
@@ -69,7 +72,6 @@ export const UserLayout: React.FC = () => {
   return (
     <AppDashboardLayout
       sidebar={<DashboardSidebar config={config} />}
-      searchPlaceholder="Search your bookings, movies..."
     />
   );
 };

@@ -1,11 +1,13 @@
 import { create } from 'zustand';
+import type { Role } from '../types/platform.js';
 import { persist } from 'zustand/middleware';
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'user' | 'admin' | 'theatre_owner';
+  role: Role;
+  permissions?: string[];
   avatar?: string;
   isOnline?: boolean;
   lastSeen?: string;
@@ -34,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, token: null, refreshToken: null, isAuthenticated: false }),
     }),
     {
-      name: 'cinema-connect-auth',
+      name: 'platform-auth',
     }
   )
 );

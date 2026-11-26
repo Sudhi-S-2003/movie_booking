@@ -24,19 +24,19 @@ export const TheatreCard = ({ theatre }: TheatreCardProps) => (
             ))}
           </div>
         </div>
-        <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest text-gray-500">
+        <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[11px] font-bold uppercase tracking-wide text-gray-500">
           Premium Venue
         </span>
       </div>
 
       {/* Name + city */}
       <div className="space-y-1.5">
-        <h3 className="text-3xl font-black text-white leading-tight group-hover:text-accent-blue transition-colors">
+        <h3 className="text-3xl font-bold text-white leading-tight group-hover:text-accent-blue transition-colors">
           {theatre.name}
         </h3>
         <div className="flex items-center gap-2 text-gray-500">
           <MapPin size={13} className="text-accent-pink" />
-          <span className="text-xs font-bold uppercase tracking-widest">{theatre.city}</span>
+          <span className="text-xs font-bold uppercase tracking-wide">{theatre.city}</span>
         </div>
       </div>
 
@@ -50,13 +50,13 @@ export const TheatreCard = ({ theatre }: TheatreCardProps) => (
         {theatre.amenities?.slice(0, 3).map((item: string) => (
           <span
             key={item}
-            className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-bold uppercase text-gray-400"
+            className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[11px] font-bold uppercase text-gray-400"
           >
             {item}
           </span>
         ))}
         {theatre.amenities?.length > 3 && (
-          <span className="px-3 py-1 text-[9px] font-bold uppercase text-accent-blue">
+          <span className="px-3 py-1 text-[11px] font-bold uppercase text-accent-blue">
             +{theatre.amenities.length - 3} More
           </span>
         )}
@@ -66,7 +66,7 @@ export const TheatreCard = ({ theatre }: TheatreCardProps) => (
     {/* CTA */}
     <Link
       to={`/theatre/${theatre._id}`}
-      className="mt-8 flex items-center justify-center gap-2 py-4 bg-white/5 border border-white/10 rounded-[28px] font-black uppercase tracking-widest text-[10px] hover:bg-accent-blue hover:text-white transition-all shadow-xl group/btn"
+      className="mt-8 flex items-center justify-center gap-2 py-4 bg-white/5 border border-white/10 rounded-[28px] font-bold uppercase tracking-wide text-xs hover:bg-accent-blue hover:text-white transition-all shadow-xl group/btn"
     >
       View <ChevronRight size={15} className="group-hover/btn:translate-x-1 transition-transform" />
     </Link>

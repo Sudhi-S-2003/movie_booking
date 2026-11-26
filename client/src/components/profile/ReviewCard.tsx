@@ -52,7 +52,7 @@ export const ReviewCard = ({ review }: ReviewCardProps) => (
           <div className="min-w-0">
             <Link
               to={review.movie ? `/movie/${review.movie._id}` : '#'}
-              className="text-base font-black text-white hover:text-accent-pink transition-colors block truncate"
+              className="text-base font-bold text-white hover:text-accent-pink transition-colors block truncate"
             >
               {review.movie?.title ?? 'Unknown title'}
             </Link>
@@ -72,7 +72,7 @@ export const ReviewCard = ({ review }: ReviewCardProps) => (
             {review.movie.genres.slice(0, 3).map((g) => (
               <span
                 key={g}
-                className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-2 py-0.5 rounded-full bg-white/5 border border-white/10"
+                className="text-xs font-bold uppercase tracking-wider text-gray-500 px-2 py-0.5 rounded-full bg-white/5 border border-white/10"
               >
                 {g}
               </span>

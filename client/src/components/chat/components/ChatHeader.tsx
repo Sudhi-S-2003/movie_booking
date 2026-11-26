@@ -1,8 +1,8 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { dashboardPrefix } from '../../../features/platform/useAccount.js';
 import { ArrowLeft, Phone, Video, MoreVertical, Users, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChatAvatar } from '../ui/ChatAvatar.js';
-import { TokenUsageBadge } from './TokenUsageBadge.js';
 import { useAuthStore } from '../../../store/authStore.js';
 import type { Conversation } from '../types.js';
 
@@ -63,10 +63,7 @@ export const ChatHeader = memo(({
   }, [location.pathname]);
 
   const membersPath = useMemo(() => {
-    const role = (user?.role ?? 'user').toString().toLowerCase();
-    const prefix = role === 'admin' ? '/admin'
-      : role === 'theatre_owner' ? '/owner'
-      : '/user';
+    const prefix = dashboardPrefix(user?.role);
     return `${prefix}/chat/${conversation._id}/members`;
   }, [user, conversation._id]);
 
@@ -112,7 +109,7 @@ export const ChatHeader = memo(({
         <h3 className="text-[12px] font-bold text-white truncate">
           {displayName}
         </h3>
-        <p className={`text-[9px] font-medium truncate ${
+        <p className={`text-[11px] font-medium truncate ${
           typingUsers.length > 0 ? 'text-accent-blue' : 'text-white/30'
         }`}>
           {subtitle}
@@ -120,7 +117,6 @@ export const ChatHeader = memo(({
       </div>
 
       {/* Token usage pill — visible on all chat types; hidden on guest views */}
-      <TokenUsageBadge />
 
       {/* Action buttons */}
       {!isSystem && (
@@ -163,7 +159,7 @@ export const ChatHeader = memo(({
               >
                 {/* Header strip — tells the user what this menu is about. */}
                 <div className="px-4 pt-3 pb-2">
-                  <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">
+                  <span className="text-[11px] font-bold text-white/30 uppercase tracking-wider">
                     Conversation
                   </span>
                   <p className="mt-0.5 text-[11px] font-bold text-white/70 truncate">
@@ -222,9 +218,9 @@ const MenuAction = ({
       {icon}
     </span>
     <span className="flex-1 min-w-0">
-      <span className="block text-[12px] font-black">{label}</span>
+      <span className="block text-[12px] font-bold">{label}</span>
       {hint && (
-        <span className="block text-[10px] font-medium text-white/40 mt-0.5">
+        <span className="block text-xs font-medium text-white/40 mt-0.5">
           {hint}
         </span>
       )}
